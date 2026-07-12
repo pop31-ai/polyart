@@ -1,0 +1,417 @@
+================================================================================
+  Polynomial Video Compression: Algorithms and Implementation
+  Author: PolyArt Research Team
+  Date: July 2026
+  Module Reference: polyart_video_codec
+================================================================================
+
+ABSTRACT
+--------
+
+This document describes the core algorithms underlying the PolyArt Video
+Codec, implemented in the polyart_video_codec module. We detail the edge
+detection pipeline (Sobel and Canny-like methods), contour extraction via
+connected-component tracing, polynomial curve fitting using least-squares
+optimization, delta frame computation with temporal tracking, quantization
+strategies, entropy coding, and the final rendering pipeline. Each algorithm
+is presented with pseudocode, mathematical foundations, and implementation
+notes specific to our reference codebase.
+
+================================================================================
+
+1. EDGE DETECTION ALGORITHMS
+-----------------------------
+
+The first stage of encoding converts raster frames into edge maps using
+gradient-based detection.
+
+1.1 Sobel Operator
+
+  The Sobel operator computes approximate image gradients using two 3x3
+  convolution kernels:
+
+    G_x = [-1  0  +1]     G_y = [-1  -2  -1]
+          [-2  0  +2]           [ 0   0   0]
+          [-1  0  +1]           [+1  +2  +1]
+
+  For each pixel (x, y) in the luminance channel L:
+
+    I_x(x,y) = sum over 3x3 neighborhood of G_x * L
+    I_y(x,y) = sum over 3x3 neighborhood of G_y * L
+
+    Gradient magnitude:
+      M(x,y) = sqrt(I_x(x,y)^2 + I_y(x,y)^2)
+
+    Gradient direction:
+      theta(x,y) = atan2(I_y(x,y), I_x(x,y))
+
+  Thresholding:
+    A pixel is classified as an edge if:
+      M(x,y) > T_high    =>  definite edge (strong)
+      T_low < M(x,y) <= T_high  =>  possible edge (weak, kept if connected)
+      M(x,y) <= T_low     =>  not an edge
+
+  Typical values: T_high = 50, T_low = 20 (on 0-255 scale)
+
+  Implementation note: The polyart_video_codec module applies Sobel on
+  a downscaled luminance buffer (half resolution) for speed, then
+  upscales the edge map to full resolution with bilinear interpolation.
+
+1.2 Canny-like Non-Maximum Suppression
+
+  After gradient computation, thin edges are produced:
+
+    Step 1: Quantize gradient direction into 4 categories:
+      0 degrees   (horizontal edge)   => compare with (x+1, y) and (x-1, y)
+      45 degrees  (diagonal)          => compare with (x+1, y-1) and (x-1, y+1)
+      90 degrees  (vertical edge)     => compare with (x, y+1) and (x, y-1)
+      135 degrees (anti-diagonal)     => compare with (x+1, y+1) and (x-1, y-1)
+
+    Step 2: Suppress non-maximum pixels:
+      If M(x,y) < M(neighbor along gradient): set M(x,y) = 0
+
+    Step 3: Hysteresis thresholding using union-find on weak pixels
+      connected to strong pixels within a distance of 2 pixels.
+
+  Output: Binary edge map with 1-pixel-wide contours.
+
+  The polyart_video_codec module implements this as _canny_suppress()
+  in the edge detection sub-module, using a lookup table for gradient
+  direction quantization to avoid branching in the inner loop.
+
+================================================================================
+
+2. CONTOUR EXTRACTION
+---------------------
+
+Connected contours are extracted from the binary edge map using a modified
+Moore-Neighbor tracing algorithm:
+
+  Algorithm: ContourTracing(edge_map)
+    contours = []
+    visited = boolean matrix, same size as edge_map, initialized false
+
+    for each pixel (x, y) in scan order:
+      if edge_map(x,y) == 1 and not visited(x,y):
+        contour = trace_contour(edge_map, visited, x, y)
+        if length(contour) >= MIN_CONTOUR_LENGTH:
+          contours.append(contour)
+
+    return contours
+
+  Algorithm: trace_contour(map, visited, start_x, start_y)
+    contour = [(start_x, start_y)]
+    visited(start_x, start_y) = true
+    direction = 0  (start scanning right)
+
+    loop:
+      for each neighbor in clockwise order from direction+5 mod 8:
+        if neighbor is edge pixel and not visited:
+          contour.append(neighbor)
+          visited(neighbor) = true
+          direction = direction_to(neighbor)
+          break
+      else:
+        break  (no unvisited neighbor found, contour complete)
+
+    return contour
+
+  The 8-connectivity neighbor order (Moore neighborhood):
+    7  0  1
+    6  P  2
+    5  4  3
+
+  where P is the current pixel and numbers indicate scan order.
+
+  Contours shorter than MIN_CONTOUR_LENGTH (default: 5 pixels) are
+  discarded as noise. The remaining contours are stored as ordered
+  sequences of (x, y) coordinates.
+
+  polyart_video_codec implementation: The contour extraction runs in
+  O(n) time where n is the number of edge pixels. Memory usage is
+  proportional to canvas area for the visited matrix.
+
+================================================================================
+
+3. POLYNOMIAL CURVE FITTING
+----------------------------
+
+Each extracted contour is fitted with a polynomial curve using the method
+of least squares.
+
+3.1 Parameterization
+
+  Contours are parameterized by normalized arc length:
+
+    s_0 = 0
+    s_i = s_{i-1} + sqrt((x_i - x_{i-1})^2 + (y_i - y_{i-1})^2)
+    s_normalized = s_i / s_total
+
+  This yields a set of pairs {(s_j, x_j)} and {(s_j, y_j)} where
+  s_j in [0, 1] for each contour point j.
+
+3.2 Least-Squares Polynomial Fitting
+
+  For x-coordinate fitting:
+
+    Given m points (s_j, x_j), find coefficients a_0, ..., a_n minimizing:
+
+      E_x = sum_{j=0}^{m-1} [x_j - P_x(s_j)]^2
+
+    where P_x(s) = a_0 + a_1*s + a_2*s^2 + ... + a_n*s^n
+
+    This reduces to solving the normal equations:
+
+      (A^T A) * a = A^T * x
+
+    where A is the Vandermonde matrix:
+      A = [1  s_0  s_0^2  ...  s_0^n]
+          [1  s_1  s_1^2  ...  s_1^n]
+          [...                        ]
+          [1  s_{m-1}  ...  s_{m-1}^n]
+
+  Similarly for y-coordinate fitting with coefficients b_0, ..., b_n.
+
+  The degree n is selected adaptively. Start with n=1 and increase until:
+
+    RMS_error(n) = sqrt(E_x(m-n) + E_y(m-n)) / sqrt(m) < T_fit
+
+  where T_fit is the fitting tolerance (default: 0.5 pixels).
+
+  Maximum degree is capped at MAX_DEGREE (default: 15 in
+  polyart_video_codec).
+
+3.3 Numerical Stability
+
+  The Vandermonde matrix is ill-conditioned for high degrees. We address
+  this using:
+
+    1. Pre-normalization of s values to [0, 1]
+    2. QR decomposition instead of direct normal equations solve
+    3. Coefficient clamping: |a_k| <= 2^15 for stability
+
+  In polyart_video_codec, the fitting is performed by _poly_fit_qr()
+  which uses Householder reflections for the QR decomposition.
+
+================================================================================
+
+4. DELTA FRAME COMPUTATION
+---------------------------
+
+Delta frames encode the temporal difference between consecutive frames.
+
+4.1 Curve Matching
+
+  Between frame t-1 and frame t, curves are matched using a cost function:
+
+    For each curve C_i in frame t-1 and C_j in frame t:
+
+      cost(i,j) = w1 * |centroid_dist(C_i, C_j)|
+                 + w2 * |degree_diff(C_i, C_j)|
+                 + w3 * shape_distance(C_i, C_j)
+
+    where:
+      centroid_dist = Euclidean distance between curve centroids
+      degree_diff = |deg(C_i) - deg(C_j)|
+      shape_distance = RMSE of coefficient differences (normalized)
+
+  Optimal matching is found using the Hungarian algorithm on the cost
+  matrix. Curves with cost > MATCH_THRESHOLD are left unmatched.
+
+  Matched curves produce delta entries. Unmatched curves in frame t are
+  new additions. Unmatched curves in frame t-1 are marked for removal.
+
+4.2 Delta Encoding Modes
+
+  Additive delta:
+    a_j(t) = a_j(t-1) + delta_j
+    Delta is stored as: delta_j = a_j(t) - a_j(t-1)
+
+  Replacement delta:
+    a_j(t) is stored directly (used when |delta_j| > 0.5 * |a_j(t-1)|)
+
+  Interpolated delta:
+    a_j(t) = a_j(t-1) + t_delta * velocity_j
+    where velocity_j = (a_j(t-1) - a_j(t-2)) / dt
+    This is used for smooth linear motion and requires only 2 bytes
+    (the velocity coefficient) per curve.
+
+  The polyart_video_codec module selects the mode that minimizes the
+  encoded delta size per curve using a rate-distortion criterion:
+
+    min_mode in {additive, replacement, interpolated}
+    such that: distortion(mode) < D_max
+    and size(mode) is minimized
+
+================================================================================
+
+5. OBJECT TRACKING ACROSS FRAMES
+---------------------------------
+
+Persistent curve IDs enable temporal object tracking:
+
+  Tracking State:
+    Each curve is assigned a persistent uint16 ID at first appearance.
+    The ID is maintained across frames as long as the curve is matched
+    in the Hungarian assignment.
+
+  ID Lifecycle:
+    1. New curve detected => assign next available ID from free list
+    2. Curve matched => retain ID, update position history
+    3. Curve unmatched for > MAX_MISSING_FRAMES (default: 5) => release ID
+    4. Curve reappears => if within spatial tolerance, reassign old ID
+
+  Position History:
+    Each tracked curve maintains a circular buffer of the last 8 centroid
+    positions. This history is used for:
+      - Motion estimation in delta frames
+      - Interpolated delta prediction
+      - Occlusion detection (rapid centroid jump)
+
+  The tracking module in polyart_video_codec stores state in a
+  CurveTracker object that persists across frame encoding calls.
+
+================================================================================
+
+6. QUANTIZATION AND ENTROPY CODING
+------------------------------------
+
+6.1 Scalar Quantization
+
+  Each polynomial coefficient a_k is quantized:
+
+    a_q = round(a_k / Q_k)
+
+    where Q_k = Q_base * 2^(k/4)  (degree-dependent step size)
+
+  Dequantization:
+    a_hat = a_q * Q_k
+
+  The quantization introduces distortion:
+    |a_k - a_hat| <= Q_k / 2
+
+6.2 Entropy Coding
+
+  Quantized values are encoded using a context-adaptive arithmetic coder.
+
+  Symbol Model:
+    Residuals r = a_q are modeled with a Laplacian distribution:
+      P(r) = (lambda/2) * exp(-lambda * |r|)
+
+    lambda is estimated from the previous 256 symbols in the current
+    frame using maximum likelihood:
+      lambda_hat = N / sum(|r_i|)  for i in recent symbols
+
+  Context Selection:
+    Three context models are maintained:
+      C0: Coefficients of degree 0-3 (smooth curves)
+      C1: Coefficients of degree 4-8 (moderate detail)
+      C2: Coefficients of degree 9+ (high detail)
+
+  Arithmetic coding achieves near-optimal compression, typically within
+  5% of the entropy bound for well-modeled distributions.
+
+  polyart_video_codec implementation: Uses the _ArithmeticCoder class
+  with 16-bit precision and adaptive probability updates every 128
+  symbols.
+
+================================================================================
+
+7. RENDERING PIPELINE
+---------------------
+
+Decoding reconstructs the video frame from polynomial curve data:
+
+  Step 1: Canvas Initialization
+    Fill with background color (stored in file header).
+
+  Step 2: Curve Sorting
+    Sort curves by layer index (ascending) for proper painter's algorithm
+    rendering. Within the same layer, sort by bounding box area (smaller
+    first, for proper overlapping).
+
+  Step 3: Rasterization
+    For each curve P_x(s), P_y(s) where s in [0, 1]:
+      1. Evaluate polynomial at N evenly-spaced parameter values
+         (N = max(bounding_box_width, bounding_box_height) * 2)
+      2. Draw line segments between consecutive evaluated points
+      3. If curve forms a closed contour (start ~= end), fill the
+         interior using scanline fill algorithm
+
+  Step 4: Color Application
+    Apply curve color with specified alpha blending:
+      canvas(x,y) = alpha * curve_color + (1-alpha) * canvas(x,y)
+
+  Step 5: Anti-Aliasing (optional)
+    Apply 2x SSAA by rendering at double resolution and downsampling
+    with a 2x2 box filter. Configurable via DECODE_AA flag.
+
+  Evaluation complexity: O(D * N) per curve where D is the polynomial
+  degree and N is the number of evaluation points.
+
+================================================================================
+
+8. CONCLUSION
+-------------
+
+The algorithms in polyart_video_codec form a complete pipeline from raw
+video frames to compressed polynomial representations and back. The edge
+detection and contour extraction stages identify visually significant
+structures. Polynomial fitting provides a compact mathematical
+representation. Delta encoding exploits temporal redundancy. Entropy coding
+approaches theoretical compression limits. The rendering pipeline
+reconstructs frames with configurable quality.
+
+Each algorithm component is designed for both quality and speed, enabling
+real-time encoding and decoding. The modular architecture allows
+independent optimization of each stage and facilitates future extensions
+such as GPU-accelerated rendering and machine-learning-based contour
+detection.
+
+================================================================================
+
+9. REFERENCES
+-------------
+
+[1]  Sobel, I. and Feldman, G. "A 3x3 Isotropic Gradient Operator for
+     Image Processing." Pattern Classification and Scene Analysis,
+     Duda and Hart, Wiley, 1973, pp. 271-272.
+
+[2]  Canny, J. "A Computational Approach to Edge Detection." IEEE
+     Transactions on Pattern Analysis and Machine Intelligence, vol. 8,
+     no. 6, 1986, pp. 679-698.
+
+[3]  Moore, E.H. "On the reciprocal of the general algebraic matrix."
+     Bulletin of the American Mathematical Society, vol. 26, 1920,
+     pp. 394-395. (Moore-Neighbor tracing basis)
+
+[4]  Lawson, C.L. and Hanson, R.J. "Solving Least Squares Problems."
+     SIAM Classics in Applied Mathematics, 1995. QR decomposition
+     methods for polynomial fitting.
+
+[5]  Kuhn, H.W. "The Hungarian Method for the Assignment Problem."
+     Naval Research Logistics Quarterly, vol. 2, 1955, pp. 83-97.
+
+[6]  Witten, I.H., Neal, R.M., and Cleary, J.G. "Arithmetic Coding
+     for Data Compression." Communications of the ACM, vol. 30, no. 6,
+     1987, pp. 520-540.
+
+[7]  PolyArt Codec Reference Implementation. polyart_video_codec module,
+     function references: _edge_detect_sobel(), _canny_suppress(),
+     _trace_contours(), _poly_fit_qr(), _delta_encode(),
+     _arithmetic_encode(), _render_frame(). Version 1.0.0, 2026.
+
+[8]  Gonzalez, R.C. and Woods, R.E. "Digital Image Processing."
+     4th edition, Pearson, 2018. Chapters 10 (edge detection) and
+     11 (image segmentation for contour extraction).
+
+[9]  Press, W.H., et al. "Numerical Recipes: The Art of Scientific
+     Computing." 3rd edition, Cambridge University Press, 2007.
+     Chapters 2 (linear algebra) and 15 (least squares).
+
+[10] Russ, J.C. "The Image Processing Handbook." 7th edition, CRC
+     Press, 2016. Scanline fill algorithms and anti-aliasing methods.
+
+================================================================================
+End of Document - codec_algorithms.txt
+================================================================================
