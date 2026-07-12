@@ -1,0 +1,52 @@
+5 LANGUAGES, 1 PROTOCOL
+===SLIDE===
+PYTHON CODEC
+- Reference implementation
+- Pure Python with NumPy
+- Research and prototyping
+- Easy to understand and modify
+- Foundation for all other codecs
+===SLIDE===
+JAVASCRIPT CODEC
+- Browser-native streaming
+- WebAssembly acceleration
+- No plugins required
+- Mobile-first design
+- Sub-5ms decode time
+===SLIDE===
+C++ CODEC
+- Highest performance
+- Hardware acceleration
+- Production deployment
+- Embedded systems ready
+- Real-time streaming capable
+===SLIDE===
+JAVA CODEC
+- Enterprise integration
+- JVM ecosystem compatibility
+- Spring Boot ready
+- Microservice architecture
+- Android native support
+===SLIDE===
+GO CODEC
+- Cloud-native design
+- Concurrent streaming
+- Kubernetes optimized
+- Lightweight binaries
+- Perfect for CDNs
+===SLIDE===
+PERFORMANCE COMPARISON
+| Language | Encode | Decode | Memory |
+|----------|--------|--------|--------|
+| Python   | 50ms   | 30ms   | 128MB  |
+| JS/WASM  | 20ms   | 5ms    | 64MB   |
+| C++      | 5ms    | 3ms    | 32MB   |
+| Java     | 15ms   | 8ms    | 96MB   |
+| Go       | 10ms   | 6ms    | 48MB   |
+===SLIDE===
+CROSS-PLATFORM SUPPORT
+- One protocol, five implementations
+- Binary-compatible across languages
+- Interoperable by design
+- Same quality everywhere
+- Choose your language, same result

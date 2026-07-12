@@ -1,0 +1,52 @@
+POMPEII: A POLYNOMIAL RENAISSANCE
+===SLIDE===
+13 CLASSES OF ARCHITECTURE
+- Domus (houses)
+- Thermae (bathhouses)
+- Forums (public spaces)
+- Temples (religious)
+- Theaters (entertainment)
+- Shops and workshops
+- Garden complexes
+===SLIDE===
+46 SOURCE IMAGES
+- Wall paintings: 18 high-res scans
+- Mosaic patterns: 12 photographs
+- Architectural details: 10 captures
+- Street views: 6 panoramic shots
+- All converted to polynomials
+===SLIDE===
+WALL PAINTING STYLES
+- Fourth Style: Architectural fantasy
+- Frescoes: Mythological scenes
+- Stucco relief: 3D textures preserved
+- Colors: Mathematically exact
+- Detail: Brushstroke-level precision
+===SLIDE===
+MOSAIC PATTERNS
+- Floor mosaics: Full geometric detail
+- tessellations: Perfect reconstruction
+- Color gradients: Lossless encoding
+- Interactive exploration
+- Infinite zoom capability
+===SLIDE===
+ANIMATED ERUPTION
+- Volcanic simulation in polynomial
+- Real-time 3D reconstruction
+- Historical accuracy maintained
+- Educational overlay available
+- Interactive timeline
+===SLIDE===
+3D RECONSTRUCTION
+- Full building models
+- Interior walkthrough capability
+- Furniture and artifacts
+- Human-scale perspective
+- All in 600KB total
+===SLIDE===
+CULTURAL IMPACT
+- Accessible to anyone, anywhere
+- Educational resource for schools
+- Research platform for scholars
+- Tourism enhancement tool
+- Heritage preservation model

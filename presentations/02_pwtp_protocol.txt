@@ -1,0 +1,49 @@
+PWTP: THE FUTURE OF 3D STREAMING
+===SLIDE===
+THE PROBLEM: BANDWIDTH CRISIS
+- 80% of internet traffic is video
+- 4K/8K streaming is unsustainable
+- 3D content requires 100x more data
+- Global infrastructure cannot scale
+- Rural and developing areas left behind
+===SLIDE===
+THE SOLUTION: POLYNOMIAL COEFFICIENTS
+- Replace pixels with polynomial functions
+- Store coefficients, not bitmaps
+- Reconstruct from math, not buffers
+- One coefficient set = infinite resolution
+- No quality loss at any zoom level
+===SLIDE===
+THE WALK EXAMPLE
+- 15-minute Pompeii walkthrough: 600KB
+- Equivalent MP4: 420MB
+- Compression ratio: 700,000:1
+- Streams on 2G networks
+- Loads in under 2 seconds
+===SLIDE===
+ARCHITECTURE
+- Encoder: Mesh/texture → polynomial fit
+- Transport: Coefficient stream over HTTP/WS
+- Decoder: Real-time GPU reconstruction
+- Cache: Polynomial coefficients are cacheable
+- Fallback: Adaptive LOD by bandwidth
+===SLIDE===
+DEMO RESULTS
+- 13 ancient Roman classes rendered
+- 46 source images → polynomial models
+- Wall paintings, mosaics, architecture
+- Real-time 3D navigation
+- Sub-second load on mobile
+===SLIDE===
+MARKET OPPORTUNITY
+- Cloud gaming: $65B by 2030
+- VR/AR streaming: $85B by 2030
+- Digital twins: $50B by 2030
+- Total addressable: $200B+
+===SLIDE===
+ROADMAP
+- Q3 2026: Core codec release
+- Q1 2027: JavaScript SDK launch
+- Q3 2027: Enterprise pilot
+- 2028: Hardware acceleration
+- 2029: Industry standard proposal

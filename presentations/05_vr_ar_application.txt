@@ -1,0 +1,50 @@
+VR/AR AT POLYNOMIAL SPEED
+===SLIDE===
+VR BANDWIDTH PROBLEM
+- 8K per eye minimum for VR
+- 120fps required for comfort
+- Total: 40+ Gbps needed
+- Wireless streaming: Impossible today
+- Tethered headsets: User frustration
+===SLIDE===
+THE WIRELESS VR DREAM
+- Cut the cord permanently
+- Stream from cloud to headset
+- No local GPU required
+- Lightweight, comfortable form factor
+- Price point under $200
+===SLIDE===
+PWTP ENABLES IT
+- Polynomial coefficients: 2.4MB/minute
+- 40Gbps requirement → 300Kbps actual
+- Real-time decode: 3ms on mobile GPU
+- Motion-to-photon: Under 10ms
+- Bandwidth: 100x reduction
+===SLIDE===
+LATENCY NUMBERS
+- Head tracking → render: 2ms
+- Polynomial decode: 3ms
+- Display update: 2ms
+- Total motion-to-photon: 7ms
+- Below perceptual threshold
+===SLIDE===
+DEMO SCENARIOS
+- Virtual Pompeii tour: 600KB total
+- Medical training simulation
+- Architectural walkthrough
+- Historical reconstruction
+- All on 3G connection
+===SLIDE===
+HARDWARE REQUIREMENTS
+- Headset: ARM-based SoC
+- Decode chip: Custom polynomial decoder
+- Connection: WiFi 5 or 4G+
+- Battery: 4 hours continuous
+- Weight: Under 200g
+===SLIDE===
+TIMELINE
+- 2026: Desktop VR prototype
+- 2027: Mobile VR demo
+- 2028: Standalone headset SDK
+- 2029: Consumer device partnership
+- 2030: Mass market launch

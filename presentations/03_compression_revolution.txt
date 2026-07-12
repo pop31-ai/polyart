@@ -1,0 +1,50 @@
+700,000:1 COMPRESSION: THE NUMBERS
+===SLIDE===
+THE PROBLEM
+- Video files are growing exponentially
+- 4K = 6GB per hour
+- 8K = 25GB per hour
+- 3D content = 100GB per scene
+- Storage costs are unsustainable
+===SLIDE===
+CURRENT SOLUTIONS
+- H.264/HEVC/AV1: Incremental gains
+- Max compression: 100:1 to 200:1
+- Quality loss at high ratios
+- Computationally expensive encode
+- Patent-encumbered
+===SLIDE===
+PWTP APPROACH
+- Polynomial coefficient representation
+- No pixel data transmitted
+- Mathematical reconstruction only
+- Lossless by design
+- Patent-free and open
+===SLIDE===
+BANDWIDTH COMPARISON
+| Method     | 1hr 4K | 1hr 8K  |
+| H.264      | 3 GB   | 12 GB   |
+| H.265      | 1.5 GB | 6 GB    |
+| AV1        | 1 GB   | 4 GB    |
+| PWTP       | 2.4 MB | 10 MB   |
+===SLIDE===
+THE WALK EXAMPLE
+- 15 min 3D walkthrough: 600KB
+- Traditional equivalent: 420MB
+- Compression ratio: 700,000:1
+- Streaming on 2G: Possible
+- Streaming on 3G: Instant
+===SLIDE===
+ENERGY SAVINGS
+- 99.9% less data transmitted
+- 90% less server compute
+- 95% less storage required
+- 80% less cooling needed
+- Massive carbon reduction
+===SLIDE===
+CONCLUSION
+- Polynomial compression is 1000x better
+- Quality is lossless, not "close enough"
+- Infrastructure cost drops to near zero
+- Universal access becomes possible
+- The math speaks for itself

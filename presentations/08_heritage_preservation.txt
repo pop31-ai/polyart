@@ -1,0 +1,50 @@
+SAVING HISTORY WITH POLYNOMIALS
+===SLIDE===
+CULTURAL HERITAGE AT RISK
+- Climate change: Rising seas, storms
+- Conflict: Syria, Ukraine, Afghanistan
+- Urban development: Ancient sites lost
+- Natural decay: Irreversible damage
+- Time is running out
+===SLIDE===
+DIGITAL PRESERVATION
+- Current methods: Photography, LiDAR
+- File sizes: 100GB-1TB per site
+- Storage costs: Prohibitive
+- Sharing: Impractical
+- Resolution loss over time
+===SLIDE===
+POLYNOMIAL SCANNING
+- 3D scan → polynomial representation
+- Site preservation: 10-50MB total
+- Lossless: Infinite detail preserved
+- Interpretable: Mathematically verifiable
+- Future-proof: No format obsolescence
+===SLIDE===
+VIRTUAL TOURISM
+- Visit Pompeii from your phone
+- Walk through ancient temples
+- Inspect wall paintings up close
+- No travel required
+- 600KB for a 15-minute tour
+===SLIDE===
+ACADEMIC RESEARCH
+- Scholars worldwide access same data
+- Precise measurements from coefficients
+- Collaborative annotation
+- Version control for cultural sites
+- Open data for all
+===SLIDE===
+FUNDING MODEL
+- Government heritage grants
+- Tourism board partnerships
+- University research budgets
+- Crowd-sourced preservation
+- Token-based licensing
+===SLIDE===
+IMPACT
+- Save 1000+ sites in 5 years
+- Educate 1 billion people
+- Preserve for 1000+ years
+- Democratize cultural access
+- Legacy that outlasts us all

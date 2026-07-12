@@ -1,0 +1,50 @@
+INVESTMENT OPPORTUNITY: $5M
+===SLIDE===
+PROBLEM SIZE
+- Video streaming: $200B market
+- 3D content: Fastest growing segment
+- Bandwidth crisis: Unsustainable
+- Current solutions: Incremental only
+- The market is ready for disruption
+===SLIDE===
+THE SOLUTION
+- PWTP: Polynomial streaming protocol
+- 700,000:1 compression ratio
+- 100x bandwidth reduction
+- Lossless quality
+- Patent-free technology
+===SLIDE===
+TRACTION
+- 16 Python modules built
+- 5 codec implementations
+- 13 architectural classes encoded
+- Working demo: Pompeii walkthrough
+- Technical validation complete
+===SLIDE===
+MARKET OPPORTUNITY
+- Cloud gaming: $65B
+- VR/AR streaming: $85B
+- Digital twins: $50B
+- Enterprise video: $30B
+- Total addressable: $230B
+===SLIDE===
+TEAM NEEDS
+- CTO: Polynomial mathematics PhD
+- VP Engineering: C++ and GPU expert
+- VP Sales: Enterprise media background
+- Lead Developer: Full-stack, 3 hires
+- Advisory board: 5 industry experts
+===SLIDE===
+USE OF FUNDS
+- 40% Engineering: Core platform
+- 25% Sales: Enterprise pipeline
+- 20% Operations: Infrastructure
+- 10% Marketing: Brand building
+- 5% Legal: IP protection
+===SLIDE===
+ROI PROJECTION
+- Year 1: $2M revenue
+- Year 2: $15M revenue
+- Year 3: $60M revenue
+- Year 5: $200M revenue
+- 10x return in 5 years

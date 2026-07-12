@@ -1,0 +1,50 @@
+OPEN SOURCE + COMMERCIAL
+===SLIDE===
+CORE MIT LICENSE
+- Full polynomial codec: Open source
+- Community contributions welcome
+- No license fees for anyone
+- Transparent development
+- Fork-friendly design
+===SLIDE===
+OPEN CODECS
+- Python: Full reference implementation
+- JavaScript: Browser streaming
+- C++: High-performance core
+- Java: Enterprise integration
+- Go: Cloud-native deployment
+===SLIDE===
+COMMUNITY BUILDING
+- GitHub: Active development
+- Discord: Developer community
+- Monthly: Virtual meetups
+- Annual: Polynomial conference
+- Education: Free workshops
+===SLIDE===
+COMMERCIAL ENTERPRISE FEATURES
+- Advanced optimization tools
+- Priority support
+- Custom codec development
+- Enterprise security
+- SLA guarantees
+===SLIDE===
+SUPPORT TIERS
+- Community: Free, best effort
+- Professional: $50K/year, email support
+- Enterprise: $250K/year, 24/7 support
+- Custom: $1M/year, dedicated team
+- All tiers include updates
+===SLIDE===
+REVENUE STREAMS
+- Open source: Community adoption
+- Enterprise: $50K-1M/year
+- Support: Recurring revenue
+- Training: $5K per course
+- Consulting: $500/hour
+===SLIDE===
+ECOSYSTEM
+- Plugin marketplace
+- Third-party integrations
+- Partner program
+- Certification program
+- Developer ecosystem

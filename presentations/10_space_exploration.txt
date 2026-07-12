@@ -1,0 +1,50 @@
+SPACE COMMUNICATION WITH POLYNOMIALS
+===SLIDE===
+THE MARS DELAY PROBLEM
+- Earth to Mars: 4-24 minutes light delay
+- Traditional video: Impossible in real-time
+- Bandwidth: 2Mbps maximum
+- File transfers: Hours for one image
+- Mission critical: Cannot wait
+===SLIDE===
+TRADITIONAL VIDEO IMPOSSIBLE
+- HD video: 5Mbps minimum
+- Mars bandwidth: 200x insufficient
+- Storage: Limited on spacecraft
+- Power: Constrained solar panels
+- Every bit counts
+===SLIDE===
+THE PWTP SOLUTION
+- Polynomial coefficients: 2.4MB/minute
+- Mars bandwidth: 2Mbps sufficient
+- Real-time terrain streaming
+- 3D model reconstruction
+- Works with delay-tolerant networking
+===SLIDE===
+MISSION PLANNING
+- Stream Mars terrain to Earth
+- Collaborative exploration
+- Real-time 3D map updates
+- Astronaut navigation aids
+- Scientific data sharing
+===SLIDE===
+ASTRONAUT TRAINING
+- Virtual Mars surface simulation
+- Equipment operation training
+- Emergency procedure practice
+- Earth-based preparation
+- Polynomial-encoded Mars data
+===SLIDE===
+NASA PARTNERSHIP
+- SBIR grant application filed
+- Mars 2030 mission alignment
+- Deep space network optimization
+- Lunar gateway integration
+- Long-term collaboration
+===SLIDE===
+TIMELINE
+- 2026: Earth-based prototype
+- 2027: ISS demonstration
+- 2028: Lunar gateway test
+- 2029: Mars relay simulation
+- 2030: Mars mission integration

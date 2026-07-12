@@ -1,0 +1,49 @@
+POLYART: MATHEMATICS AS ART
+===SLIDE===
+WHAT IS POLYART?
+- Transform any visual content into polynomial expressions
+- Mathematics becomes the canvas, art becomes the output
+- Break the barrier between science and creativity
+- A new paradigm in digital content creation
+===SLIDE===
+CORE CONCEPT
+- Every image, 3D model, and animation = polynomial coefficients
+- Lossless, interpretable, mathematically elegant
+- One protocol, infinite possibilities
+- Numbers tell stories
+===SLIDE===
+16 PYTHON MODULES
+- polyart.core: Engine and orchestrator
+- polyart.geometry: 3D mesh processing
+- polyart.animation: Motion sequences
+- polyart.viz: Visualization tools
+- polyart.codec: Encode/decode pipeline
+- Plus 11 specialized modules
+===SLIDE===
+5 CODECS
+- Python: Reference implementation
+- JavaScript: Browser-native streaming
+- C++: High-performance production
+- Java: Enterprise integration
+- Go: Microservices and cloud
+===SLIDE===
+KEY METRICS
+- 700,000:1 compression ratio
+- 87% smaller files vs MP4
+- 3ms decode latency
+- 100% lossless
+- Works on 2G connections
+===SLIDE===
+COMPETITIVE ADVANTAGE
+- Only polynomial-based streaming protocol
+- 100x smaller than traditional codecs
+- Interpretable coefficients (not black-box)
+- Real-time encode and decode
+- Cross-platform, cross-language
+===SLIDE===
+CALL TO ACTION
+- Join the polynomial revolution
+- We are seeking $5M Series A
+- Partnerships welcome: media, education, defense
+- Contact: polyart@polynomial.dev
+- The future is mathematical

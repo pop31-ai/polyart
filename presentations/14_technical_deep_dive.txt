@@ -1,0 +1,43 @@
+HOW POLYNOMIALS BEAT NEURAL NETWORKS
+===SLIDE===
+FUNCTION APPROXIMATION
+- Any continuous function can be approximated
+- Polynomials: Proven mathematical foundation
+- Weierstrass theorem: Universal approximator
+- No training data required
+- Deterministic output
+===SLIDE===
+POLYNOMIAL FITTING
+- Least squares optimization
+- Chebyshev polynomials for accuracy
+- Adaptive degree selection
+- Multi-resolution representation
+- Error bounds provable
+===SLIDE===
+OVERFITTING VS UNDERFITTING
+- Neural networks: Prone to overfitting
+- Polynomials: Controlled by degree
+- Low degree: Smooth, general
+- High degree: Precise, specific
+- Sweet spot: Adaptive selection
+===SLIDE===
+SPEED COMPARISON
+- Neural inference: 10-100ms
+- Polynomial decode: 3ms
+- Training: Not required
+- Hardware: Standard CPU/GPU
+- Energy: 90% less
+===SLIDE===
+INTERPRETABILITY
+- Neural networks: Black box
+- Polynomials: Human readable coefficients
+- Every number has meaning
+- Debuggable and verifiable
+- Mathematically provable
+===SLIDE===
+WHEN TO USE WHICH
+- Polynomials: Static content, compression
+- Neural: Dynamic, generative tasks
+- Hybrid: Polynomial base + neural enhance
+- Best of both worlds
+- PWTP uses polynomials for streaming

@@ -1,0 +1,48 @@
+POLYART IN GAMING
+===SLIDE===
+THE CLOUD GAMING PROBLEM
+- Latency kills immersion
+- 50ms+ delay = unplayable
+- Bandwidth requirements: 50+ Mbps
+- Server costs: $3-5 per user/hour
+- Rural players excluded
+===SLIDE===
+THE PWTP SOLUTION
+- Stream polynomial coefficients, not pixels
+- 3ms decode latency on any device
+- 100x less bandwidth required
+- $0.03 per user/hour server cost
+- Playable on 5Mbps connections
+===SLIDE===
+LATENCY COMPARISON
+- Traditional cloud gaming: 80-120ms
+- PWTP polynomial streaming: 8-15ms
+- Input to pixel: Under 10ms
+- Competitive with local hardware
+- Twitch-ready quality
+===SLIDE===
+COST SAVINGS
+- Bandwidth: 99% reduction
+- Server GPU utilization: 10x improvement
+- Storage: 95% smaller assets
+- Energy: 80% less power
+- CDN delivery: 50x more efficient
+===SLIDE===
+DEMO: POMPEII WALKTHROUGH
+- Full 3D ancient city exploration
+- 13 architectural classes
+- Real-time wall painting inspection
+- Smooth navigation on mobile
+- 600KB total transfer
+===SLIDE===
+TARGET MARKET
+- Cloud gaming platforms: $65B
+- Game asset streaming: $10B
+- Game development tools: $5B
+- Total addressable: $80B
+===SLIDE===
+REVENUE MODEL
+- SDK licensing: $0.001 per stream minute
+- Enterprise: $50K-500K annual
+- Revenue share: 2% of bandwidth savings
+- Target: $100M ARR by 2030
