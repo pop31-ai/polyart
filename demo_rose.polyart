@@ -1,0 +1,182 @@
+{
+  "format": "polyart",
+  "version": "1.0.0",
+  "meta": {
+    "name": "Роза",
+    "author": "Artist",
+    "description": "",
+    "phi": 1.618033988749895
+  },
+  "canvas": {
+    "width": 10,
+    "height": 10,
+    "background": "#f5efe0",
+    "xlim": [
+      -2,
+      2
+    ],
+    "ylim": [
+      -2,
+      2
+    ]
+  },
+  "layers": [
+    {
+      "name": "Основной",
+      "objects": [
+        {
+          "type": "superformula",
+          "poly_x": [
+            0
+          ],
+          "poly_y": [
+            0
+          ],
+          "t_range": [
+            0,
+            1
+          ],
+          "n_points": 300,
+          "color": "#8a2020",
+          "alpha": 1.0,
+          "linewidth": 1.0,
+          "fill": true,
+          "fill_alpha": 0.5,
+          "fill_color": "#d85050",
+          "style": "solid",
+          "sf_params": [
+            6,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "center": [
+            0,
+            0
+          ],
+          "scale": 1.5
+        },
+        {
+          "type": "superformula",
+          "poly_x": [
+            0
+          ],
+          "poly_y": [
+            0
+          ],
+          "t_range": [
+            0,
+            1
+          ],
+          "n_points": 300,
+          "color": "#8a2020",
+          "alpha": 1.0,
+          "linewidth": 1.0,
+          "fill": true,
+          "fill_alpha": 0.5,
+          "fill_color": "#c04040",
+          "style": "solid",
+          "sf_params": [
+            12,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "center": [
+            0,
+            0
+          ],
+          "scale": 1.2
+        },
+        {
+          "type": "superformula",
+          "poly_x": [
+            0
+          ],
+          "poly_y": [
+            0
+          ],
+          "t_range": [
+            0,
+            1
+          ],
+          "n_points": 300,
+          "color": "#8a2020",
+          "alpha": 1.0,
+          "linewidth": 1.0,
+          "fill": true,
+          "fill_alpha": 0.5,
+          "fill_color": "#a03030",
+          "style": "solid",
+          "sf_params": [
+            18,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "center": [
+            0,
+            0
+          ],
+          "scale": 0.9
+        },
+        {
+          "type": "superformula",
+          "poly_x": [
+            0
+          ],
+          "poly_y": [
+            0
+          ],
+          "t_range": [
+            0,
+            1
+          ],
+          "n_points": 300,
+          "color": "#8a2020",
+          "alpha": 1.0,
+          "linewidth": 1.0,
+          "fill": true,
+          "fill_alpha": 0.5,
+          "fill_color": "#d85050",
+          "style": "solid",
+          "sf_params": [
+            24,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "center": [
+            0,
+            0
+          ],
+          "scale": 0.6000000000000001
+        }
+      ]
+    }
+  ],
+  "formulas": [
+    {
+      "expr": "Rose: r(t) = (|cos(6t/4)| + |sin(6t/4)|)^(-1)",
+      "x": -4.8,
+      "y": 4.5,
+      "fontsize": 8,
+      "color": "#8a6a4a"
+    },
+    {
+      "expr": "PolyArt API - polynomial art",
+      "x": -4.8,
+      "y": 4.2,
+      "fontsize": 7,
+      "color": "#8a6a4a"
+    }
+  ]
+}
