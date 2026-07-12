@@ -1,0 +1,166 @@
+# PolyArt Reference 08: Curves Library
+
+## polyart_curves.py
+
+Complete atlas of polynomial curves for the human body.
+
+---
+
+### SkeletalCurves
+
+Bone and joint curves.
+
+```python
+from polyart_curves import SkeletalCurves
+```
+
+| Method | Description |
+|--------|-------------|
+| `spine(ax, cx, cy, s)` | Spinal column curve |
+| `rib(ax, cx, cy, s, i)` | Single rib curve |
+| `pelvis(ax, cx, cy, s)` | Pelvic bone outline |
+| `skull(ax, cx, cy, s)` | Skull outline |
+| `hand(ax, cx, cy, s)` | Hand skeleton |
+| `foot(ax, cx, cy, s)` | Foot skeleton |
+
+---
+
+### MuscleCurves
+
+Muscle contour curves.
+
+```python
+from polyart_curves import MuscleCurves
+```
+
+| Method | Description |
+|--------|-------------|
+| `bicep(ax, cx, cy, s)` | Bicep contour |
+| `quadricep(ax, cx, cy, s)` | Quadricep contour |
+| `pectoral(ax, cx, cy, s)` | Pectoral muscle |
+| `deltoid(ax, cx, cy, s)` | Shoulder muscle |
+| `calf(ax, cx, cy, s)` | Calf muscle |
+| `abdominals(ax, cx, cy, s)` | Abdominal muscles |
+
+---
+
+### SkinCurves
+
+Skin surface and silhouette curves.
+
+```python
+from polyart_curves import SkinCurves
+```
+
+| Method | Description |
+|--------|-------------|
+| `body_silhouette(ax, cx, cy, s)` | Full body outline |
+| `face_contour(ax, cx, cy, s)` | Face silhouette |
+| `hand_outline(ax, cx, cy, s)` | Hand skin outline |
+| `wrinkle(ax, x0, y0, x1, y1, s)` | Wrinkle line |
+
+---
+
+### VeinCurves
+
+Vascular network curves.
+
+```python
+from polyart_curves import VeinCurves
+```
+
+| Method | Description |
+|--------|-------------|
+| `artery(ax, x0, y0, x1, y1, s)` | Main artery |
+| `capillary_network(ax, cx, cy, s)` | Capillary bed |
+| `venous_return(ax, x0, y0, x1, y1)` | Venous path |
+
+---
+
+### NerveCurves
+
+Neural pathway curves.
+
+```python
+from polyart_curves import NerveCurves
+```
+
+| Method | Description |
+|--------|-------------|
+| `nerve_fiber(ax, x0, y0, x1, y1, s)` | Single nerve fiber |
+| `nerve_plexus(ax, cx, cy, s)` | Nerve network |
+| `synapse(ax, cx, cy, s)` | Synaptic junction |
+
+---
+
+### LimbCurves
+
+Limb geometry curves.
+
+```python
+from polyart_curves import LimbCurves
+```
+
+| Method | Description |
+|--------|-------------|
+| `arm(ax, cx, cy, s)` | Full arm |
+| `leg(ax, cx, cy, s)` | Full leg |
+| `finger(ax, cx, cy, s, i)` | Single finger |
+| `toe(ax, cx, cy, s, i)` | Single toe |
+
+---
+
+### HeadCurves
+
+Head and facial feature curves.
+
+```python
+from polyart_curves import HeadCurves
+```
+
+| Method | Description |
+|--------|-------------|
+| `head_outline(ax, cx, cy, s)` | Head shape |
+| `ear(ax, cx, cy, s)` | Ear outline |
+| `nose(ax, cx, cy, s)` | Nose profile |
+| `eye(ax, cx, cy, s)` | Eye shape |
+| `mouth(ax, cx, cy, s)` | Mouth curve |
+| `hair(ax, cx, cy, s)` | Hair outline |
+
+---
+
+### FigureCurves
+
+Complete figure compositions.
+
+```python
+from polyart_curves import FigureCurves
+```
+
+| Method | Description |
+|--------|-------------|
+| `standing_figure(ax, cx, cy, s)` | Standing pose |
+| `seated_figure(ax, cx, cy, s)` | Seated pose |
+| `reclining_figure(ax, cx, cy, s)` | Reclining pose |
+| `anatomical_study(ax, cx, cy, s)` | Full anatomy |
+
+---
+
+### Example
+
+```python
+from polyart_curves import SkeletalCurves, MuscleCurves
+
+fig, ax = plt.subplots()
+SkeletalCurves.spine(ax, 0, 0, 1.0)
+MuscleCurves.bicep(ax, 1, 0, 0.5)
+plt.savefig("anatomy.png")
+```
+
+---
+
+## See Also
+
+- Reference 07: Biology
+- Reference 05: Emotions
+- Reference 01: Core API

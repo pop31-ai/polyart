@@ -1,0 +1,112 @@
+# PolyArt Reference 03: Visual Editor
+
+## polyart_editor.py
+
+### Launch
+
+```bash
+python polyart_editor.py
+```
+
+Requires tkinter (included with Python).
+
+---
+
+### Interface Layout
+
+```
++-----------------------------------------------+
+|  Menu: File | Edit | View | Presets | Help    |
++--------+------------------------+-------------+
+| Layer  |                        | Properties  |
+| Tree   |    Canvas Viewport     |             |
+|        |    (matplotlib)        | - Position  |
+| + Root |                        | - Size      |
+|   + L1 |                        | - Color     |
+|   + L2 |                        | - Style     |
+|        |                        |             |
++--------+------------------------+-------------+
+|  Status Bar: coordinates, zoom, selected obj  |
++-----------------------------------------------+
+```
+
+---
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| Ctrl+N | New project |
+| Ctrl+O | Open .polyart |
+| Ctrl+S | Save .polyart |
+| Ctrl+Z | Undo |
+| Ctrl+Y | Redo |
+| Ctrl+E | Export PNG |
+| Delete | Delete selected |
+| Ctrl+A | Select all |
+| Ctrl+D | Duplicate |
+| G | Toggle grid |
+| Space | Reset viewport |
+
+---
+
+### Layer Operations
+
+- **Add Layer**: Right-click layer tree > Add Layer
+- **Rename**: Double-click layer name
+- **Reorder**: Drag layer in tree
+- **Toggle Visibility**: Click eye icon
+- **Lock Layer**: Click lock icon
+
+---
+
+### Object Operations
+
+- **Select**: Click object in viewport
+- **Move**: Drag selected object
+- **Resize**: Drag corner handles
+- **Rotate**: Use property panel angle
+- **Delete**: Press Delete key
+- **Duplicate**: Ctrl+D
+
+---
+
+### Presets Menu
+
+| Preset | Description |
+|--------|-------------|
+| Golden Mandala | Fibonacci spiral pattern |
+| Greek Vase | Amphora with meander |
+| Roman Temple | Doric column temple |
+| Piranesi Stairs | Impossible staircase |
+| Vitruvian Man | Anatomical study |
+| Flower Garden | Botanical composition |
+| SPQR Forum | Roman forum scene |
+
+---
+
+### Color Picker
+
+- Click color swatch in Properties panel
+- Enter hex value directly
+- Use preset palette (bottom panel)
+- Supports RGB and HSV modes
+
+---
+
+### Export Options
+
+| Format | Description |
+|--------|-------------|
+| PNG | Raster image (default) |
+| SVG | Vector graphics |
+| PDF | Print quality |
+| .polyart | Project file |
+
+---
+
+## See Also
+
+- Reference 01: Core API
+- Reference 02: File Format
+- Reference 04: Viewer

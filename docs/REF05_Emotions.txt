@@ -1,0 +1,74 @@
+# PolyArt Reference 05: Emotions & States
+
+## polyart_emotions.py
+
+### EmotionTemplates
+
+Render polynomial emotion expressions.
+
+```python
+from polyart_emotions import EmotionTemplates
+```
+
+| Method | Description |
+|--------|-------------|
+| `joy(path)` | Happy expression |
+| `sorrow(path)` | Sad expression |
+| `anger(path)` | Angry expression |
+| `fear(path)` | Fearful expression |
+| `love(path)` | Loving expression |
+| `surprise(path)` | Surprised expression |
+| `calm(path)` | Calm expression |
+| `pride(path)` | Proud expression |
+| `exhaustion(path)` | Tired expression |
+| `determination(path)` | Determined expression |
+
+**Parameters (all methods):**
+- `path` (str): Output file path
+- `s` (float): Scale (default 1.0)
+- `dpi` (int): Resolution (default 150)
+
+---
+
+### StateTemplates
+
+Render physical activity states.
+
+```python
+from polyart_emotions import StateTemplates
+```
+
+| Method | Description |
+|--------|-------------|
+| `sleeping(path)` | Sleeping pose |
+| `running(path)` | Running pose |
+| `thinking(path)` | Thinking pose |
+| `dancing(path)` | Dancing pose |
+
+---
+
+### Emotion Math Model
+
+Each emotion is defined by polynomial parameters:
+- **Brow curve**: `y = a*x^2 + b*x + c`
+- **Eye aperture**: `r = r0 + A*sin(w*t + phi)`
+- **Mouth curve**: `y = sum(a_i * x^i)`
+- **Skin tension**: alpha blending factor
+
+---
+
+### Example
+
+```python
+from polyart_emotions import EmotionTemplates
+
+EmotionTemplates.joy("joy.png", s=2.0)
+EmotionTemplates.anger("anger.png", dpi=300)
+```
+
+---
+
+## See Also
+
+- Reference 06: Animals
+- Reference 08: Curves Library

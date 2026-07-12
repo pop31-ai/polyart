@@ -1,0 +1,106 @@
+# PolyArt Reference 02: File Format (.polyart)
+
+## polyart_format.py
+
+### Format Specification
+
+The .polyart format is JSON-based, storing polynomial art objects.
+
+```json
+{
+  "format": "polyart/1.0",
+  "canvas": {
+    "name": "My Art",
+    "width": 10,
+    "height": 10,
+    "background": "#0d0a1a"
+  },
+  "layers": [
+    {
+      "name": "Layer 1",
+      "visible": true,
+      "objects": [
+        {
+          "kind": "circle",
+          "params": {"cx": 0, "cy": 0, "r": 1.0},
+          "style": {"color": "#c8a040", "linewidth": 0.5}
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### Save
+
+```python
+from polyart_format import PolyArtFile
+
+file = PolyArtFile()
+file.canvas = {"name": "test", "width": 10, "height": 10, "background": "#0d0a1a"}
+file.add_layer("shapes")
+file.add_object("shapes", "circle", {"cx": 0, "cy": 0, "r": 1.0}, {"color": "#c8a040"})
+file.save("art.polyart")
+```
+
+---
+
+### Load
+
+```python
+from polyart_format import PolyArtFile
+
+file = PolyArtFile.load("art.polyart")
+print(file.canvas)
+print(file.layers)
+```
+
+---
+
+### Render
+
+```python
+from polyart_format import PolyArtFile
+
+file = PolyArtFile.load("art.polyart")
+file.render("output.png", dpi=150)
+```
+
+---
+
+### Object Kinds
+
+| Kind | Parameters | Description |
+|------|-----------|-------------|
+| `circle` | cx, cy, r | Circle |
+| `ellipse` | cx, cy, rx, ry | Ellipse |
+| `line` | x1, y1, x2, y2 | Line segment |
+| `polyline` | x[], y[] | Connected lines |
+| `polygon` | x[], y[] | Filled polygon |
+| `text` | x, y, text, fontsize | Text label |
+| `poly_x` | coeff[] | Polynomial X coefficients |
+| `poly_y` | coeff[] | Polynomial Y coefficients |
+
+---
+
+### Style Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `color` | str | "#000000" | Stroke color |
+| `linewidth` | float | 1.0 | Stroke width |
+| `alpha` | float | 1.0 | Opacity (0-1) |
+| `fill` | bool | false | Fill shape |
+| `fill_color` | str | "#ffffff" | Fill color |
+| `fill_alpha` | float | 1.0 | Fill opacity |
+| `linestyle` | str | "solid" | solid, dashed, dotted |
+| `marker` | str | "none" | Point marker |
+
+---
+
+## See Also
+
+- Reference 01: Core API
+- Reference 03: Editor

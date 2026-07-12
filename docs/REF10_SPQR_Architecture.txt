@@ -1,0 +1,131 @@
+# PolyArt Reference 10: SPQR Architecture & Piranesi
+
+## polyart_spqr.py
+
+### RomanOrders
+
+Classical column orders.
+
+```python
+from polyart_spqr import RomanOrders
+```
+
+| Method | Description |
+|--------|-------------|
+| `doric_column(ax, x, y, h, s)` | Doric: simple capital, fluted shaft |
+| `ionic_column(ax, x, y, h, s)` | Ionic: volute capital |
+| `corinthian_column(ax, x, y, h, s)` | Corinthian: acanthus leaves |
+
+---
+
+### RomanArch
+
+Arch construction.
+
+```python
+from polyart_spqr import RomanArch
+```
+
+| Method | Description |
+|--------|-------------|
+| `semicircular_arch(ax, cx, cy, w, h, s)` | Classic Roman arch |
+| `pointed_arch(ax, cx, cy, w, h, s)` | Gothic pointed arch |
+| `aqueduct_segment(ax, cx, cy, w, h, n_arches, s)` | Multi-arch aqueduct |
+| `triumphal_arch(ax, cx, cy, w, h, s)` | Full triumphal arch |
+
+---
+
+### PiranesiArchitecture
+
+Impossible architecture (Piranesi style).
+
+```python
+from polyart_spqr import PiranesiArchitecture
+```
+
+| Method | Description |
+|--------|-------------|
+| `infinite_staircase(ax, cx, cy, s)` | Escher-like impossible staircase |
+| `impossible_corridor(ax, cx, cy, s)` | Penrose-style corridor |
+| `spiral_tower(ax, cx, cy, s)` | Tower with impossible spiral |
+| `nested_arches(ax, cx, cy, s)` | Recursively nested arches |
+
+---
+
+### SPQRForum
+
+Roman forum elements.
+
+```python
+from polyart_spqr import SPQRForum
+```
+
+| Method | Description |
+|--------|-------------|
+| `temple(ax, cx, cy, s)` | Roman temple with pediment |
+| `colosseum_wall(ax, cx, cy, s, n_levels)` | Curved Colosseum wall |
+| `pantheon_dome(ax, cx, cy, s)` | Dome with oculus |
+| `forum_pillars(ax, cx, cy, s, n)` | Row of pillars |
+
+---
+
+### SPQRComposition
+
+Full scene compositions.
+
+```python
+from polyart_spqr import SPQRComposition
+```
+
+| Method | Description |
+|--------|-------------|
+| `piranesi_prison(ax, s)` | Full Piranesi prison scene |
+| `roman_city(ax, s)` | Roman cityscape |
+| `spqr_glory(ax, s)` | SPQR eagle and laurel |
+
+---
+
+### Piranesi Style Guide
+
+The Piranesi effect uses:
+- **Thin lines**: lw=0.1-0.4
+- **Low alpha**: 0.15-0.6
+- **Dark backgrounds**: #0d0a1a, #0a0812
+- **Stone colors**: #c8b898, #a09070
+- **Gold accents**: #c8a040
+- **Multiple passes**: 2-3 offset lines per edge
+- **Cross-hatching**: Dense diagonal lines for shadows
+- **Impossible geometry**: Penrose triangles, Escher stairs
+
+---
+
+### Architecture Parameters
+
+| Parameter | Range | Description |
+|-----------|-------|-------------|
+| `h` | 0.5-3.0 | Column/arch height |
+| `s` | 0.5-2.0 | Scale factor |
+| `n_levels` | 2-5 | Colosseum levels |
+| `n_arches` | 2-8 | Aqueduct arches |
+| `depth` | 3-6 | Nesting depth |
+
+---
+
+### Example
+
+```python
+from polyart_spqr import SPQRComposition, PiranesiArchitecture
+
+fig, ax = plt.subplots(figsize=(12, 12))
+SPQRComposition.piranesi_prison(ax, s=2.0)
+plt.savefig("piranesi.png")
+```
+
+---
+
+## See Also
+
+- Reference 01: Core API
+- Reference 09: Botanical Art
+- Article 16: Impossible Architecture
+- Article 25: SPQR Architecture

@@ -1,0 +1,112 @@
+# PolyArt Reference 09: Botanical & Flower Art
+
+## polyart_flowers.py
+
+### FlowerCurves
+
+Polynomial flower renderers.
+
+```python
+from polyart_flowers import FlowerCurves
+```
+
+| Method | Description | Petals |
+|--------|-------------|--------|
+| `rose(ax, cx, cy, s, petals, color)` | Multi-layer rose | 5+ |
+| `lily(ax, cx, cy, s, color)` | 6-petal lily | 6 |
+| `daisy(ax, cx, cy, s, petals, color)` | Daisy with center | 12 |
+| `tulip(ax, cx, cy, s, color)` | Tulip with stem | 3 |
+| `sunflower(ax, cx, cy, s, color)` | Fibonacci sunflower | 24 |
+| `orchid(ax, cx, cy, s, color)` | Orchid with lip | 3 |
+| `lotus(ax, cx, cy, s, color)` | Layered lotus | 4 layers |
+| `chrysanthemum(ax, cx, cy, s, color)` | Spiral chrysanthemum | 21 |
+| `peony(ax, cx, cy, s, color)` | Multi-layer peony | 4 layers |
+| `hibiscus(ax, cx, cy, s, color)` | Hibiscus with stamens | 5 |
+| `lavender(ax, cx, cy, s, color)` | Lavender spikes | 12 |
+| `forget_me_not(ax, cx, cy, s, color)` | Cluster of small flowers | 8x5 |
+| `cherry_blossom(ax, cx, cy, s, color)` | Cherry blossom | 5 |
+| `cactus_flower(ax, cx, cy, s, color)` | Cactus flower | 8 |
+| `camellia(ax, cx, cy, s, color)` | Camellia layers | 3 layers |
+| `pansy(ax, cx, cy, s, color)` | Pansy face | 5 |
+| `snowdrop(ax, cx, cy, s, color)` | Snowdrop bell | 3 |
+
+---
+
+### PlantCurves
+
+Plant and foliage renderers.
+
+```python
+from polyart_flowers import PlantCurves
+```
+
+| Method | Description |
+|--------|-------------|
+| `vine(ax, x0, y0, x1, y1, s)` | Curving vine with leaves |
+| `branch(ax, x0, y0, angle, length, depth)` | Recursive tree branch |
+| `fern(ax, cx, cy, s)` | Fern frond |
+| `grass(ax, cx, cy, s, n)` | Grass blade cluster |
+| `tree_canopy(ax, cx, cy, s)` | Tree top cluster |
+| `cactus(ax, cx, cy, s)` | Cactus with flowers |
+| `bonsai(ax, cx, cy, s)` | Bonsai tree |
+| `succulent(ax, cx, cy, s)` | Rosette succulent |
+| `mushroom(ax, cx, cy, s, cap_color)` | Mushroom |
+| `seaweed(ax, cx, cy, s, n)` | Seaweed strands |
+
+---
+
+### CompositionCurves
+
+Multi-element compositions.
+
+```python
+from polyart_flowers import CompositionCurves
+```
+
+| Method | Description |
+|--------|-------------|
+| `bouquet(ax, cx, cy, s)` | Flower bouquet |
+| `garden_scene(ax, cx, cy, s)` | Full garden |
+| `wreath(ax, cx, cy, s, n_flowers)` | Flower wreath |
+| `floral_border(ax, x0, y0, x1, y1, s)` | Border pattern |
+| `terrarium(ax, cx, cy, s)` | Glass terrarium |
+| `ikebana(ax, cx, cy, s)` | Japanese arrangement |
+| `flower_crown(ax, cx, cy, s, n)` | Flower crown |
+| `vertical_garden(ax, cx, cy, s)` | Wall garden |
+| `forest_floor(ax, cx, cy, s)` | Forest scene |
+
+---
+
+### Color Palettes
+
+| Palette | Colors |
+|---------|--------|
+| Rose | #c83060, #801830, #f0b0c0 |
+| Lily | #f0e0c0, #c0a060, #f0d870 |
+| Daisy | #ffffff, #d0d0d0, #e8c020 |
+| Sunflower | #f0c810, #a08008, #503010 |
+| Lavender | #9060c0, #6040a0, #2a6a1a |
+| Cherry | #f8b0c8, #d090a0, #f0d060 |
+| Succulent | #3a8a5a, #2a6a3a, #5aaa7a |
+
+---
+
+### Example
+
+```python
+from polyart_flowers import FlowerCurves, CompositionCurves
+
+fig, ax = plt.subplots(figsize=(10, 10))
+FlowerCurves.rose(ax, -1, 0, 1.5, petals=7)
+FlowerCurves.sunflower(ax, 1, 0, 1.5)
+CompositionCurves.wreath(ax, 0, 0, 2.0, n_flowers=12)
+plt.savefig("flowers.png")
+```
+
+---
+
+## See Also
+
+- Reference 07: Biology
+- Reference 01: Core API
+- Reference 10: SPQR Architecture

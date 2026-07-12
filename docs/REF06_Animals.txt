@@ -1,0 +1,62 @@
+# PolyArt Reference 06: Animal Templates
+
+## polyart_animals.py
+
+### AnimalTemplates
+
+Render polynomial animal forms.
+
+```python
+from polyart_animals import AnimalTemplates
+```
+
+| Method | Description |
+|--------|-------------|
+| `lion(path, s, dpi)` | Lion with mane |
+| `eagle(path, s, dpi)` | Eagle with wings |
+| `wolf(path, s, dpi)` | Wolf head |
+| `horse(path, s, dpi)` | Horse profile |
+| `snake(path, s, dpi)` | Coiled snake |
+| `bear(path, s, dpi)` | Bear figure |
+| `dolphin(path, s, dpi)` | Dolphin arc |
+| `owl(path, s, dpi)` | Owl face |
+| `dragon(path, s, dpi)` | Mythical dragon |
+
+---
+
+### Parameters
+
+All methods accept:
+- `path` (str): Output file path
+- `s` (float): Scale factor (default 3.0)
+- `dpi` (int): Resolution (default 150)
+- `color` (str): Primary color (optional)
+
+---
+
+### Animal Math Model
+
+Each animal uses:
+- **Body outline**: Polynomial curves (poly_x, poly_y)
+- **Appendages**: Bezier-like polynomial segments
+- **Texture**: Procedural pattern via parametric equations
+- **Details**: Eyes, nose, mouth as small polynomial shapes
+
+---
+
+### Example
+
+```python
+from polyart_animals import AnimalTemplates
+
+AnimalTemplates.lion("lion.png", s=4.0)
+AnimalTemplates.dragon("dragon.png", s=5.0, color="#c83060")
+```
+
+---
+
+## See Also
+
+- Reference 05: Emotions
+- Reference 08: Curves Library
+- Reference 07: Biology

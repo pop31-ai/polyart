@@ -1,0 +1,81 @@
+# PolyArt Reference 04: Viewer
+
+## polyart_viewer.py
+
+### Launch
+
+```bash
+python polyart_viewer.py art.polyart
+```
+
+Or without arguments for file dialog:
+```bash
+python polyart_viewer.py
+```
+
+---
+
+### Features
+
+- Load and display .polyart files
+- Layer tree with visibility toggles
+- Property inspection
+- Zoom and pan
+- Export to PNG
+
+---
+
+### Navigation
+
+| Action | Control |
+|--------|---------|
+| Zoom In | Mouse wheel up |
+| Zoom Out | Mouse wheel down |
+| Pan | Middle mouse drag |
+| Reset View | Double-click |
+
+---
+
+### Layer Panel
+
+Shows all layers in the project. Each layer shows:
+- Name
+- Visibility toggle (eye icon)
+- Object count
+- Lock status
+
+---
+
+### Properties Panel
+
+Displays properties of selected object:
+- Kind (circle, line, etc.)
+- Position (cx, cy)
+- Size (r, width, height)
+- Style (color, linewidth, alpha)
+
+---
+
+### Command Line
+
+```bash
+# View specific file
+python polyart_viewer.py my_art.polyart
+
+# View and export
+python polyart_viewer.py my_art.polyart --export output.png
+
+# Set DPI
+python polyart_viewer.py my_art.polyart --dpi 300
+
+# Show all layers
+python polyart_viewer.py my_art.polyart --all-layers
+```
+
+---
+
+## See Also
+
+- Reference 01: Core API
+- Reference 02: File Format
+- Reference 03: Editor

@@ -1,0 +1,106 @@
+# PolyArt Reference 07: Biology & Growth
+
+## polyart_biology.py
+
+### GrowthCurves
+
+Mathematical growth models.
+
+```python
+from polyart_biology import GrowthCurves
+```
+
+| Method | Description |
+|--------|-------------|
+| `exponential(t, a, k)` | y = a * e^(kt) |
+| `logistic(t, L, k, t0)` | y = L / (1 + e^(-k(t-t0))) |
+| `gompertz(t, a, b, c)` | y = a * e^(-b*e^(-ct)) |
+| `michaelis_menten(t, Vmax, Km)` | y = Vmax*t / (Km + t) |
+
+---
+
+### Phyllotaxis
+
+Plant leaf arrangement patterns.
+
+```python
+from polyart_biology import Phyllotaxis
+```
+
+| Method | Description |
+|--------|-------------|
+| `golden_points(n, scale)` | Golden angle dot placement |
+| `fibonacci_spiral(n, scale)` | Fibonacci spiral points |
+| `parastichy(n, m, scale)` | Parastichy pattern |
+
+---
+
+### Biomechanics
+
+Biomechanical curve models.
+
+```python
+from polyart_biology import Biomechanics
+```
+
+| Method | Description |
+|--------|-------------|
+| `bone_profile(length, width)` | Bone cross-section curve |
+| `tendon_path(x0, y0, x1, y1)` | Tendon trajectory |
+| `muscle_attachment(x, y, angle)` | Muscle insertion point |
+
+---
+
+### TuringPatterns
+
+Reaction-diffusion pattern generator.
+
+```python
+from polyart_biology import TuringPatterns
+```
+
+| Method | Description |
+|--------|-------------|
+| `simulate(w, h, n_steps)` | Run Turing simulation |
+| `spots(w, h, n_steps)` | Spot pattern |
+| `stripes(w, h, n_steps)` | Stripe pattern |
+| `labyrinth(w, h, n_steps)` | Labyrinth pattern |
+
+**Parameters:**
+- `w`, `h` (int): Grid dimensions
+- `n_steps` (int): Simulation steps (default 500)
+
+---
+
+### VariantGenerator
+
+Parametric flower variants.
+
+```python
+from polyart_biology import VariantGenerator
+```
+
+| Method | Description |
+|--------|-------------|
+| `generate(base_params, n, variation)` | Generate n variants |
+| `cross(param1, param2)` | Cross two variants |
+| `mutate(params, rate)` | Random mutation |
+
+---
+
+### Example
+
+```python
+from polyart_biology import Phyllotaxis, TuringPatterns
+
+xs, ys = Phyllotaxis.golden_points(n=200, scale=2.0)
+pattern = TuringPatterns.spots(100, 100, n_steps=1000)
+```
+
+---
+
+## See Also
+
+- Reference 01: Core API
+- Reference 08: Curves Library
+- Reference 10: SPQR Architecture
