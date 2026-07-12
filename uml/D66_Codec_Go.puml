@@ -1,0 +1,20 @@
+@startuml
+component "Go Codec" {
+  package "goroutines" {
+    [CaptureGr] as CG
+    [EdgeGr] as EG
+    [PolyGr] as PG
+    [SendGr] as SG
+  }
+  channel "chFrames" as CF
+  channel "chEdges" as CE
+  channel "chPolys" as CP
+}
+
+CG --> CF
+CF --> EG
+EG --> CE
+CE --> PG
+PG --> CP
+CP --> SG
+@enduml

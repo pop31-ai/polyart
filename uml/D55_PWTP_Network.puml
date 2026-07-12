@@ -1,0 +1,21 @@
+@startuml
+start
+:Client creates Packet;
+:Serialize payload;
+:Send UDP packet;
+
+if (Reliable?) then (yes)
+  :Add sequence number;
+  :Wait for ACK;
+  if (ACK received?) then (yes)
+    :Mark delivered;
+  else (no)
+    :Retry up to N times;
+  endif
+else (no)
+  :Fire and forget;
+endif
+
+:Update send stats;
+stop
+@enduml

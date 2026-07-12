@@ -1,0 +1,27 @@
+@startuml
+class PolyObject {
+  -id : int
+  -type : ObjectType
+  -owner : int
+  +getState() : StateVector
+  +applyForce(f : Vector3)
+}
+
+class StateVector {
+  -position : Vector3
+  -rotation : Quaternion
+  -scale : Vector3
+  -velocity : Vector3
+  +interpolate(t : float) : StateVector
+}
+
+class Polynomial {
+  -coefficients : float[]
+  -degree : int
+  +evaluate(t : float) : float
+  +fit(data : Point[]) : void
+}
+
+PolyObject --> StateVector
+StateVector --> Polynomial : "position over time"
+@enduml

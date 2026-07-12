@@ -1,0 +1,21 @@
+@startuml
+abstract class Emotion {
+  -intensity : float
+  -duration : float
+  +affect() : void
+}
+
+class Joy extends Emotion
+class Sadness extends Emotion
+class Anger extends Emotion
+class Fear extends Emotion
+class Surprise extends Emotion
+class Disgust extends Emotion
+
+Joy : -valence = positive
+Sadness : -valence = negative
+Anger : -valence = negative
+Fear : -valence = negative
+Surprise : -valence = neutral
+Disgust : -valence = negative
+@enduml

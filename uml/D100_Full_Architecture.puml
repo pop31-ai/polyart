@@ -1,0 +1,45 @@
+@startuml
+package "PolyArt System" {
+  package "PWTP" {
+    [Protocols] as P
+  }
+  package "Codecs" {
+    [Python] as CP
+    [C++] as CC
+    [JS] as CJ
+    [Java] as CJv
+    [Go] as CG
+  }
+  package "Modules" {
+    [Pompeii] as Mo
+    [Flowers] as MF
+    [SPQR] as MS
+    [Curves] as MC
+    [3D] as M3
+    [Biology] as MB
+    [Games] as MG
+    [Emotions] as ME
+  }
+  package "Language" {
+    [Tokenizer] as LT
+    [Parser] as LP
+    [Interpreter] as LI
+  }
+  package "API" {
+    [Fluent API] as FA
+    [Serialization] as SE
+  }
+  [Converter Pipeline] as CV
+}
+
+P --> CP
+P --> CJ
+CV --> CP
+CV --> M3
+LT --> LP
+LP --> LI
+FA --> P
+SE --> FA
+MC --> M3
+MB --> MF
+@enduml

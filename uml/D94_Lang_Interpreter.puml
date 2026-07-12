@@ -1,0 +1,25 @@
+@startuml
+class Interpreter {
+  -ast : AST
+  -context : Context
+  +eval(node : Node) : Value
+  +execute(code : string)
+}
+
+class Context {
+  -scope : Map<String, Value>
+  -parent : Context
+  +get(name : string) : Value
+  +set(name : string, val : Value)
+}
+
+class Visitor {
+  +visitBinary(expr : Expression) : Value
+  +visitUnary(expr : Expression) : Value
+  +visitLiteral(node : Node) : Value
+}
+
+Interpreter --> Context : "evaluates in"
+Interpreter --> Visitor : "dispatches to"
+Context --> Interpreter : "may invoke"
+@enduml

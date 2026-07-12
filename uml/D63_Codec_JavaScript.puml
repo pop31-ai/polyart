@@ -1,0 +1,15 @@
+@startuml
+component "Node.js Codec" {
+  [FrameReader] as FR
+  [EdgeModule] as EM
+  [PolyModule] as PM
+  [WebSocketSender] as WS
+  [CanvasRenderer] as CR
+}
+
+FR --> EM : "frames"
+EM --> PM : "contours"
+PM --> WS : "polynomials"
+WS --> CR : "stream"
+CR --> FR : "feedback"
+@enduml

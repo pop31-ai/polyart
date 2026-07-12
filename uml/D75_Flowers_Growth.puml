@@ -1,0 +1,25 @@
+@startuml
+start
+:Seed planted;
+:Germination (t=0);
+:Bud formation;
+
+fork
+  :Stem elongation (Fibonacci);
+fork again
+  :Leaf emergence (phyllotaxis);
+fork again
+  :Root branching;
+end fork
+
+:Full bloom;
+:Pollination window;
+:Wilting;
+
+if (Seed set?) then (yes)
+  :Seed dispersal;
+else (no)
+  :Decomposition;
+endif
+stop
+@enduml

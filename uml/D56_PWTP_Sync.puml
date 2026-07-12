@@ -1,0 +1,19 @@
+@startuml
+participant "Client" as C
+participant "NTP Server" as N
+participant "Game Server" as S
+
+C -> N: requestTimestamp()
+N --> C: serverTime
+C -> C: offset = serverTime - localTime
+
+C -> S: tickRequest(clientTick, offset)
+S --> C: serverTick + bufferState
+
+C -> C: interpolate(serverTick + offset)
+
+alt buffer underrun
+  C -> S: requestBufferFill()
+  S --> C: bufferedPackets[]
+end
+@enduml

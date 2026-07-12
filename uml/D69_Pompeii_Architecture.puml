@@ -1,0 +1,29 @@
+@startuml
+class Column {
+  -order : OrderType
+  -height : float
+  -fluted : bool
+}
+
+class Forum {
+  -name : string
+  -columns : Column[]
+  +getArea() : float
+}
+
+class Basilica {
+  -nave : Forum
+  -aisles : Forum[]
+  +hearCase()
+}
+
+class Temple {
+  -deity : string
+  -podium : bool
+  +sacrifice()
+}
+
+Column --> Forum
+Forum --> Basilica : "contains"
+Forum --> Temple : "adjacent"
+@enduml

@@ -1,0 +1,26 @@
+@startuml
+class FrescoStyle {
+  -period : String
+  -technique : Technique
+  +apply(wall : WallPainter)
+}
+
+class WallPainter {
+  -width : int
+  -height : int
+  -layers : Layer[]
+  +paint(style : FrescoStyle)
+  +addLayer(color : ColorPalette)
+}
+
+class ColorPalette {
+  -colors : Color[]
+  -name : string
+  +getRed() : Color
+  +getBlue() : Color
+  +getGold() : Color
+}
+
+FrescoStyle --> WallPainter : "drives"
+WallPainter --> ColorPalette : "uses"
+@enduml

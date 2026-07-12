@@ -1,0 +1,23 @@
+@startuml
+package "PWTP Protocols" {
+  [PWTP-001 Init Handshake] as P001
+  [PWTP-002 Object Sync] as P002
+  [PWTP-003 Camera Ctrl] as P003
+  [PWTP-004 Network] as P004
+  [PWTP-005 Time Sync] as P005
+  [PWTP-006 QoS LOD] as P006
+  [PWTP-007 Security] as P007
+  [PWTP-008 Multi-User] as P008
+  [PWTP-009 Effects] as P009
+  [PWTP-010 Audio] as P010
+}
+P001 --> P002
+P002 --> P003
+P003 --> P004
+P004 --> P005
+P005 --> P006
+P006 --> P007
+P007 --> P008
+P008 --> P009
+P009 --> P010
+@enduml

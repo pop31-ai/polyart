@@ -1,0 +1,27 @@
+@startuml
+class Token {
+  -type : TokenType
+  -value : string
+  -line : int
+  -column : int
+}
+
+class Tokenizer {
+  -source : string
+  -pos : int
+  +nextToken() : Token
+  +peek() : Token
+  +hasMore() : bool
+}
+
+enum TokenType {
+  IDENTIFIER
+  NUMBER
+  STRING
+  KEYWORD
+  OPERATOR
+}
+
+Tokenizer --> Token : "produces"
+Token --> TokenType
+@enduml

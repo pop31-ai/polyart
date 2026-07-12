@@ -1,0 +1,29 @@
+@startuml
+state "High Detail" as High {
+  [*] --> Rendered
+  Rendered --> Animated
+  Animated --> Rendered
+}
+
+state "Medium Detail" as Med {
+  [*] --> Simplified
+  Simplified --> LOD2
+}
+
+state "Low Detail" as Low {
+  [*] --> Billboard
+  Billboard --> Impostor
+}
+
+state "Billboard" as Bill {
+  [*] --> Sprite
+  Sprite --> Sprite
+}
+
+High --> Med : "distance > 50m"
+Med --> Low : "distance > 200m"
+Low --> Bill : "distance > 500m"
+Bill --> Low : "distance < 300m"
+Low --> Med : "distance < 100m"
+Med --> High : "distance < 30m"
+@enduml

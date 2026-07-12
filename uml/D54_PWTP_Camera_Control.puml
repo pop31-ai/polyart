@@ -1,0 +1,25 @@
+@startuml
+class Camera {
+  -fov : float
+  -near : float
+  -far : float
+  +follow(target : ViewTarget)
+  +setFOV(degrees : float)
+}
+
+class ViewTarget {
+  -position : Vector3
+  -smoothFactor : float
+  +getPosition() : Vector3
+}
+
+class PolynomialPath {
+  -controlPoints : Vector3[]
+  -duration : float
+  +sample(t : float) : Vector3
+}
+
+Camera --> ViewTarget : "tracks"
+Camera --> PolynomialPath : "optional path"
+ViewTarget --> PolynomialPath : "defined by"
+@enduml

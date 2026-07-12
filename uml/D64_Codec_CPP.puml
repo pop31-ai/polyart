@@ -1,0 +1,15 @@
+@startuml
+component "C++ Codec" {
+  class ImageBuffer
+  class CannyEdge
+  class RansacFitter
+  class PolyCodec
+  class ThreadPool
+}
+
+ImageBuffer --> CannyEdge
+CannyEdge --> RansacFitter
+RansacFitter --> PolyCodec
+PolyCodec --> ThreadPool : "parallel encode"
+ThreadPool --> PolyCodec : "merge results"
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+class AST {
+  -root : Node
+  +traverse(visitor : Visitor)
+}
+
+class Parser {
+  -tokens : Token[]
+  -pos : int
+  +parse() : AST
+  +expression() : Expression
+}
+
+class Node {
+  -type : NodeType
+  -children : Node[]
+}
+
+class Expression {
+  -operator : string
+  -left : Node
+  -right : Node
+}
+
+Parser --> AST : "produces"
+AST --> Node : "root"
+Node --> Expression : "may be"
+Expression --> Node : "contains"
+@enduml

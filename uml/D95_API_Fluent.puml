@@ -1,0 +1,16 @@
+@startuml
+participant "Caller" as C
+participant "FluentBuilder" as B
+participant "Config" as CFG
+
+C -> B: create()
+activate B
+C -> B: width(800)
+C -> B: height(600)
+C -> B: title("PolyArt")
+C -> B: style(FrescoStyle)
+C -> B: build()
+B -> CFG: validate()
+B --> C: config
+deactivate B
+@enduml

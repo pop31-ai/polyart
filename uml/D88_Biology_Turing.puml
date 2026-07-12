@@ -1,0 +1,22 @@
+@startuml
+class TuringPattern {
+  -width : int
+  -height : int
+  -fieldA : float[][]
+  -fieldB : float[][]
+  +step(dt : float)
+  +reset()
+}
+
+class ReactionDiffusion {
+  -DA : float
+  -DB : float
+  -feed : float
+  -kill : float
+  +laplacian(grid : float[][]) : float[][]
+  +update(a : float[][], b : float[][])
+}
+
+TuringPattern --> ReactionDiffusion : "computed by"
+ReactionDiffusion --> TuringPattern : "modifies fields"
+@enduml

@@ -1,0 +1,30 @@
+@startuml
+class User {
+  -userId : int
+  -name : string
+  -role : Role
+  +getAuthority() : Authority
+}
+
+class Authority {
+  -level : int
+  -scope : String[]
+  +canEdit(obj : ObjectOwner) : bool
+}
+
+class ObjectOwner {
+  -objectId : int
+  -ownerId : int
+  -locked : bool
+  +tryLock(userId : int) : bool
+}
+
+class ConflictResolver {
+  +resolve(local, remote : State) : State
+  +merge(a : Change[], b : Change[]) : Change[]
+}
+
+User --> Authority
+User --> ObjectOwner : "owns"
+ConflictResolver --> ObjectOwner : "arbitrates"
+@enduml

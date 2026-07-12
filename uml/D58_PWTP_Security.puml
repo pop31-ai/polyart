@@ -1,0 +1,19 @@
+@startuml
+participant "Client" as C
+participant "Auth Server" as A
+participant "Game Server" as G
+
+C -> A: login(username, token)
+A --> C: sessionKey + salt
+
+C -> C: deriveKey(salt, password)
+
+C -> G: authRequest(sessionKey)
+G -> A: validateSession(sessionKey)
+A --> G: valid + publicKey
+G --> C: challenge(nonce)
+C -> G: respond(encrypt(nonce, key))
+G --> C: accepted(channelKey)
+
+C -> G: {encrypted} worldData
+@enduml

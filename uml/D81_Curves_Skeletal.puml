@@ -1,0 +1,37 @@
+@startuml
+class Bone {
+  -length : float
+  -thickness : float
+  -axis : Vector3
+}
+
+class Joint {
+  -position : Vector3
+  -type : JointType
+  -range : Range
+  +rotate(angle : float)
+}
+
+class Spine {
+  -segments : Bone[]
+  -curvature : Curve
+  +getSegment(i : int) : Bone
+}
+
+class RibCage {
+  -ribs : Bone[]
+  -sternum : Bone
+  +getVolume() : float
+}
+
+class Skull {
+  -face : Bone[]
+  -jaw : Joint
+}
+
+Bone --> Joint : "connected by"
+Spine --> Bone : "composed of"
+RibCage --> Bone : "composed of"
+Skull --> Joint : "jaw hinge"
+Skull --> Bone : "composed of"
+@enduml

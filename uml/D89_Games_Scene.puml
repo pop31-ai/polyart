@@ -1,0 +1,33 @@
+@startuml
+class GameScene {
+  -entities : Entity[]
+  -camera : Camera3D
+  +update(dt : float)
+  +render()
+}
+
+class Character {
+  -health : int
+  -position : Vector3
+  -state : CharState
+  +move(dir : Vector3)
+  +attack()
+}
+
+class Environment {
+  -tiles : Tile[][]
+  -lighting : Lighting
+  +generate(seed : int)
+}
+
+class Interaction {
+  -type : InteractionType
+  -participants : Entity[]
+  +trigger()
+}
+
+GameScene --> Character : "contains"
+GameScene --> Environment : "contains"
+Character --> Interaction : "initiates"
+Environment --> Interaction : "context for"
+@enduml

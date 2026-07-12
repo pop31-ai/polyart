@@ -1,0 +1,14 @@
+@startuml
+actor Client
+participant "Server" as S
+database "WorldDB" as DB
+
+Client -> S: connect(host, port)
+S --> Client: welcome(version, features)
+Client -> S: initWorldRequest(seed, params)
+S -> DB: loadWorld(seed)
+DB --> S: worldData
+S --> Client: worldState(objects[], camera[])
+Client -> S: ack(worldReady)
+S --> Client: syncTick(t=0)
+@enduml

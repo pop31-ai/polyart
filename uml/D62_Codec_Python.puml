@@ -1,0 +1,20 @@
+@startuml
+component "Python Codec" {
+  [Encoder] as PE
+  [Decoder] as PD
+  [EdgeDetector] as ED
+  [PolyFitter] as PF
+  [NumPyBackend] as NP
+}
+
+database "Input Frames" as In
+database "Output Poly" as Out
+
+In --> ED
+ED --> PF
+PF --> PE
+PE --> Out
+Out --> PD
+PD --> NP
+NP --> PE
+@enduml

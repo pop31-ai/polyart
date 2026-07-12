@@ -1,0 +1,16 @@
+@startuml
+component "Java Codec" {
+  interface "EncoderIF" as EI
+  interface "DecoderIF" as DI
+  class FrameCapture implements EI
+  class EdgeExtractor implements EI
+  class PolyAssembler implements EI
+  class StreamDecoder implements DI
+  class RenderPanel implements DI
+}
+
+FrameCapture --> EdgeExtractor
+EdgeExtractor --> PolyAssembler
+PolyAssembler --> StreamDecoder
+StreamDecoder --> RenderPanel
+@enduml

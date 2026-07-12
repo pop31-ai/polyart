@@ -1,0 +1,22 @@
+@startuml
+abstract class Flower {
+  -name : string
+  -petals : int
+  -color : Color
+  +draw() : void
+  +getStem() : Stem
+}
+
+class Rose extends Flower
+class Tulip extends Flower
+class Sunflower extends Flower
+class Lily extends Flower
+class Daisy extends Flower
+
+class Stem {
+  -height : float
+  -hasThorns : bool
+}
+
+Flower --> Stem
+@enduml

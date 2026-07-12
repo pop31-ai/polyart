@@ -1,0 +1,21 @@
+@startuml
+start
+:Select wall dimensions;
+:Choose fresco style (I-IV);
+:Prepare color palette;
+
+:Sketch outlines on wet plaster;
+:Apply base color layers;
+
+fork
+  :Paint figures;
+fork again
+  :Paint architecture;
+fork again
+  :Paint borders;
+end fork
+
+:Apply fine details;
+:Seal and dry;
+stop
+@enduml

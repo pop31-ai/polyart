@@ -1,0 +1,25 @@
+@startuml
+class Surface3D {
+  -mesh : Mesh
+  -material : Material
+  +sample(u : float, v : float) : Vector3
+}
+
+class ParametricSurface {
+  -uRange : Range
+  -vRange : Range
+  +evaluate(u : float, v : float) : Vector3
+  +normal(u : float, v : float) : Vector3
+}
+
+class Mesh {
+  -vertices : Vector3[]
+  -triangles : int[][]
+  -uvs : Vector2[]
+  +getNormals() : Vector3[]
+}
+
+Surface3D --> Mesh : "contains"
+ParametricSurface --> Surface3D : "generates"
+Mesh --> ParametricSurface : "sampled by"
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+class Wireframe3D {
+  -vertices : Vertex[]
+  -edges : Edge[]
+  -faces : Face[]
+  +render()
+  +transform(matrix : Matrix4)
+}
+
+class Vertex {
+  -position : Vector3
+  -normal : Vector3
+}
+
+class Edge {
+  -from : Vertex
+  -to : Vertex
+  -weight : float
+}
+
+class Face {
+  -vertices : Vertex[]
+  -color : Color
+}
+
+Wireframe3D --> Vertex : "has many"
+Wireframe3D --> Edge : "has many"
+Wireframe3D --> Face : "has many"
+Edge --> Vertex
+Face --> Vertex
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+class God {
+  -name : string
+  -domain : string
+  +smite()
+}
+
+class Hero {
+  -name : string
+  -deeds : String[]
+  +quest()
+}
+
+class Monster {
+  -name : string
+  -power : int
+  +attack()
+}
+
+class Scene {
+  -title : string
+  -figures : Object[]
+  +render(wall : Wall)
+}
+
+God --> Scene : "depicted in"
+Hero --> Scene : "fights in"
+Monster --> Scene : "threatens in"
+@enduml

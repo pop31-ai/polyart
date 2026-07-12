@@ -1,0 +1,27 @@
+@startuml
+class SpatialAudio {
+  -position : Vector3
+  -rolloff : float
+  -innerRadius : float
+  +play3D(sound : Sound)
+  +updatePosition(pos : Vector3)
+}
+
+class DopplerEffect {
+  -speedOfSound : float
+  -sourceVelocity : Vector3
+  +getPitchShift() : float
+  +apply(source : SpatialAudio)
+}
+
+class MusicCue {
+  -name : string
+  -priority : int
+  -fadeIn : float
+  +trigger()
+  +crossfade(next : MusicCue)
+}
+
+SpatialAudio --> DopplerEffect : "modulated by"
+MusicCue --> SpatialAudio : "may use"
+@enduml

@@ -1,0 +1,24 @@
+@startuml
+class PiranesiStyle {
+  -contrast : float
+  -depth : int
+  +render(scene : Scene)
+}
+
+class CrossHatch {
+  -angle : float
+  -density : int
+  -weight : float
+  +applyToSurface(surface : Surface)
+}
+
+class DarkAtmosphere {
+  -fogDensity : float
+  -shadowDepth : float
+  +castLight(light : Light)
+}
+
+PiranesiStyle --> CrossHatch : "uses"
+PiranesiStyle --> DarkAtmosphere : "uses"
+CrossHatch --> DarkAtmosphere : "enhances"
+@enduml

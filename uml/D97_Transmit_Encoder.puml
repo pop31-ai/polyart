@@ -1,0 +1,20 @@
+@startuml
+class PolynomialEncoder {
+  -degree : int
+  -precision : int
+  +encode(coeffs : float[]) : byte[]
+  +decode(data : byte[]) : float[]
+}
+
+class CoefficientStream {
+  -buffer : byte[]
+  -position : int
+  -compressed : bool
+  +write(c : float)
+  +read() : float
+  +flush() : byte[]
+}
+
+PolynomialEncoder --> CoefficientStream : "writes to"
+CoefficientStream --> PolynomialEncoder : "reads from"
+@enduml

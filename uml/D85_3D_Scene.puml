@@ -1,0 +1,32 @@
+@startuml
+class Scene3D {
+  -objects : Renderable[]
+  -lights : Light3D[]
+  -camera : Camera3D
+  +add(obj : Renderable)
+  +render()
+}
+
+class Camera3D {
+  -position : Vector3
+  -target : Vector3
+  -fov : float
+  +getViewMatrix() : Matrix4
+}
+
+class Light3D {
+  -type : LightType
+  -color : Color
+  -intensity : float
+}
+
+class Material3D {
+  -diffuse : Color
+  -specular : float
+  -texture : Texture
+}
+
+Scene3D --> Camera3D
+Scene3D --> Light3D : "many"
+Scene3D --> Material3D : "referenced by objects"
+@enduml

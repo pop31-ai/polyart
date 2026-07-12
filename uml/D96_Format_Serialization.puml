@@ -1,0 +1,25 @@
+@startuml
+start
+:Load polyart project;
+
+fork
+  :Read header (version, magic);
+fork again
+  :Read metadata (author, date);
+fork again
+  :Read object table;
+end fork
+
+:Deserialize polynomial data;
+:Rebuild scene graph;
+
+if (Compressed?) then (yes)
+  :Decompress streams;
+else (no)
+  :Direct read;
+endif
+
+:Validate integrity (CRC);
+:Construct render state;
+stop
+@enduml

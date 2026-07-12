@@ -1,0 +1,35 @@
+@startuml
+class Emitter {
+  -rate : float
+  -spread : float
+  -shape : Shape
+  +emit() : Particle
+  +update(dt : float)
+}
+
+class Particle {
+  -position : Vector3
+  -velocity : Vector3
+  -color : Color
+  -size : float
+  +age() : float
+}
+
+class Lifetime {
+  -birth : float
+  -death : float
+  +alive() : bool
+  +progress() : float
+}
+
+class EffectTrigger {
+  -event : EventType
+  -cooldown : float
+  +check(event : Event) : bool
+  +activate(emitter : Emitter)
+}
+
+Emitter --> Particle : "creates"
+Particle --> Lifetime : "has"
+EffectTrigger --> Emitter : "triggers"
+@enduml

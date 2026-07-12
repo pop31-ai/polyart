@@ -1,0 +1,19 @@
+@startuml
+abstract class ColumnOrder {
+  -name : string
+  -origin : string
+  +getHeight() : float
+}
+
+class Doric extends ColumnOrder
+class Ionic extends ColumnOrder
+class Corinthian extends ColumnOrder
+class Tuscan extends ColumnOrder
+class Composite extends ColumnOrder
+
+Doric : -flutes = 20
+Ionic : -scrolls = true
+Corinthian : -acanthus = true
+Tuscan : -simple = true
+Composite : -mixed = true
+@enduml

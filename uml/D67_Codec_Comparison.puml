@@ -1,0 +1,30 @@
+@startuml
+start
+:Load image frame;
+
+fork
+  :Python - PIL + NumPy;
+fork again
+  :JavaScript - Canvas API;
+fork again
+  :C++ - OpenCV;
+fork again
+  :Java - BufferedImage;
+fork again
+  :Go - image package;
+end fork
+
+:Detect edges;
+:Fit polynomials;
+:Encode coefficient stream;
+
+if (Target platform?) then (web)
+  :WebSocket send;
+elseif (desktop) then
+  :TCP pipe;
+else (embedded)
+  :UDP broadcast;
+endif
+
+stop
+@enduml

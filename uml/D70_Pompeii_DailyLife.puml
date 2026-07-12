@@ -1,0 +1,29 @@
+@startuml
+class Bakery {
+  -ovens : int
+  -grainStock : float
+  +bakeBread() : Loaf
+}
+
+class Tavern {
+  -wines : String[]
+  -capacity : int
+  +serveDrink()
+}
+
+class Bath {
+  -hotRoom : Room
+  -coldRoom : Room
+  +bathe()
+}
+
+class Shop {
+  -goods : String[]
+  -owner : string
+  +sell(item : string)
+}
+
+Bakery --> Tavern : "supplies bread"
+Tavern --> Bath : "patrons visit"
+Shop --> Tavern : "nearby"
+@enduml

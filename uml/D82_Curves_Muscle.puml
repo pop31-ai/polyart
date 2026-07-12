@@ -1,0 +1,24 @@
+@startuml
+class MuscleFiber {
+  -length : float
+  -restLength : float
+  -contraction : float
+  +contract(force : float)
+}
+
+class Tendon {
+  -material : Material
+  -strength : float
+  +attach(muscle : MuscleFiber, bone : Bone)
+}
+
+class Fascia {
+  -thickness : float
+  -layers : int
+  +wrap(muscle : MuscleFiber)
+  +release()
+}
+
+MuscleFiber --> Tendon : "attached via"
+Fascia --> MuscleFiber : "wraps"
+@enduml

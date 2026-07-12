@@ -1,0 +1,21 @@
+@startuml
+start
+:Input image (PNG/JPG);
+:Preprocess (resize, grayscale);
+:Edge detection (Canny);
+:Contour extraction;
+:Fit polynomial curves;
+:Classify curves (line, arc, spline);
+
+fork
+  :Assign colors from palette;
+fork again
+  :Calculate layer order;
+fork again
+  :Generate metadata;
+end fork
+
+:Encode to polyart format;
+:Output .poly file;
+stop
+@enduml

@@ -1,0 +1,26 @@
+@startuml
+class VariantGenerator {
+  -baseGenome : Genome
+  -rng : Random
+  +generate(count : int) : Genome[]
+  +crossover(a : Genome, b : Genome) : Genome
+}
+
+class Mutation {
+  -rate : float
+  -type : MutationType
+  +apply(gene : Gene) : Gene
+  +insert(genes : Gene[]) : Gene[]
+}
+
+class Selection {
+  -fitness : FitnessFn
+  -poolSize : int
+  +select(population : Genome[]) : Genome[]
+  +tournament(pop : Genome[]) : Genome
+}
+
+VariantGenerator --> Mutation : "applies"
+VariantGenerator --> Selection : "filters by"
+Selection --> VariantGenerator : "feeds back"
+@enduml

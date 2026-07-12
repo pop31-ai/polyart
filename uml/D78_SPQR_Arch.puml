@@ -1,0 +1,35 @@
+@startuml
+class Arch {
+  -keystone : Stone
+  -voussoirs : Stone[]
+  +span() : float
+}
+
+class Vault {
+  -arches : Arch[]
+  -barrel : bool
+  +getVolume() : float
+}
+
+class Dome {
+  -radius : float
+  -oculus : bool
+  +getHeight() : float
+}
+
+class Colosseum {
+  -tiers : int
+  -capacity : int
+  -arches : Arch[]
+}
+
+class Forum {
+  -name : string
+  -buildings : Object[]
+}
+
+Arch --> Vault : "forms"
+Vault --> Dome : "rotated"
+Colosseum --> Arch : "composed of"
+Forum --> Colosseum : "adjacent"
+@enduml

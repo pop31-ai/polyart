@@ -1,0 +1,20 @@
+@startuml
+abstract class Animal {
+  -name : string
+  -legs : int
+  +move() : void
+  +eat() : void
+}
+
+class Mammal extends Animal
+class Bird extends Animal
+class Reptile extends Animal
+class Fish extends Animal
+class Insect extends Animal
+
+Mammal : -warmBlooded = true
+Bird : -wings = 2
+Reptile : -coldBlooded = true
+Fish : -fins = true
+Insect : -legs = 6
+@enduml

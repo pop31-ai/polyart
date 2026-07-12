@@ -1,0 +1,21 @@
+@startuml
+start
+fork
+  :Traditional (pixel-based);
+  :Read all pixel data;
+  :Encode RGB values;
+  :Send full frame;
+  note right: High bandwidth
+fork again
+  :Polynomial (coefficient);
+  :Extract edge contours;
+  :Fit polynomials;
+  :Send coefficients only;
+  note right: Low bandwidth
+end fork
+
+:Compare at receiver;
+:Measure quality (PSNR);
+:Log bandwidth usage;
+stop
+@enduml

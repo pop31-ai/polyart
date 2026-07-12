@@ -1,0 +1,24 @@
+@startuml
+class GrowthCurve {
+  -type : CurveType
+  -params : float[]
+  +evaluate(t : float) : float
+  +derivative(t : float) : float
+}
+
+class Fibonacci {
+  -sequence : int[]
+  +next() : int
+  +goldenRatio() : float
+}
+
+class Phyllotaxis {
+  -angle : float
+  -divergence : float
+  +getPosition(n : int) : Vector2
+  +getAngle() : float
+}
+
+GrowthCurve --> Fibonacci : "uses ratio"
+Fibonacci --> Phyllotaxis : "angles from"
+@enduml

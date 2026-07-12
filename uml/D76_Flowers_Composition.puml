@@ -1,0 +1,26 @@
+@startuml
+class Bouquet {
+  -flowers : Flower[]
+  -wrapping : Material
+  +arrange()
+  +getCount() : int
+}
+
+class Garden {
+  -plots : Plot[]
+  -season : Season
+  +growAll()
+  +water()
+}
+
+class Wreath {
+  -diameter : float
+  -base : Material
+  +weave()
+  +hang(position : Vector3)
+}
+
+Bouquet --> Flower : "contains many"
+Garden --> Flower : "grows many"
+Wreath --> Flower : "adorned with"
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+package "Curve Library" {
+  [Skeletal] as Ske
+  [Muscle] as Mus
+  [Skin] as Ski
+  [Vein] as Vei
+  [Nerve] as Ner
+  [Limb] as Lim
+  [Head] as Hea
+  [Figure] as Fig
+}
+
+Ske --> Mus : "underlies"
+Mus --> Ski : "covered by"
+Ski --> Vei : "contains"
+Ski --> Ner : "contains"
+Lim --> Ske
+Lim --> Mus
+Hea --> Lim
+Fig --> Hea
+Fig --> Lim
+@enduml

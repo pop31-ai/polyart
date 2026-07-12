@@ -1,0 +1,24 @@
+@startuml
+class MosaicGenerator {
+  -width : int
+  -height : int
+  +generate(scene : Scene) : Mosaic
+}
+
+class Tesserae {
+  -color : Color
+  -material : Material
+  -size : float
+}
+
+class Patterns {
+  -type : PatternType
+  -scale : float
+  +geometric() : Pattern
+  +figurative() : Pattern
+}
+
+MosaicGenerator --> Patterns : "applies"
+MosaicGenerator --> Tesserae : "places"
+Tesserae --> Patterns : "fills"
+@enduml
