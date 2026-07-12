@@ -1,0 +1,186 @@
+================================================================================
+COMMERCIAL PROPOSAL: POLYART TATE MODERN INSTALLATION
+Investment: GBP 1,000,000
+================================================================================
+
+Date:       12 July 2026
+Prepared:   PolyArt Technologies Ltd
+Target:     Tate Modern / Tate Britain
+Reference:  PA-TATE-2026-001
+Classification: Commercial in Confidence
+
+================================================================================
+1. EXECUTIVE SUMMARY
+================================================================================
+
+PolyArt Technologies Ltd proposes the design, construction, and operation
+of a permanent interactive installation within the Turbine Hall at Tate
+Modern. The installation, titled "Polynomial Perspectives," will comprise
+three polynomial art chambers (each 10m x 6m) featuring real-time visitor
+interaction via touch and motion sensors. The programme includes seasonal
+content rotation four times per year, an educational programme reaching
+50,000 students annually, a marketing partnership leveraging Tate branding,
+and comprehensive maintenance and technical support over three years. The
+total investment of GBP 1,000,000 is projected to deliver a return on
+investment of 280% through increased ticket sales, merchandise revenue,
+and enhanced brand value.
+
+================================================================================
+2. SCOPE OF ENGAGEMENT
+================================================================================
+
+This proposal encompasses the end-to-end delivery of a permanent
+interactive art installation at Tate Modern, comprising:
+
+  Installation Design and Construction:
+    - 3 polynomial art chambers (each 10m x 6m, 3m ceiling height)
+    - High-resolution LED wall panels (8K resolution per chamber)
+    - Real-time polynomial rendering engine (60fps, sub-10ms latency)
+    - Touch-sensitive surfaces (capacitive, 40-point multi-touch)
+    - Motion sensor arrays (LiDAR, 12 sensors per chamber)
+    - Ambient spatial audio systems (Dolby Atmos configuration)
+
+  Content and Interaction:
+    - 12 core polynomial art pieces (4 per chamber)
+    - Visitor-driven generative art: touch/motion alters polynomial parameters
+    - Real-time visualisation of mathematical transformations
+    - Accessibility features: audio descriptions, tactile interfaces,
+      wheelchair-accessible interaction zones
+    - Seasonal content rotation: 4 new pieces per year (12 total over 3 years)
+
+  Educational Programme:
+    - Curriculum-linked workshops for Key Stages 2-4
+    - Capacity: 50,000 students per year (1,000 school visits annually)
+    - Teacher resource packs aligned with National Curriculum
+    - Dedicated education coordinator (full-time, 3-year contract)
+    - Online learning platform with pre/post-visit materials
+
+  Marketing Partnership:
+    - Co-branded marketing materials (Tate and PolyArt logos)
+    - Joint press releases for installation launch and seasonal rotations
+    - Social media campaign support (target: 5 million impressions Year 1)
+    - Feature in Tate Members magazine (quarterly, 600,000 circulation)
+    - Inclusion in Tate annual report and exhibition programme
+
+  Maintenance and Technical Support:
+    - 24/7 on-call technical support
+    - Preventive maintenance schedule (weekly inspections)
+    - Hardware refresh cycle: Year 2 component upgrade
+    - Dedicated on-site technician during opening hours
+    - Remote monitoring dashboard with real-time diagnostics
+
+================================================================================
+3. DELIVERABLES
+================================================================================
+
+Phase 1 (Months 1-3): Design and Planning
+  - Detailed installation design (architectural and technical drawings)
+  - Tate curatorial review and approval
+  - Planning permission and building regulations compliance
+  - Content development: initial 12 polynomial art pieces
+  - Educational programme curriculum mapping
+
+Phase 2 (Months 4-8): Construction and Integration
+  - Chamber construction within Turbine Hall
+  - Hardware installation and calibration
+  - Software integration and testing
+  - Accessibility audit and compliance verification
+  - Staff training (Tate front-of-house and education teams)
+
+Phase 3 (Months 9-10): Testing and Soft Launch
+  - Technical stress testing (1,000 concurrent visitors)
+  - Staff familiarisation period
+  - Media preview events
+  - Soft launch for Tate Members (2-week period)
+
+Phase 4 (Months 11-12): Public Launch and Operation
+  - Grand opening event (VIP, press, stakeholders)
+  - Full public opening
+  - Seasonal content rotation: Quarter 1 (Month 12)
+  - Ongoing educational programme delivery
+
+================================================================================
+4. TIMELINE
+================================================================================
+
+  Month 1:     Contract execution, project kickoff
+  Month 2:     Design finalisation, planning submissions
+  Month 3:     Content development begins, procurement
+  Month 4-5:   Chamber construction, structural works
+  Month 6-7:   Hardware installation, software development
+  Month 8:     Integration testing, accessibility audit
+  Month 9:     Staff training, soft launch preparation
+  Month 10:    Media preview, Members soft launch
+  Month 11:    Public grand opening
+  Month 12:    First seasonal content rotation
+  Month 13-36: Ongoing operation, maintenance, content updates
+
+================================================================================
+5. INVESTMENT BREAKDOWN
+================================================================================
+
+  Installation Design and Construction:             GBP 400,000
+  Hardware (LED panels, sensors, audio):            GBP 200,000
+  Software Development and Content Creation:        GBP 150,000
+  Educational Programme (3 years):                  GBP 100,000
+  Marketing Partnership (3 years):                  GBP  50,000
+  Maintenance and Technical Support (3 years):      GBP  70,000
+  Project Management and Contingency:               GBP  30,000
+  -----------------------------------------------------------
+  TOTAL INVESTMENT:                                GBP 1,000,000
+
+================================================================================
+6. RETURN ON INVESTMENT
+================================================================================
+
+Projected 280% ROI over three years, derived from:
+
+  Ticket Sales Increase (15% uplift attributed to installation):
+    - Additional annual ticket revenue:   GBP 1,200,000 (over 3 years)
+
+  Merchandise Revenue (70/30 split, PolyArt/Tate):
+    - PolyArt share:                      GBP   300,000 (over 3 years)
+    - Tate share:                         GBP   700,000 (retained by Tate)
+
+  Educational Programme Fees:
+    - School visit fees (50,000 students): GBP   450,000 (over 3 years)
+
+  Brand Value Enhancement:
+    - Estimated brand equity increase:    GBP   500,000 (over 3 years)
+
+  Total Projected Return:               GBP 3,800,000
+  Net Return:                           GBP 2,800,000
+  ROI:                                  280%
+
+  Key Performance Indicators:
+    - 500,000+ visitors in Year 1
+    - 50,000 students engaged annually
+    - 95%+ visitor satisfaction rating
+    - 4 seasonal content rotations completed on schedule
+    - 10+ national media features in Year 1
+
+================================================================================
+7. TERMS AND CONDITIONS
+================================================================================
+
+  - Payment schedule: 30% on signing, 30% at Month 6,
+    20% at Month 10, 20% at Month 12
+  - Three-year operational agreement with annual renewal option
+  - Revenue sharing: 70/30 split on merchandise (PolyArt/Tate)
+  - Tate retains full editorial control over exhibition branding
+  - PolyArt retains intellectual property in software and algorithms
+  - Governing law: England and Wales
+
+================================================================================
+8. CONTACT
+================================================================================
+
+  PolyArt Technologies Ltd
+  Commercial Partnerships Division
+  Email: partnerships@polyart.tech
+  Telephone: +44 (0)20 7946 0002
+  Web: www.polyart.tech/tate
+
+================================================================================
+END OF PROPOSAL
+================================================================================

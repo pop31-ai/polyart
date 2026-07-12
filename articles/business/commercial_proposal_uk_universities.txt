@@ -1,0 +1,162 @@
+================================================================================
+COMMERCIAL PROPOSAL: POLYART FOR UK UNIVERSITIES
+Investment: GBP 1,000,000
+================================================================================
+
+Date:       12 July 2026
+Prepared:   PolyArt Technologies Ltd
+Target:     Russell Group Universities (Oxford, Cambridge, Imperial, UCL, Edinburgh)
+Reference:  PA-UK-UNI-2026-001
+Classification: Commercial in Confidence
+
+================================================================================
+1. EXECUTIVE SUMMARY
+================================================================================
+
+PolyArt Technologies Ltd is pleased to present this commercial proposal to
+five leading Russell Group universities for a comprehensive five-year
+partnership delivering the PolyArt platform across mathematics, computer
+science, and fine art departments. The total investment of GBP 1,000,000
+covers platform licensing, curriculum integration, teacher training, annual
+student competitions, research collaboration, and custom content creation
+aligned with UK curricula (GCSE, A-Level, and degree-level). This
+partnership is projected to deliver a return on investment of 350% through
+improved STEM enrolment, research grant acquisition, and industry
+partnerships over the five-year programme period.
+
+================================================================================
+2. SCOPE OF ENGAGEMENT
+================================================================================
+
+This proposal encompasses a five-year strategic partnership across ten
+university departments at five Russell Group institutions:
+
+  Partner Institutions:
+    - University of Oxford (Mathematics, Fine Art)
+    - University of Cambridge (Computer Science, Mathematics)
+    - Imperial College London (Computing, Mathematics)
+    - University College London (Fine Art, Computer Science)
+    - University of Edinburgh (Informatics, Mathematics)
+
+  Platform Licensing:
+    - Full PolyArt Enterprise licence for 10 departments
+    - Concurrent user capacity: 5,000 students per institution
+    - Cloud-hosted infrastructure with 99.9% uptime SLA
+    - Quarterly software updates and feature releases
+
+  Curriculum Integration:
+    - Bespoke content modules for GCSE Mathematics (polynomial visualisation)
+    - A-Level Further Mathematics supplements (graphical transformations)
+    - Degree-level research tools for computational art and data visualisation
+    - Cross-disciplinary modules bridging mathematics and fine art
+
+================================================================================
+3. DELIVERABLES
+================================================================================
+
+Phase 1 (Months 1-6): Foundation
+  - Platform deployment across all 10 departments
+  - Integration with existing university VLE systems (Canvas, Moodle)
+  - Initial content library: 200 pre-built polynomial art exercises
+  - Pilot cohorts at Oxford and Cambridge (500 students)
+
+Phase 2 (Months 7-12): Expansion
+  - Full rollout to all five institutions
+  - Teacher Training Programme: 200 instructors certified
+  - In-person workshops (5 days per cohort, 4 cohorts)
+  - Online certification pathway with CPD accreditation
+  - Annual Student Competition: Year 1 launch with GBP 10,000 prize pool
+
+Phase 3 (Months 13-18): Maturation
+  - Research Collaboration Framework established
+  - Joint publications pipeline (minimum 10 papers in Year 1)
+  - Industry partnership brokering (technology, finance, engineering sectors)
+  - Custom content creation: 500 additional exercises aligned to UK curricula
+  - Dedicated UK support team (3 engineers, 1 account manager)
+
+Phase 4 (Months 19-60): Sustained Growth
+  - Annual competition scaling to 2,000+ participants
+  - Expansion to additional departments and institutions
+  - Research grant applications (target: GBP 2,000,000 in external funding)
+  - International student recruitment marketing materials
+  - Biannual platform reviews and roadmap alignment
+
+================================================================================
+4. TIMELINE
+================================================================================
+
+  Month 1-2:    Contract execution, project kickoff, stakeholder meetings
+  Month 3-4:    Technical integration, VLE compatibility testing
+  Month 5-6:    Pilot deployment at Oxford and Cambridge
+  Month 7-9:    Teacher Training Programme Cohort 1 (100 instructors)
+  Month 10-12:  Full rollout, Year 1 Competition launch
+  Month 13-15:  Research Collaboration Framework operational
+  Month 16-18:  First joint publications submitted
+  Month 19-24:  Industry partnerships formalised
+  Month 25-60:  Sustained operation and expansion
+
+================================================================================
+5. INVESTMENT BREAKDOWN
+================================================================================
+
+  Platform Licensing (5 years, 10 departments):    GBP 350,000
+  Curriculum Integration & Content Creation:        GBP 200,000
+  Teacher Training Programme (200 instructors):     GBP 150,000
+  Annual Student Competitions (5 years):            GBP 100,000
+  Research Collaboration Framework:                  GBP  80,000
+  Dedicated UK Support Team (5 years):              GBP  90,000
+  Project Management & Administration:              GBP  30,000
+  -----------------------------------------------------------
+  TOTAL INVESTMENT:                                GBP 1,000,000
+
+================================================================================
+6. RETURN ON INVESTMENT
+================================================================================
+
+Projected 350% ROI over five years, derived from:
+
+  STEM Enrolment Growth (25% increase across partner departments):
+    - Additional tuition revenue:         GBP 1,500,000
+    - Research grant acquisition:         GBP 2,000,000
+    - Industry partnership revenue:       GBP 1,200,000
+
+  Cost Savings:
+    - Reduced manual content development: GBP   400,000
+    - Shared infrastructure efficiencies: GBP   200,000
+
+  Total Projected Return:               GBP 5,300,000
+  Net Return:                           GBP 4,300,000
+  ROI:                                  350%
+
+  Key Performance Indicators:
+    - 25% increase in STEM postgraduate applications
+    - Minimum 10 peer-reviewed publications
+    - 3+ industry partnership agreements
+    - 90%+ instructor satisfaction rating
+    - 85%+ student engagement rate
+
+================================================================================
+7. TERMS AND CONDITIONS
+================================================================================
+
+  - Payment schedule: 20% on contract signing, 30% at Month 6,
+    30% at Month 12, 20% at Month 18
+  - Five-year licence with annual review clauses
+  - Intellectual property: jointly owned for co-created content
+  - Confidentiality: mutual NDA covering proprietary algorithms
+  - Termination: 12-month notice period after initial 24-month term
+  - Governing law: England and Wales
+
+================================================================================
+8. CONTACT
+================================================================================
+
+  PolyArt Technologies Ltd
+  Commercial Partnerships Division
+  Email: partnerships@polyart.tech
+  Telephone: +44 (0)20 7946 0001
+  Web: www.polyart.tech/universities
+
+================================================================================
+END OF PROPOSAL
+================================================================================

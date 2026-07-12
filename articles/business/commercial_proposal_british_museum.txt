@@ -1,0 +1,214 @@
+================================================================================
+COMMERCIAL PROPOSAL: POLYART BRITISH MUSEUM HERITAGE PROJECT
+Investment: GBP 1,000,000
+================================================================================
+
+Date:       12 July 2026
+Prepared:   PolyArt Technologies Ltd
+Target:     The British Museum
+Reference:  PA-BM-2026-001
+Classification: Commercial in Confidence
+
+================================================================================
+1. EXECUTIVE SUMMARY
+================================================================================
+
+PolyArt Technologies Ltd proposes a landmark heritage project at the
+British Museum, combining polynomial reconstruction of damaged artefacts
+with interactive three-dimensional exhibits of the Parthenon marbles and
+Egyptian sculptures. The project encompasses a digital preservation archive,
+public engagement programme, school workshops reaching 100,000 students,
+an online platform for global access, a research partnership with the UCL
+Institute of Archaeology, and a 24-month delivery timeline. The total
+investment of GBP 1,000,000 is projected to deliver a return on investment
+of 300% through increased tourism, research funding, and educational
+partnerships.
+
+================================================================================
+2. SCOPE OF ENGAGEMENT
+================================================================================
+
+This proposal encompasses the application of PolyArt's polynomial
+reconstruction technology to the British Museum's world-renowned collections,
+creating interactive digital exhibits and a comprehensive preservation
+archive.
+
+  Polynomial Reconstruction of Damaged Artefacts:
+    - 30 damaged artefacts selected for digital reconstruction
+    - Polynomial modelling of original forms from fragmentary evidence
+    - Side-by-side display: original fragments alongside digital restoration
+    - Scholarly verification by Museum curators and external experts
+    - High-resolution 3D models (sub-millimetre accuracy)
+
+  Interactive Three-Dimensional Exhibits:
+    - Parthenon Marbles Gallery: 4 interactive stations
+      * Full-scale digital reconstruction of the East Pediment
+      * Touchscreen exploration of individual figures and reliefs
+      * Augmented reality overlay viewing original paint schemes
+    - Egyptian Sculpture Gallery: 3 interactive stations
+      * Polynomial reconstruction of the Rosetta Stone (original form)
+      * Interactive 3D model of the Great Sphinx fragment
+      * Digital assembly of dismembered statuary
+    - Assyrian Gallery: 2 interactive stations
+      * Reconstruction of the Palace of Ashurbanipal reliefs
+      * Virtual walkthrough of reconstructed throne room
+
+  Digital Preservation Archive:
+    - Comprehensive 3D scanning of 500 artefacts
+    - Open-access digital repository (Creative Commons licensing)
+    - Metadata standards aligned with CIDOC-CRM
+    - Long-term digital preservation (25-year commitment)
+    - API access for researchers and educators
+
+  Public Engagement Programme:
+    - Daily public demonstrations (2 sessions, 30 minutes each)
+    - Monthly "Behind the Scenes" talks (polynomial reconstruction process)
+    - Family workshops during school holidays (weekly)
+    - Accessibility programme: tactile 3D-printed replicas, audio descriptions
+    - Volunteer docent training (50 volunteers)
+
+  School Workshops:
+    - Curriculum-linked workshops for Key Stages 1-5
+    - Capacity: 100,000 students over 24 months (208 workshops/year)
+    - Teacher resource packs and pre/post-visit materials
+    - Student competition: "Reconstruct the Past" (national)
+    - Online learning modules for remote schools
+
+  Online Platform Access:
+    - Virtual exhibition accessible worldwide
+    - 3D artefact viewer (browser-based, no plugin required)
+    - Educational resources library
+    - Research data portal
+    - Multilingual support (English, French, German, Spanish, Mandarin, Arabic)
+
+  Research Partnership:
+    - Formal partnership with UCL Institute of Archaeology
+    - Joint research projects (minimum 5 over 24 months)
+    - PhD studentships (3 funded positions)
+    - Conference presentations (target: 8 papers)
+    - Open-access publication of all research findings
+
+================================================================================
+3. DELIVERABLES
+================================================================================
+
+Phase 1 (Months 1-6): Digitisation and Planning
+  - 3D scanning of 500 artefacts (priority: 30 reconstruction candidates)
+  - Polynomial modelling of 30 damaged artefacts
+  - Exhibition design and gallery layout planning
+  - Research partnership agreement with UCL
+  - Educational programme curriculum mapping
+
+Phase 2 (Months 7-12): Development and Installation
+  - Interactive exhibit hardware installation
+  - Software development and content creation
+  - Digital preservation archive platform launch
+  - School workshop programme pilot (20 schools)
+  - Public engagement programme soft launch
+
+Phase 3 (Months 13-18): Full Operation
+  - Full public opening of interactive exhibits
+  - Complete school workshop programme operational
+  - Online platform global launch
+  - Research projects underway
+  - Public engagement programme fully operational
+
+Phase 4 (Months 19-24): Consolidation and Legacy
+  - Archive expansion to 500 artefacts
+  - Research publications submitted
+  - Impact assessment and reporting
+  - Sustainability planning for ongoing operation
+  - International partnership discussions (museums abroad)
+
+================================================================================
+4. TIMELINE
+================================================================================
+
+  Month 1:     Contract execution, project kickoff
+  Month 2-3:   3D scanning begins, artefact selection finalised
+  Month 4-6:   Polynomial modelling, exhibition design
+  Month 7-8:   Hardware installation, software development
+  Month 9-10:  Content creation, testing, staff training
+  Month 11-12: Pilot school workshops, soft launch
+  Month 13:    Full public opening
+  Month 14-18: Full operation, research projects active
+  Month 19-22: Archive expansion, publications
+  Month 23-24: Impact assessment, sustainability planning
+
+================================================================================
+5. INVESTMENT BREAKDOWN
+================================================================================
+
+  3D Digitisation (500 artefacts):                  GBP 150,000
+  Polynomial Reconstruction (30 artefacts):          GBP 120,000
+  Interactive Exhibit Hardware and Installation:     GBP 250,000
+  Software Development and Content Creation:         GBP 180,000
+  Digital Preservation Archive Platform:             GBP 100,000
+  School Workshops (24 months):                      GBP  80,000
+  Public Engagement Programme (24 months):           GBP  50,000
+  Research Partnership (UCL, 24 months):             GBP  40,000
+  Project Management and Administration:             GBP  30,000
+  -----------------------------------------------------------
+  TOTAL INVESTMENT:                                GBP 1,000,000
+
+================================================================================
+6. RETURN ON INVESTMENT
+================================================================================
+
+Projected 300% ROI over 24 months, derived from:
+
+  Tourism Impact:
+    - 10% increase in Museum attendance (500,000 additional visitors)
+    - Additional ticket and gift shop revenue:     GBP 1,500,000
+
+  Research Funding:
+    - UKRI and ERC grants (target: 3 applications)
+    - Projected research income:                   GBP   800,000
+
+  Educational Partnerships:
+    - School workshop fees and licensing:           GBP   400,000
+    - Online platform subscriptions (educational): GBP   200,000
+
+  Digital Archive Licensing:
+    - Commercial licensing of 3D models:            GBP   300,000
+    - Museum replica production partnerships:      GBP   200,000
+
+  Total Projected Return:               GBP 3,400,000
+  Net Return:                           GBP 2,400,000
+  ROI:                                  300%
+
+  Key Performance Indicators:
+    - 500 artefacts digitised to archival standard
+    - 30 damaged artefacts digitally reconstructed
+    - 100,000 students engaged through workshops
+    - 500,000 additional Museum visitors
+    - 5+ joint research publications
+    - 100,000+ online platform users in Year 1
+    - 95%+ public satisfaction rating
+
+================================================================================
+7. TERMS AND CONDITIONS
+================================================================================
+
+  - Payment schedule: 20% on signing, 25% at Month 6,
+    25% at Month 12, 20% at Month 18, 10% at Month 24
+  - Museum retains curatorial control over artefact interpretation
+  - PolyArt retains intellectual property in reconstruction algorithms
+  - Digital archive: Creative Commons BY-NC-SA 4.0 licensing
+  - Research partnership: jointly owned publications
+  - Long-term preservation: 25-year digital archive commitment
+  - Governing law: England and Wales
+
+================================================================================
+8. CONTACT
+================================================================================
+
+  PolyArt Technologies Ltd
+  Commercial Partnerships Division
+  Email: partnerships@polyart.tech
+  Telephone: +44 (0)20 7946 0004
+  Web: www.polyart.tech/britishmuseum
+
+================================================================================
+END OF PROPOSAL
+================================================================================

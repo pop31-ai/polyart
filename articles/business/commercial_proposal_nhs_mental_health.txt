@@ -1,0 +1,239 @@
+================================================================================
+COMMERCIAL PROPOSAL: POLYART NHS MENTAL HEALTH THERAPY
+Investment: GBP 1,000,000
+================================================================================
+
+Date:       12 July 2026
+Prepared:   PolyArt Technologies Ltd
+Target:     NHS Trusts and Mental Health Organisations
+Reference:  PA-NHS-2026-001
+Classification: Commercial in Confidence
+
+================================================================================
+1. EXECUTIVE SUMMARY
+================================================================================
+
+PolyArt Technologies Ltd proposes the deployment of a therapeutic polynomial
+art platform across 20 NHS trusts and mental health organisations. The
+platform provides evidence-based art therapy modules for anxiety, depression,
+PTSD, and dementia, with integrated patient progress tracking, clinician
+training for 500 therapists, clinical trials support for three studies,
+research publication partnerships, patient home access licenses, and full
+integration with NHS digital infrastructure. The total investment of
+GBP 1,000,000 covers 18 months of deployment and 12 months of clinical
+trials. This programme is projected to deliver a return on investment of
+400% through reduced treatment costs, improved patient outcomes, and NICE
+accreditation.
+
+================================================================================
+2. SCOPE OF ENGAGEMENT
+================================================================================
+
+This proposal encompasses the end-to-end deployment of a clinically validated
+digital therapeutics platform across the NHS, combining polynomial art
+creation with established art therapy methodologies.
+
+  Therapeutic Platform for 20 NHS Trusts:
+    - Cloud-hosted platform (NHS Data Security and Protection Toolkit compliant)
+    - Integration with NHS Spine and clinical systems (HL7 FHIR)
+    - Hosted on NHS-approved cloud infrastructure (UK data residency)
+    - 20 trust deployments across England (mental health and acute trusts)
+    - Concurrent capacity: 2,000 patients and 500 clinicians
+
+  Art Therapy Modules:
+    - Anxiety Module: polynomial colour therapy, guided breathing visualisation,
+     渐进式 pattern complexity, session-by-session progression
+    - Depression Module: mood-responsive polynomial generation, positive
+      reinforcement algorithms, social sharing (opt-in), achievement tracking
+    - PTSD Module: trauma-informed design, controlled exposure through
+      polynomial abstraction, therapist-controlled parameters, safety protocols
+    - Dementia Module: memory-triggering polynomial patterns, familiar colour
+      palettes, simplified interface, carer-assisted mode, cognitive
+      stimulation exercises
+    - Each module: 12 structured sessions, 45-60 minutes per session
+    - Evidence-based design informed by NICE guidelines and clinical literature
+
+  Patient Progress Tracking:
+    - Standardised outcome measures (PHQ-9, GAD-7, PCL-5, MMSE)
+    - Automated scoring and trend visualisation
+    - Clinician dashboard with real-time patient monitoring
+    - Alert system for deterioration or non-engagement
+    - Monthly outcome reports for trust management
+
+  Clinician Training Programme:
+    - 500 therapists trained across 20 trusts
+    - Accredited training programme (CPD points: 20 per therapist)
+    - In-person workshops (3 days per cohort, 10 cohorts)
+    - Online learning management system with certification
+    - Ongoing clinical supervision support (quarterly webinars)
+
+  Clinical Trials Support:
+    - 3 clinical trials designed and supported
+    - Trial 1: Randomised Controlled Trial (RCT) for anxiety (n=200)
+    - Trial 2: Feasibility study for depression (n=100)
+    - Trial 3: Pilot study for dementia (n=60)
+    - Statistical analysis support
+    - Ethical approval facilitation
+    - Patient recruitment materials and processes
+
+  Research Publication Partnership:
+    - Joint publications in peer-reviewed journals
+    - Target: 6 publications over 24 months
+    - Open-access publication fees covered
+    - Conference presentations (target: 4 conferences)
+    - Plain English summaries for patients and public
+
+  Patient Home Access Licences:
+    - 5,000 home access licences for patient use
+    - Tablet lending programme (500 devices for patients without access)
+    - Carer portal for family involvement (opt-in)
+    - Telehealth integration for remote therapy sessions
+    - 24/7 technical support helpline for patients
+
+  NHS Digital Infrastructure Integration:
+    - NHS Smart Card authentication
+    - Integration with Electronic Patient Records (EPR)
+    - NHS App compatible patient interface
+    - Data shared via NHS Spine (HL7 FHIR R4)
+    - Cyber Essentials Plus and ISO 27001 compliant
+    - NHS Data Security and Protection Toolkit (DSPT) certified
+
+================================================================================
+3. DELIVERABLES
+================================================================================
+
+Phase 1 (Months 1-3): Platform Development and Certification
+  - Platform development and clinical validation
+  - NHS DSPT compliance certification
+  - Cyber Essentials Plus certification
+  - Clinical advisory board established
+  - Ethics approval for clinical trials
+
+Phase 2 (Months 4-9): Pilot Deployment
+  - 5 trust pilot deployment
+  - Clinician training Cohort 1 (125 therapists)
+  - Patient recruitment for pilot study
+  - Platform refinement based on clinical feedback
+  - Interim outcome data collection
+
+Phase 3 (Months 10-18): Full Rollout
+  - Remaining 15 trusts deployed
+  - Clinician training Cohorts 2-10 (375 therapists)
+  - Full clinical trials launched (3 studies)
+  - Home access licences distributed
+  - Monthly outcome reporting operational
+
+Phase 4 (Months 19-30): Trials and Accreditation
+  - Clinical trials completed
+  - Data analysis and publication
+  - NICE accreditation application
+  - Health Technology Assessment (HTA) submission
+  - National rollout planning
+
+================================================================================
+4. TIMELINE
+================================================================================
+
+  Month 1:      Contract execution, clinical advisory board established
+  Month 2-3:    Platform development, NHS compliance certification
+  Month 4-5:    Pilot trust deployment (5 trusts)
+  Month 6-7:    Clinician training Cohort 1, patient recruitment
+  Month 8-9:    Pilot data collection, platform refinement
+  Month 10-12:  Full rollout begins (15 additional trusts)
+  Month 13-15:  Clinical trials fully operational
+  Month 16-18:  Full rollout complete, all 20 trusts operational
+  Month 19-24:  Clinical trials completed, data analysis
+  Month 25-27:  Publications submitted, NICE application
+  Month 28-30:  HTA submission, national rollout planning
+
+================================================================================
+5. INVESTMENT BREAKDOWN
+================================================================================
+
+  Platform Development and Clinical Validation:     GBP 200,000
+  NHS Compliance and Certification:                 GBP  50,000
+  Trust Deployment (20 trusts):                     GBP 200,000
+  Clinician Training (500 therapists):              GBP 150,000
+  Clinical Trials Support (3 studies):              GBP 150,000
+  Patient Home Access (5,000 licences):             GBP 100,000
+  Research Publication Partnership:                 GBP  50,000
+  Ongoing Support and Maintenance (24 months):      GBP  70,000
+  Project Management and Administration:            GBP  30,000
+  -----------------------------------------------------------
+  TOTAL INVESTMENT:                                GBP 1,000,000
+
+================================================================================
+6. RETURN ON INVESTMENT
+================================================================================
+
+Projected 400% ROI over 30 months, derived from:
+
+  Reduced Treatment Costs:
+    - 20% reduction in average treatment length (anxiety and depression)
+    - Cost savings per patient: GBP 800
+    - 5,000 patients treated over 24 months
+    - Total savings: GBP 4,000,000
+
+  Improved Patient Outcomes:
+    - 30% faster recovery times
+    - Reduced re-referral rates (15% reduction)
+    - Reduced hospital admissions (10% reduction)
+    - Estimated savings: GBP 1,500,000
+
+  NICE Accreditation and HTA:
+    - Positive NICE guidance enables national adoption
+    - Potential NHS England commissioning contract
+    - Estimated contract value: GBP 5,000,000 (Year 3-5)
+
+  Research Funding:
+    - NIHR and MRC grants (target: 2 applications)
+    - Projected research income: GBP 500,000
+
+  Licensing and Scaling:
+    - International licensing opportunities
+    - Private sector healthcare partnerships
+    - Estimated licensing revenue: GBP 1,000,000
+
+  Total Projected Return:               GBP 12,000,000
+  Net Return:                           GBP 11,000,000
+  ROI:                                  400% (conservative, based on NHS savings alone)
+
+  Key Performance Indicators:
+    - 20 NHS trusts fully operational
+    - 500 clinicians trained and certified
+    - 5,000 patients treated with home access
+    - 3 clinical trials completed
+    - 6 peer-reviewed publications
+    - 30% improvement in clinical outcomes (PHQ-9, GAD-7)
+    - NICE positive guidance achieved
+    - 90%+ clinician satisfaction rating
+    - 85%+ patient engagement rate
+
+================================================================================
+7. TERMS AND CONDITIONS
+================================================================================
+
+  - Payment schedule: 15% on signing, 25% at Month 6,
+    25% at Month 12, 20% at Month 18, 15% at Month 24
+  - NHS data processing agreement (Article 28 GDPR compliant)
+  - Patient data remains NHS property at all times
+  - PolyArt retains intellectual property in platform algorithms
+  - Clinical trial data: jointly owned by NHS trusts and PolyArt
+  - NICE accreditation: PolyArt leads application, NHS trusts provide evidence
+  - Termination: 6-month notice period
+  - Governing law: England and Wales
+  - Dispute resolution: NHS Dispute Resolution Procedure
+
+================================================================================
+8. CONTACT
+================================================================================
+
+  PolyArt Technologies Ltd
+  Commercial Partnerships Division
+  Email: partnerships@polyart.tech
+  Telephone: +44 (0)20 7946 0005
+  Web: www.polyart.tech/nhs
+
+================================================================================
+END OF PROPOSAL
+================================================================================
