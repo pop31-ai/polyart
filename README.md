@@ -21,8 +21,9 @@ polyart/
   polyart_lang.py         # Meta-Language DSL: tokenizer, parser, interpreter (50+ commands)
   polyart_curves.py       # Curves Library: body systems - skeletal, muscle, skin, veins, nerves, limbs, head, figure
   polyart_flowers.py      # Botanical Art: flowers (rose, lily, daisy, tulip, sunflower, orchid, lotus), plants, compositions
+  polyart_spqr.py         # SPQR Roman Architecture: columns, arches, Piranesi impossible geometry, Roman forum, Colosseum
   examples/               # 13 showcase demos + 3 .polyart scripts
-  articles/               # 12 technical articles
+  articles/               # 32 technical articles
   CONTRIBUTORS.md         # 30+ team members
   CHANGELOG.md            # Version history
 ```
@@ -42,6 +43,7 @@ polyart/
 | `polyart_lang` | Meta-language DSL | Tokenizer, Parser, Interpreter - 50+ built-in commands |
 | `polyart_curves` | Body system curves | SkeletalCurves, MuscleCurves, SkinCurves, VeinCurves, NerveCurves, LimbCurves, HeadCurves, FigureCurves |
 | `polyart_flowers` | Botanical art | FlowerCurves, PlantCurves, CompositionCurves |
+| `polyart_spqr` | SPQR Roman architecture & Piranesi | RomanOrders, RomanArch, PiranesiArchitecture, SPQRForum, SPQRComposition |
 
 ## Quick Start
 
