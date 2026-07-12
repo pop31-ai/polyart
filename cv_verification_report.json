@@ -1,0 +1,329 @@
+[
+  {
+    "file": "amphora_art.png",
+    "rarity": 59.247282330028604,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.004,
+      "symmetry": 0.977,
+      "fractal_dim": 1.999,
+      "texture": 0.075,
+      "color_diversity": 0.097,
+      "golden_ratio": 0.797,
+      "polynomial_smoothness": 0.436,
+      "curvature_energy": 0.005
+    }
+  },
+  {
+    "file": "apollo_polyart_render.png",
+    "rarity": 55.33257156940468,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.005,
+      "symmetry": 0.902,
+      "fractal_dim": 2.006,
+      "texture": 0.151,
+      "color_diversity": 0.237,
+      "golden_ratio": 0.618,
+      "polynomial_smoothness": 0.367,
+      "curvature_energy": 0.004
+    }
+  },
+  {
+    "file": "apollonian_faces.png",
+    "rarity": 57.67225011944984,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.004,
+      "symmetry": 0.899,
+      "fractal_dim": 2.007,
+      "texture": 0.117,
+      "color_diversity": 0.166,
+      "golden_ratio": 0.787,
+      "polynomial_smoothness": 0.384,
+      "curvature_energy": 0.005
+    }
+  },
+  {
+    "file": "bio_biomech.png",
+    "rarity": 56.730567867188284,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.003,
+      "symmetry": 0.984,
+      "fractal_dim": 2.007,
+      "texture": 0.079,
+      "color_diversity": 0.072,
+      "golden_ratio": 0.618,
+      "polynomial_smoothness": 0.469,
+      "curvature_energy": 0.003
+    }
+  },
+  {
+    "file": "bio_growth.png",
+    "rarity": 62.646127876745695,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.004,
+      "symmetry": 0.995,
+      "fractal_dim": 2.007,
+      "texture": 0.078,
+      "color_diversity": 0.054,
+      "golden_ratio": 0.618,
+      "polynomial_smoothness": 0.885,
+      "curvature_energy": 0.005
+    }
+  },
+  {
+    "file": "bio_turing.png",
+    "rarity": 67.31731111754026,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.007,
+      "symmetry": 0.94,
+      "fractal_dim": 2.008,
+      "texture": 0.32,
+      "color_diversity": 0.373,
+      "golden_ratio": 0.817,
+      "polynomial_smoothness": 0.789,
+      "curvature_energy": 0.003
+    }
+  },
+  {
+    "file": "bio_variants.png",
+    "rarity": 61.89047263668961,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.005,
+      "symmetry": 0.969,
+      "fractal_dim": 2.008,
+      "texture": 0.148,
+      "color_diversity": 0.205,
+      "golden_ratio": 0.817,
+      "polynomial_smoothness": 0.52,
+      "curvature_energy": 0.004
+    }
+  },
+  {
+    "file": "caricature.png",
+    "rarity": 52.8119934053525,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.002,
+      "symmetry": 0.99,
+      "fractal_dim": 2.006,
+      "texture": 0.077,
+      "color_diversity": 0.115,
+      "golden_ratio": 0.451,
+      "polynomial_smoothness": 0.362,
+      "curvature_energy": 0.002
+    }
+  },
+  {
+    "file": "demo_composition.png",
+    "rarity": 60.96190041373837,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.002,
+      "symmetry": 0.972,
+      "fractal_dim": 2.008,
+      "texture": 0.078,
+      "color_diversity": 0.099,
+      "golden_ratio": 0.915,
+      "polynomial_smoothness": 0.418,
+      "curvature_energy": 0.001
+    }
+  },
+  {
+    "file": "demo_geometric_primitives.png",
+    "error": "not a PNG file"
+  },
+  {
+    "file": "demo_mathematical_surfaces.png",
+    "error": "not a PNG file"
+  },
+  {
+    "file": "demo_rose.png",
+    "rarity": 52.89912095158746,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.001,
+      "symmetry": 0.926,
+      "fractal_dim": 2.004,
+      "texture": 0.03,
+      "color_diversity": 0.04,
+      "golden_ratio": 0.642,
+      "polynomial_smoothness": 0.286,
+      "curvature_energy": 0.001
+    }
+  },
+  {
+    "file": "demo_spqr_3d.png",
+    "error": "not a PNG file"
+  },
+  {
+    "file": "emperor_mathematicus.png",
+    "rarity": 52.184909950710534,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.002,
+      "symmetry": 0.978,
+      "fractal_dim": 1.971,
+      "texture": 0.145,
+      "color_diversity": 0.137,
+      "golden_ratio": 0.338,
+      "polynomial_smoothness": 0.455,
+      "curvature_energy": 0.002
+    }
+  },
+  {
+    "file": "emperor_portrait.png",
+    "rarity": 48.21721040962353,
+    "classification": "BORDERLINE",
+    "features": {
+      "edge_density": 0.002,
+      "symmetry": 0.994,
+      "fractal_dim": 2.01,
+      "texture": 0.084,
+      "color_diversity": 0.115,
+      "golden_ratio": 0.384,
+      "polynomial_smoothness": 0.103,
+      "curvature_energy": 0.002
+    }
+  },
+  {
+    "file": "lines_composition.png",
+    "rarity": 56.98063206553728,
+    "classification": "LIVING",
+    "features": {
+      "edge_density": 0.02,
+      "symmetry": 0.911,
+      "fractal_dim": 1.839,
+      "texture": 0.509,
+      "color_diversity": 0.752,
+      "golden_ratio": 0.618,
+      "polynomial_smoothness": 0.184,
+      "curvature_energy": 0.012
+    }
+  },
+  {
+    "file": "parthenon_art.png",
+    "rarity": 68.16417254241216,
+    "classification": "BORDERLINE",
+    "features": {
+      "edge_density": 0.01,
+      "symmetry": 0.966,
+      "fractal_dim": 2.008,
+      "texture": 0.32,
+      "color_diversity": 0.758,
+      "golden_ratio": 0.868,
+      "polynomial_smoothness": 0.558,
+      "curvature_energy": 0.004
+    }
+  },
+  {
+    "file": "porcelain_figurines.png",
+    "rarity": 58.679319125645016,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.002,
+      "symmetry": 0.991,
+      "fractal_dim": 2.006,
+      "texture": 0.052,
+      "color_diversity": 0.055,
+      "golden_ratio": 0.736,
+      "polynomial_smoothness": 0.479,
+      "curvature_energy": 0.002
+    }
+  },
+  {
+    "file": "scene_anatomy.png",
+    "rarity": 60.858034497684656,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.002,
+      "symmetry": 0.969,
+      "fractal_dim": 2.007,
+      "texture": 0.096,
+      "color_diversity": 0.117,
+      "golden_ratio": 0.467,
+      "polynomial_smoothness": 0.936,
+      "curvature_energy": 0.001
+    }
+  },
+  {
+    "file": "scene_game.png",
+    "rarity": 65.51710403630938,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.007,
+      "symmetry": 0.942,
+      "fractal_dim": 2.007,
+      "texture": 0.222,
+      "color_diversity": 0.256,
+      "golden_ratio": 0.618,
+      "polynomial_smoothness": 1.0,
+      "curvature_energy": 0.004
+    }
+  },
+  {
+    "file": "scene_piranesi.png",
+    "rarity": 59.974891429124824,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.021,
+      "symmetry": 0.911,
+      "fractal_dim": 1.675,
+      "texture": 0.308,
+      "color_diversity": 0.337,
+      "golden_ratio": 0.817,
+      "polynomial_smoothness": 0.573,
+      "curvature_energy": 0.021
+    }
+  },
+  {
+    "file": "scene_roman.png",
+    "rarity": 63.87670783349748,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.009,
+      "symmetry": 0.933,
+      "fractal_dim": 2.008,
+      "texture": 0.178,
+      "color_diversity": 0.17,
+      "golden_ratio": 0.817,
+      "polynomial_smoothness": 0.712,
+      "curvature_energy": 0.01
+    }
+  },
+  {
+    "file": "vitruvian_da_vinci.png",
+    "rarity": 59.235104875707556,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.003,
+      "symmetry": 0.967,
+      "fractal_dim": 2.004,
+      "texture": 0.064,
+      "color_diversity": 0.104,
+      "golden_ratio": 0.952,
+      "polynomial_smoothness": 0.261,
+      "curvature_energy": 0.003
+    }
+  },
+  {
+    "file": "weary_emperor.png",
+    "rarity": 59.76290149045657,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.002,
+      "symmetry": 0.995,
+      "fractal_dim": 2.01,
+      "texture": 0.09,
+      "color_diversity": 0.103,
+      "golden_ratio": 0.384,
+      "polynomial_smoothness": 0.93,
+      "curvature_energy": 0.002
+    }
+  }
+]
