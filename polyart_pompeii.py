@@ -1656,6 +1656,828 @@ class PompeiiArtGenerator:
 
 
 # ======================================================================
+# 8. PompeiiWallPainting - Full wall painting reconstruction
+# ======================================================================
+
+class PompeiiWallPainting:
+    """Reconstruct full Pompeian wall paintings (First through Fourth Style)."""
+
+    def first_style(self, width, height):
+        """First Style (Incrustation) - imitation marble blocks."""
+        fig, ax = _fig()
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+        block_h = height / 8
+        block_w = width / 5
+        for row in range(8):
+            for col in range(5):
+                bx = col * block_w + (row % 2) * block_w * 0.5
+                by = row * block_h
+                colors = [POMPEIAN_RED, POMPEIAN_OCHRE, POMPEIAN_WHITE, POMPEIAN_BLUE, POMPEIAN_GREEN]
+                c = colors[(row + col) % 5]
+                ax.add_patch(mpatches.Rectangle((bx, by), block_w * 0.95, block_h * 0.9,
+                                                facecolor=c, edgecolor=POMPEIAN_WHITE,
+                                                linewidth=0.15, alpha=0.15))
+        self._add_dado(ax, width, height)
+        return fig, ax
+
+    def second_style(self, width, height):
+        """Second Style (Architectural) - painted architecture with depth."""
+        fig, ax = _fig()
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+        # large columns
+        for cx_ in [width * 0.15, width * 0.5, width * 0.85]:
+            ax.plot([cx_, cx_], [height * 0.1, height * 0.9],
+                    color=POMPEIAN_CREAM, lw=0.4, alpha=0.4)
+            # capital
+            cap_w = width * 0.04
+            ax.plot([cx_ - cap_w, cx_ + cap_w], [height * 0.9, height * 0.9],
+                    color=POMPEIAN_CREAM, lw=0.3, alpha=0.35)
+        # receding walls
+        for t_ in np.linspace(0, 1, 10):
+            inset = t_ * width * 0.12
+            rect = mpatches.Rectangle((inset, height * 0.15), width - 2 * inset, height * 0.7,
+                                       facecolor="none", edgecolor=POMPEIAN_OCHRE,
+                                       linewidth=0.1, alpha=0.15 + t_ * 0.1)
+            ax.add_patch(rect)
+        self._add_dado(ax, width, height)
+        return fig, ax
+
+    def third_style(self, width, height):
+        """Third Style (Ornate) - flat surfaces with delicate ornaments."""
+        fig, ax = _fig()
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+        # center panel
+        pw = width * 0.4
+        ph = height * 0.6
+        px = (width - pw) / 2
+        py = height * 0.2
+        ax.add_patch(mpatches.Rectangle((px, py), pw, ph,
+                                        facecolor=POMPEIAN_BLACK, edgecolor=POMPEIAN_GOLD,
+                                        linewidth=0.3, alpha=0.2))
+        # thin candelabra on sides
+        for cx_ in [px - width * 0.05, px + pw + width * 0.05]:
+            ax.plot([cx_, cx_], [py, py + ph], color=POMPEIAN_GOLD, lw=0.15, alpha=0.35)
+            for fy_ in np.linspace(py + ph * 0.1, py + ph * 0.9, 5):
+                theta = np.linspace(0, 2 * np.pi, 20)
+                ax.plot(cx_ + 0.01 * width * np.cos(theta),
+                        fy_ + 0.01 * width * np.sin(theta),
+                        color=POMPEIAN_GOLD, lw=0.1, alpha=0.3)
+        self._add_dado(ax, width, height)
+        return fig, ax
+
+    def fourth_style(self, width, height):
+        """Fourth Style (Fantastic) - theatrical, architectural illusions."""
+        fig, ax = _fig()
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+        # theatrical columns with garlands
+        for cx_ in [width * 0.1, width * 0.35, width * 0.65, width * 0.9]:
+            ax.plot([cx_, cx_], [height * 0.1, height * 0.85],
+                    color=POMPEIAN_CREAM, lw=0.35, alpha=0.4)
+            # twisted decoration
+            twist_t = np.linspace(0, 8 * np.pi, 100)
+            twist_x = cx_ + 0.005 * width * np.sin(twist_t)
+            twist_y = np.linspace(height * 0.15, height * 0.8, 100)
+            ax.plot(twist_x, twist_y, color=POMPEIAN_GOLD, lw=0.1, alpha=0.25)
+        # upper balcony
+        ax.plot([0, width], [height * 0.85, height * 0.85], color=POMPEIAN_CREAM, lw=0.3, alpha=0.35)
+        # arches
+        arch_t = np.linspace(0, np.pi, 80)
+        for lx, rx in [(0.1, 0.35), (0.35, 0.65), (0.65, 0.9)]:
+            mid = (lx + rx) / 2
+            half = (rx - lx) / 2
+            ax.plot(width * mid + width * half * 0.9 * np.cos(arch_t),
+                    height * 0.85 + 0.06 * height * np.sin(arch_t),
+                    color=POMPEIAN_GOLD, lw=0.2, alpha=0.3)
+        # central window/panel with figure
+        pw = width * 0.2
+        px = (width - pw) / 2
+        ax.add_patch(mpatches.Rectangle((px, height * 0.4), pw, height * 0.35,
+                                        facecolor=POMPEIAN_BLUE, edgecolor=POMPEIAN_GOLD,
+                                        linewidth=0.2, alpha=0.1))
+        self._add_dado(ax, width, height)
+        return fig, ax
+
+    def _add_dado(self, ax, width, height):
+        """Add decorative dado (base) to wall painting."""
+        ax.plot([0, width], [height * 0.1, height * 0.1], color=POMPEIAN_OCHRE, lw=0.3, alpha=0.35)
+        self.meander = PompeiiDecorations()
+        self.meander.meander_pattern(ax, 0, height * 0.04, width, height * 0.04, POMPEIAN_GOLD)
+
+
+# ======================================================================
+# 9. PompeiiMosaicGenerator - Mosaic patterns
+# ======================================================================
+
+class PompeiiMosaicGenerator:
+    """Generate Pompeian mosaic patterns - tessellated geometric and figurative."""
+
+    def geometric_floor(self, width, height, cell_size_ratio=0.08):
+        """Geometric mosaic floor pattern."""
+        fig, ax = _fig()
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+        cell = min(width, height) * cell_size_ratio
+        cols = int(width / cell)
+        rows = int(height / cell)
+        for r in range(rows):
+            for c in range(cols):
+                cx_ = c * cell
+                cy_ = r * cell
+                if (r + c) % 3 == 0:
+                    c_color = POMPEIAN_WHITE
+                elif (r + c) % 3 == 1:
+                    c_color = POMPEIAN_RED
+                else:
+                    c_color = POMPEIAN_BLACK
+                ax.add_patch(mpatches.Rectangle((cx_, cy_), cell * 0.95, cell * 0.95,
+                                                facecolor=c_color, edgecolor=POMPEIAN_OCHRE,
+                                                linewidth=0.05, alpha=0.12))
+        return fig, ax
+
+    def diamond_pattern(self, width, height):
+        """Diamond tessellation mosaic."""
+        fig, ax = _fig()
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+        cell = min(width, height) * 0.06
+        for r in range(int(height / cell) + 1):
+            for c in range(int(width / cell) + 1):
+                cx_ = c * cell + (r % 2) * cell * 0.5
+                cy_ = r * cell
+                diamond = np.array([
+                    [cx_, cy_ + cell * 0.5],
+                    [cx_ + cell * 0.5, cy_],
+                    [cx_ + cell, cy_ + cell * 0.5],
+                    [cx_ + cell * 0.5, cy_ + cell],
+                ])
+                colors = [POMPEIAN_WHITE, POMPEIAN_BLUE, POMPEIAN_RED, POMPEIAN_OCHRE]
+                ax.fill(diamond[:, 0], diamond[:, 1],
+                        color=colors[(r + c) % 4], alpha=0.1)
+                ax.plot(diamond[:, 0], diamond[:, 1],
+                        color=POMPEIAN_OCHRE, lw=0.08, alpha=0.2)
+        return fig, ax
+
+    def star_pattern(self, width, height):
+        """Star/cross tessellation."""
+        fig, ax = _fig()
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+        cell = min(width, height) * 0.1
+        for r in range(int(height / cell) + 1):
+            for c in range(int(width / cell) + 1):
+                cx_ = c * cell + cell / 2
+                cy_ = r * cell + cell / 2
+                # 8-point star
+                theta_outer = np.linspace(0, 2 * np.pi, 16)
+                r_outer = cell * 0.45
+                r_inner = cell * 0.2
+                star_r = np.where(theta_outer % (np.pi / 4) < 0.01, r_outer, r_inner)
+                # fix: alternate radii
+                star_r = np.array([r_outer if i % 2 == 0 else r_inner for i in range(16)])
+                star_x = cx_ + star_r * np.cos(theta_outer)
+                star_y = cy_ + star_r * np.sin(theta_outer)
+                ax.fill(star_x, star_y, color=POMPEIAN_GOLD, alpha=0.08)
+                ax.plot(star_x, star_y, color=POMPEIAN_GOLD, lw=0.1, alpha=0.2)
+        return fig, ax
+
+    def guilloche_floor(self, width, height):
+        """Interlaced guilloche mosaic floor."""
+        fig, ax = _fig()
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+        deco = PompeiiDecorations()
+        for y_ in np.linspace(height * 0.1, height * 0.9, 6):
+            deco.guilloche(ax, 0, y_, width, height * 0.04, POMPEIAN_GOLD)
+        for x_ in np.linspace(width * 0.1, width * 0.9, 6):
+            t = np.linspace(0, 4 * np.pi, 200)
+            ax.plot(x_ + height * 0.04 * np.sin(t), np.linspace(0, height, 200),
+                    color=POMPEIAN_GOLD, lw=0.15, alpha=0.2)
+        return fig, ax
+
+
+# ======================================================================
+# 10. PompeiiAnimals - Animal mosaics and frescoes
+# ======================================================================
+
+class PompeiiAnimals:
+    """Animals found in Pompeian mosaics and frescoes."""
+
+    def dolphin(self, ax, x, y, size, color=POMPEIAN_BLUE):
+        """Dolphin - common in Roman mosaics."""
+        t = np.linspace(0, 2 * np.pi, 200)
+        body_x = x + size * 0.4 * t / (2 * np.pi)
+        body_y = y + size * 0.15 * np.sin(t)
+        # curved body
+        body_x = x + size * np.linspace(0, 0.8, 200)
+        body_y = y + size * 0.15 * np.sin(np.pi * np.linspace(0, 1, 200))
+        ax.plot(body_x, body_y, color=color, lw=0.3, alpha=0.4)
+        # tail
+        tail_t = np.linspace(0, 1, 40)
+        ax.plot(x + size * 0.8 + size * 0.1 * tail_t,
+                y + size * 0.15 * (1 - tail_t) + size * 0.05 * tail_t * np.sin(np.pi * tail_t),
+                color=color, lw=0.25, alpha=0.35)
+        # dorsal fin
+        fin_t = np.linspace(0, 1, 30)
+        ax.plot(x + size * 0.35 + size * 0.05 * fin_t,
+                y + size * 0.15 + size * 0.08 * fin_t * (1 - fin_t) * 4,
+                color=color, lw=0.2, alpha=0.3)
+        # eye
+        theta = np.linspace(0, 2 * np.pi, 20)
+        ax.fill(x + size * 0.12 + size * 0.015 * np.cos(theta),
+                y + size * 0.15 + size * 0.015 * np.sin(theta),
+                color=POMPEIAN_BLACK, alpha=0.2)
+
+    def peacock(self, ax, x, y, size):
+        """Peacock - symbol of Juno."""
+        # body
+        t = np.linspace(-1, 1, 100)
+        body_x = x + size * 0.15 * t
+        body_y = y + size * 0.15 + size * 0.08 * (1 - t ** 2)
+        ax.fill_between(body_x, y + size * 0.05, body_y,
+                        color=POMPEIAN_BLUE, alpha=0.15)
+        # tail fan
+        for angle in np.linspace(0.3, 2.84, 20):
+            feather_len = size * 0.3
+            fx = x + size * 0.15 + feather_len * np.cos(angle)
+            fy = y + size * 0.2 + feather_len * np.sin(angle)
+            ax.plot([x + size * 0.15, fx], [y + size * 0.2, fy],
+                    color=POMPEIAN_GREEN, lw=0.1, alpha=0.2)
+            # eye spot
+            theta = np.linspace(0, 2 * np.pi, 10)
+            ax.fill(fx + size * 0.015 * np.cos(theta),
+                    fy + size * 0.015 * np.sin(theta),
+                    color=POMPEIAN_BLUE, alpha=0.15)
+        # head
+        theta = np.linspace(0, 2 * np.pi, 20)
+        ax.fill(x + size * 0.15 + size * 0.02 * np.cos(theta),
+                y + size * 0.25 + size * 0.02 * np.sin(theta),
+                color=POMPEIAN_BLUE, alpha=0.2)
+
+    def horse(self, ax, x, y, size):
+        """Horse - from hunting mosaics."""
+        # body
+        t = np.linspace(0, 1, 200)
+        body_x = x + size * 0.6 * t
+        body_y = y + size * 0.15 + size * 0.06 * np.sin(np.pi * t)
+        ax.plot(body_x, body_y, color=POMPEIAN_BROWN, lw=0.3, alpha=0.4)
+        # neck and head
+        ax.plot([x + size * 0.55, x + size * 0.65, x + size * 0.7],
+                [y + size * 0.18, y + size * 0.3, y + size * 0.28],
+                color=POMPEIAN_BROWN, lw=0.25, alpha=0.35)
+        # legs
+        for lx in [0.1, 0.25, 0.4, 0.55]:
+            ax.plot([x + size * lx, x + size * lx + size * 0.01],
+                    [y + size * 0.12, y],
+                    color=POMPEIAN_BROWN, lw=0.2, alpha=0.3)
+        # tail
+        tail_t = np.linspace(0, 1, 40)
+        ax.plot(x + size * 0.05 + size * 0.05 * np.sin(tail_t * 3),
+                y + size * 0.12 + size * 0.08 * tail_t,
+                color=POMPEIAN_BROWN, lw=0.15, alpha=0.25)
+
+    def dog(self, ax, x, y, size):
+        """Dog - from the famous mosaic 'Cave Canem'."""
+        # body
+        t = np.linspace(0, 1, 150)
+        body_x = x + size * 0.5 * t
+        body_y = y + size * 0.12 + size * 0.05 * np.sin(np.pi * t)
+        ax.plot(body_x, body_y, color=POMPEIAN_OCHRE, lw=0.3, alpha=0.4)
+        # head
+        head_t = np.linspace(0, 1, 40)
+        ax.plot(x + size * 0.5 + size * 0.08 * head_t,
+                y + size * 0.15 + size * 0.04 * np.sin(np.pi * head_t * 0.5),
+                color=POMPEIAN_OCHRE, lw=0.25, alpha=0.35)
+        # legs
+        for lx in [0.1, 0.2, 0.35, 0.45]:
+            ax.plot([x + size * lx, x + size * lx],
+                    [y + size * 0.1, y],
+                    color=POMPEIAN_OCHRE, lw=0.2, alpha=0.3)
+        # tail
+        tail_t = np.linspace(0, 1, 30)
+        ax.plot(x + size * 0.02 + size * 0.03 * np.sin(tail_t * 2),
+                y + size * 0.12 + size * 0.06 * tail_t,
+                color=POMPEIAN_OCHRE, lw=0.15, alpha=0.25)
+        # chain
+        chain_t = np.linspace(0, 1, 20)
+        ax.plot(x + size * 0.55 + size * 0.05 * chain_t,
+                y + size * 0.15 - size * 0.02 * chain_t,
+                color=POMPEIAN_GOLD, lw=0.15, alpha=0.3)
+
+    def bird_flock(self, ax, x, y, size, n_birds=8):
+        """Flock of birds - garden fresco motif."""
+        np.random.seed(123)
+        for i in range(n_birds):
+            bx = x + np.random.rand() * size * 0.8
+            by = y + np.random.rand() * size * 0.5
+            bsize = size * 0.05 + np.random.rand() * size * 0.03
+            t = np.linspace(0, 1, 20)
+            ax.plot(bx - bsize * t, by + bsize * 0.5 * np.sin(np.pi * t),
+                    color=POMPEIAN_BLACK, lw=0.15, alpha=0.3)
+            ax.plot(bx + bsize * t, by + bsize * 0.5 * np.sin(np.pi * t),
+                    color=POMPEIAN_BLACK, lw=0.15, alpha=0.3)
+
+    def snake(self, ax, x, y, size, coils=3):
+        """Snake - decorative motif."""
+        t = np.linspace(0, coils * 2 * np.pi, 300)
+        sx = x + size * 0.3 * t / (coils * 2 * np.pi)
+        sy = y + size * 0.05 * np.sin(t)
+        ax.plot(sx, sy, color=POMPEIAN_GREEN, lw=0.2, alpha=0.35)
+        # head
+        theta = np.linspace(0, 2 * np.pi, 15)
+        ax.fill(sx[-1] + size * 0.01 * np.cos(theta),
+                sy[-1] + size * 0.01 * np.sin(theta),
+                color=POMPEIAN_GREEN, alpha=0.25)
+
+
+# ======================================================================
+# 11. PompeiiFragments - Broken fresco fragments
+# ======================================================================
+
+class PompeiiFragments:
+    """Fragments of frescoes - irregular edges, cracked surfaces."""
+
+    def fresco_fragment(self, width, height, fragment_type="figure"):
+        """Single fresco fragment with irregular edges."""
+        fig, ax = _fig()
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+        # irregular polygon outline
+        n_pts = 12
+        angles = np.sort(np.random.rand(n_pts) * 2 * np.pi)
+        r_base = min(width, height) * 0.35
+        r_var = r_base * 0.15
+        np.random.seed(hash(fragment_type) % 10000)
+        radii = r_base + np.random.rand(n_pts) * r_var
+        frag_x = width / 2 + radii * np.cos(angles)
+        frag_y = height / 2 + radii * np.sin(angles)
+        frag_x = np.append(frag_x, frag_x[0])
+        frag_y = np.append(frag_y, frag_y[0])
+        ax.fill(frag_x, frag_y, color=POMPEIAN_TERRACOTTA, alpha=0.12)
+        ax.plot(frag_x, frag_y, color=POMPEIAN_BROWN, lw=0.3, alpha=0.4)
+        # cracks
+        for _ in range(5):
+            cx_ = np.random.rand() * width
+            cy_ = np.random.rand() * height
+            crack_t = np.linspace(0, 1, 30)
+            crack_x = cx_ + 0.05 * width * crack_t * np.random.randn()
+            crack_y = cy_ + 0.05 * height * crack_t * np.random.randn()
+            ax.plot(crack_x, crack_y, color=POMPEIAN_BROWN, lw=0.1, alpha=0.2)
+        # content inside fragment
+        if fragment_type == "figure":
+            self._draw_figure_in_fragment(ax, width / 2, height / 2, min(width, height) * 0.2)
+        elif fragment_type == "flower":
+            self._draw_flower_in_fragment(ax, width / 2, height / 2, min(width, height) * 0.15)
+        elif fragment_type == "pattern":
+            self._draw_pattern_in_fragment(ax, width / 2, height / 2, min(width, height) * 0.2)
+        return fig, ax
+
+    def _draw_figure_in_fragment(self, ax, cx, cy, size):
+        """Draw figure inside fragment."""
+        t = np.linspace(-1, 1, 100)
+        body_x = cx + size * 0.3 * t
+        body_y = cy + size * 0.3 * (1 - t ** 2)
+        ax.fill_between(body_x, cy - size * 0.1, body_y,
+                        color=POMPEIAN_CREAM, alpha=0.12)
+        theta = np.linspace(0, 2 * np.pi, 30)
+        ax.fill(cx + size * 0.08 * np.cos(theta),
+                cy + size * 0.35 + size * 0.08 * np.sin(theta),
+                color=POMPEIAN_CREAM, alpha=0.12)
+
+    def _draw_flower_in_fragment(self, ax, cx, cy, size):
+        """Draw flower inside fragment."""
+        for petal in range(6):
+            angle = petal * np.pi / 3
+            petal_t = np.linspace(0, 1, 40)
+            px = cx + size * 0.2 * petal_t * np.cos(angle)
+            py = cy + size * 0.2 * petal_t * np.sin(angle)
+            ax.plot(px, py, color=POMPEIAN_RED, lw=0.2, alpha=0.3)
+        theta = np.linspace(0, 2 * np.pi, 20)
+        ax.fill(cx + size * 0.04 * np.cos(theta),
+                cy + size * 0.04 * np.sin(theta),
+                color=POMPEIAN_GOLD, alpha=0.2)
+
+    def _draw_pattern_in_fragment(self, ax, cx, cy, size):
+        """Draw geometric pattern inside fragment."""
+        for r in np.linspace(0.05, 0.2, 5):
+            theta = np.linspace(0, 2 * np.pi, 60)
+            ax.plot(cx + size * r * np.cos(theta),
+                    cy + size * r * np.sin(theta),
+                    color=POMPEIAN_GOLD, lw=0.1, alpha=0.2)
+
+
+# ======================================================================
+# 12. PompeiiAnimated - Animated GIF generation
+# ======================================================================
+
+class PompeiiAnimated:
+    """Generate animated GIFs with Pompeii themes."""
+
+    def eruption_animation(self, width=6, height=6, n_frames=20, output_path="pompeii_eruption.gif"):
+        """Animated eruption of Vesuvius."""
+        frames = []
+        fig_base, ax_base = _fig(str(width), str(height))
+        fig_base.set_size_inches(width, height)
+
+        for frame in range(n_frames):
+            fig, ax = plt.subplots(figsize=(width, height))
+            fig.set_facecolor(BG_DARK)
+            ax.set_facecolor(BG_DARK)
+            ax.set_xlim(0, 1)
+            ax.set_ylim(0, 1)
+            ax.axis("off")
+
+            # mountain
+            mt_x = np.linspace(0.2, 0.8, 200)
+            mt_y = 0.4 + 0.3 * np.exp(-((mt_x - 0.5) ** 2) / 0.008)
+            ax.fill_between(mt_x, 0.35, mt_y, color=POMPEIAN_BROWN, alpha=0.25)
+            ax.plot(mt_x, mt_y, color=POMPEIAN_BROWN, lw=0.3, alpha=0.4)
+
+            # eruption cloud grows with frame
+            intensity = frame / n_frames
+            for i in range(int(5 + 15 * intensity)):
+                np.random.seed(i + frame * 10)
+                cx_ = 0.5 + 0.08 * intensity * (np.random.rand() - 0.5) * 2
+                cy_ = 0.72 + i * 0.012 * intensity
+                cr = 0.03 + 0.04 * intensity * np.random.rand()
+                theta = np.linspace(0, 2 * np.pi, 40)
+                ax.fill(cx_ + cr * np.cos(theta),
+                        cy_ + cr * 0.6 * np.sin(theta),
+                        color=ASH_GREY, alpha=0.06)
+
+            # lava streams
+            if intensity > 0.3:
+                lava_t = np.linspace(0, 1, 50)
+                for side in [-1, 1]:
+                    lx = 0.5 + side * 0.03 * lava_t
+                    ly = 0.72 - 0.15 * lava_t ** 2 * intensity
+                    ax.plot(lx, ly, color=POMPEIAN_RED, lw=0.2, alpha=0.3 * intensity)
+
+            # save frame
+            fig.canvas.draw()
+            frame_img = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+            frame_img = frame_img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+            frames.append(frame_img)
+            plt.close(fig)
+
+        # save as GIF
+        if frames:
+            from matplotlib.animation import FuncAnimation
+            fig_anim, ax_anim = plt.subplots(figsize=(width, height))
+            ax_anim.axis("off")
+            im = ax_anim.imshow(frames[0])
+
+            def update(frame_idx):
+                im.set_data(frames[frame_idx])
+                return [im]
+
+            anim = FuncAnimation(fig_anim, update, frames=len(frames), interval=100)
+            anim.save(output_path, writer="pillow", fps=10)
+            plt.close(fig_anim)
+
+        return output_path
+
+    def fresco_reveal(self, width=6, height=6, n_frames=15, output_path="pompeii_fresco_reveal.gif"):
+        """Fresco gradually revealed from behind plaster."""
+        frames = []
+        for frame in range(n_frames):
+            fig, ax = plt.subplots(figsize=(width, height))
+            fig.set_facecolor(BG_DARK)
+            ax.set_facecolor(BG_DARK)
+            ax.set_xlim(0, 1)
+            ax.set_ylim(0, 1)
+            ax.axis("off")
+
+            # the fresco (always fully drawn)
+            gen = PompeiiComposition()
+            deco = PompeiiDecorations()
+            # garden scene
+            deco.garland(ax, 0.1, 0.8, 0.9, 0.8)
+            deco.garland(ax, 0.1, 0.2, 0.9, 0.2)
+            # columns
+            for cx_ in [0.15, 0.85]:
+                ax.plot([cx_, cx_], [0.15, 0.85], color=POMPEIAN_CREAM, lw=0.3, alpha=0.35)
+            # flowers
+            np.random.seed(42)
+            for _ in range(10):
+                fx_ = 0.2 + np.random.rand() * 0.6
+                fy_ = 0.3 + np.random.rand() * 0.4
+                theta = np.linspace(0, 2 * np.pi, 20)
+                ax.plot(fx_ + 0.02 * np.cos(theta), fy_ + 0.02 * np.sin(theta),
+                        color=np.random.choice([POMPEIAN_RED, POMPEIAN_OCHRE]),
+                        lw=0.15, alpha=0.3)
+
+            # plaster overlay (shrinks with frame)
+            plaster_opacity = max(0, 0.8 - frame * 0.06)
+            plaster_radius = 0.5 + (n_frames - frame) * 0.02
+            theta = np.linspace(0, 2 * np.pi, 100)
+            ax.fill(0.5 + plaster_radius * np.cos(theta),
+                    0.5 + plaster_radius * np.sin(theta),
+                    color=POMPEIAN_SAND, alpha=plaster_opacity)
+
+            fig.canvas.draw()
+            frame_img = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+            frame_img = frame_img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+            frames.append(frame_img)
+            plt.close(fig)
+
+        if frames:
+            from matplotlib.animation import FuncAnimation
+            fig_anim, ax_anim = plt.subplots(figsize=(width, height))
+            ax_anim.axis("off")
+            im = ax_anim.imshow(frames[0])
+
+            def update(frame_idx):
+                im.set_data(frames[frame_idx])
+                return [im]
+
+            anim = FuncAnimation(fig_anim, update, frames=len(frames), interval=150)
+            anim.save(output_path, writer="pillow", fps=8)
+            plt.close(fig_anim)
+
+        return output_path
+
+
+# ======================================================================
+# 13. PompeiiSymbols - SPQR and Roman symbols
+# ======================================================================
+
+class PompeiiSymbols:
+    """SPQR banners, Roman military standards, and civic symbols."""
+
+    def spqr_banner(self, width, height):
+        """SPQR banner in Pompeian style."""
+        fig, ax = _fig()
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+        # banner background
+        ax.add_patch(mpatches.Rectangle((width * 0.1, height * 0.2),
+                                        width * 0.8, height * 0.6,
+                                        facecolor=POMPEIAN_RED, edgecolor=POMPEIAN_GOLD,
+                                        linewidth=0.4, alpha=0.2))
+        # SPQR text (drawn as lines)
+        # S
+        s_t = np.linspace(0, 2 * np.pi, 100)
+        ax.plot(width * 0.25 + width * 0.04 * np.cos(s_t),
+                height * 0.5 + height * 0.08 * np.sin(s_t),
+                color=POMPEIAN_GOLD, lw=0.3, alpha=0.5)
+        # P
+        ax.plot([width * 0.35, width * 0.35], [height * 0.35, height * 0.65],
+                color=POMPEIAN_GOLD, lw=0.3, alpha=0.5)
+        ax.plot([width * 0.35, width * 0.4], [height * 0.65, height * 0.65],
+                color=POMPEIAN_GOLD, lw=0.3, alpha=0.5)
+        ax.plot(width * 0.4 + width * 0.02 * np.cos(np.linspace(0, np.pi, 40)),
+                height * 0.55 + height * 0.05 * np.sin(np.linspace(0, np.pi, 40)),
+                color=POMPEIAN_GOLD, lw=0.3, alpha=0.5)
+        # Q
+        q_t = np.linspace(0, 2 * np.pi, 100)
+        ax.plot(width * 0.5 + width * 0.04 * np.cos(q_t),
+                height * 0.5 + height * 0.08 * np.sin(q_t),
+                color=POMPEIAN_GOLD, lw=0.3, alpha=0.5)
+        ax.plot([width * 0.53, width * 0.56], [height * 0.38, height * 0.3],
+                color=POMPEIAN_GOLD, lw=0.3, alpha=0.5)
+        # R
+        ax.plot([width * 0.63, width * 0.63], [height * 0.35, height * 0.65],
+                color=POMPEIAN_GOLD, lw=0.3, alpha=0.5)
+        ax.plot([width * 0.63, width * 0.68], [height * 0.65, height * 0.65],
+                color=POMPEIAN_GOLD, lw=0.3, alpha=0.5)
+        ax.plot(width * 0.68 + width * 0.02 * np.cos(np.linspace(0, np.pi, 40)),
+                height * 0.55 + height * 0.05 * np.sin(np.linspace(0, np.pi, 40)),
+                color=POMPEIAN_GOLD, lw=0.3, alpha=0.5)
+        ax.plot([width * 0.66, width * 0.7], [height * 0.48, height * 0.35],
+                color=POMPEIAN_GOLD, lw=0.3, alpha=0.5)
+        # laurel wreath border
+        theta = np.linspace(0, 2 * np.pi, 200)
+        ax.plot(width * 0.5 + width * 0.35 * np.cos(theta),
+                height * 0.5 + height * 0.25 * np.sin(theta),
+                color=POMPEIAN_GREEN, lw=0.2, alpha=0.35)
+        # laurel leaves
+        for leaf_angle in np.linspace(0, 2 * np.pi, 24):
+            lx = width * 0.5 + width * 0.35 * np.cos(leaf_angle)
+            ly = height * 0.5 + height * 0.25 * np.sin(leaf_angle)
+            leaf_t = np.linspace(0, 1, 20)
+            leaf_x = lx + 0.01 * width * leaf_t * np.cos(leaf_angle + 0.3)
+            leaf_y = ly + 0.01 * height * leaf_t * np.sin(leaf_angle + 0.3)
+            ax.plot(leaf_x, leaf_y, color=POMPEIAN_GREEN, lw=0.12, alpha=0.3)
+        return fig, ax
+
+    def military_standard(self, width, height):
+        """Roman military standard (signum)."""
+        fig, ax = _fig()
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+        # pole
+        ax.plot([width * 0.5, width * 0.5], [height * 0.05, height * 0.95],
+                color=POMPEIAN_GOLD, lw=0.3, alpha=0.5)
+        # phalerae (discs)
+        for dy in [0.3, 0.5, 0.7]:
+            theta = np.linspace(0, 2 * np.pi, 60)
+            ax.plot(width * 0.5 + 0.05 * width * np.cos(theta),
+                    height * dy + 0.05 * width * np.sin(theta),
+                    color=POMPEIAN_GOLD, lw=0.25, alpha=0.4)
+        # transverse bar
+        ax.plot([width * 0.35, width * 0.65], [height * 0.82, height * 0.82],
+                color=POMPEIAN_GOLD, lw=0.3, alpha=0.45)
+        # hand at top
+        theta = np.linspace(0, 2 * np.pi, 40)
+        ax.fill(width * 0.5 + 0.03 * width * np.cos(theta),
+                height * 0.9 + 0.03 * width * np.sin(theta),
+                color=POMPEIAN_CREAM, alpha=0.2)
+        # spearpoint
+        ax.plot([width * 0.5, width * 0.5], [height * 0.93, height * 0.98],
+                color=POMPEIAN_CREAM, lw=0.3, alpha=0.4)
+        ax.plot([width * 0.47, width * 0.5, width * 0.53],
+                [height * 0.95, height * 0.98, height * 0.95],
+                color=POMPEIAN_CREAM, lw=0.2, alpha=0.35)
+        return fig, ax
+
+
+# ======================================================================
+# 14. PompeiiFullWall - Complete wall reconstruction
+# ======================================================================
+
+class PompeiiFullWall:
+    """Complete wall with dado, main panels, and frieze."""
+
+    def complete_wall(self, width=10, height=8, style="fourth"):
+        """Generate a complete Pompeian wall painting."""
+        fig, ax = _fig()
+        fig.set_size_inches(width, height)
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+
+        wall = PompeiiWallPainting()
+        fresco = PompeiiFrescoStyle()
+        deco = PompeiiDecorations()
+
+        # dado (bottom band)
+        ax.add_patch(mpatches.Rectangle((0, 0), width, height * 0.12,
+                                        facecolor=POMPEIAN_DARK_RED, alpha=0.15))
+        deco.meander_pattern(ax, 0, height * 0.05, width, height * 0.04, POMPEIAN_GOLD)
+
+        # main wall zone
+        ax.add_patch(mpatches.Rectangle((0, height * 0.12), width, height * 0.68,
+                                        facecolor=POMPEIAN_DARK_RED, alpha=0.08))
+
+        # central panel
+        pw = width * 0.35
+        ph = height * 0.5
+        px = (width - pw) / 2
+        py = height * 0.2
+        ax.add_patch(mpatches.Rectangle((px, py), pw, ph,
+                                        facecolor=POMPEIAN_BLACK, edgecolor=POMPEIAN_GOLD,
+                                        linewidth=0.3, alpha=0.15))
+        fresco.garden_scene(ax, px + pw * 0.05, py + ph * 0.05, pw * 0.9, ph * 0.9)
+
+        # side panels
+        for side_px in [width * 0.05, width * 0.65]:
+            sw = width * 0.25
+            sh = height * 0.4
+            sy = height * 0.25
+            ax.add_patch(mpatches.Rectangle((side_px, sy), sw, sh,
+                                            facecolor=POMPEIAN_BLUE, edgecolor=POMPEIAN_GOLD,
+                                            linewidth=0.2, alpha=0.08))
+
+        # upper zone (frieze)
+        ax.add_patch(mpatches.Rectangle((0, height * 0.8), width, height * 0.12,
+                                        facecolor=POMPEIAN_RED, alpha=0.1))
+        deco.guilloche(ax, 0, height * 0.86, width, height * 0.03, POMPEIAN_GOLD)
+
+        # candelabra dividers
+        for cx_ in [width * 0.3, width * 0.7]:
+            deco.candelabra(ax, cx_, height * 0.15, height * 0.6)
+
+        # garland across top
+        deco.garland(ax, width * 0.1, height * 0.78, width * 0.9, height * 0.78)
+
+        return fig, ax
+
+
+# ======================================================================
+# 15. PompeiiArtGeneratorExtended - Extended generator with all new classes
+# ======================================================================
+
+class PompeiiArtGeneratorExtended:
+    """Extended generator with all Pompeii art classes."""
+
+    def __init__(self):
+        self.fresco = PompeiiFrescoStyle()
+        self.arch = PompeiiArchitecture()
+        self.life = PompeiiDailyLife()
+        self.myth = PompeiiMythology()
+        self.deco = PompeiiDecorations()
+        self.comp = PompeiiComposition()
+        self.wall = PompeiiWallPainting()
+        self.mosaic = PompeiiMosaicGenerator()
+        self.animals = PompeiiAnimals()
+        self.fragments = PompeiiFragments()
+        self.animated = PompeiiAnimated()
+        self.symbols = PompeiiSymbols()
+        self.full_wall = PompeiiFullWall()
+
+    def save(self, fig, name, dpi=150):
+        """Save figure to PNG."""
+        path = f"pompeii_{name}.png"
+        fig.savefig(path, dpi=dpi, bbox_inches="tight",
+                    facecolor=fig.get_facecolor(), edgecolor="none")
+        plt.close(fig)
+        return path
+
+    def generate_extended_gallery(self):
+        """Generate extended gallery with all new classes."""
+        paths = []
+        gen_basic = PompeiiArtGenerator()
+
+        # Basic 30
+        print("Generating basic gallery (30 images)...")
+        basic_paths = gen_basic.generate_gallery()
+        paths.extend(basic_paths)
+
+        # Wall painting styles (4)
+        print("Generating wall painting styles...")
+        for style_name, style_method in [
+            ("first_style", self.wall.first_style),
+            ("second_style", self.wall.second_style),
+            ("third_style", self.wall.third_style),
+            ("fourth_style", self.wall.fourth_style),
+        ]:
+            fig, ax = style_method(8, 6)
+            paths.append(self.save(fig, style_name))
+
+        # Mosaic patterns (4)
+        print("Generating mosaic patterns...")
+        for mosaic_name, mosaic_method in [
+            ("geometric_floor", self.mosaic.geometric_floor),
+            ("diamond_mosaic", self.mosaic.diamond_pattern),
+            ("star_mosaic", self.mosaic.star_pattern),
+            ("guilloche_floor", self.mosaic.guilloche_floor),
+        ]:
+            fig, ax = mosaic_method(1, 1)
+            paths.append(self.save(fig, mosaic_name))
+
+        # Animal mosaics (5)
+        print("Generating animal mosaics...")
+        fig, ax = _fig()
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        self.animals.dolphin(ax, 0.05, 0.7, 0.3)
+        self.animals.peacock(ax, 0.5, 0.6, 0.4)
+        self.animals.horse(ax, 0.1, 0.2, 0.35)
+        self.animals.dog(ax, 0.55, 0.15, 0.35)
+        self.animals.snake(ax, 0.1, 0.4, 0.3)
+        paths.append(self.save(fig, "animals_mosaic"))
+
+        fig, ax = _fig()
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        self.animals.bird_flock(ax, 0.1, 0.5, 0.8, 12)
+        self.animals.dolphin(ax, 0.05, 0.15, 0.4)
+        paths.append(self.save(fig, "birds_and_dolphins"))
+
+        # Fragments (3)
+        print("Generating fresco fragments...")
+        for frag_name, frag_type in [
+            ("fragment_figure", "figure"),
+            ("fragment_flower", "flower"),
+            ("fragment_pattern", "pattern"),
+        ]:
+            fig, ax = self.fragments.fresco_fragment(1, 1, frag_type)
+            paths.append(self.save(fig, frag_name))
+
+        # SPQR symbols (2)
+        print("Generating SPQR symbols...")
+        fig, ax = self.symbols.spqr_banner(1, 1)
+        paths.append(self.save(fig, "spqr_banner"))
+
+        fig, ax = self.symbols.military_standard(1, 1)
+        paths.append(self.save(fig, "military_standard"))
+
+        # Complete wall (1)
+        print("Generating complete wall reconstruction...")
+        fig, ax = self.full_wall.complete_wall(10, 8)
+        paths.append(self.save(fig, "complete_wall"))
+
+        # Animated GIFs (2)
+        print("Generating animated GIFs (may take a moment)...")
+        try:
+            gif1 = self.animated.eruption_animation(5, 5, 15, "pompeii_eruption.gif")
+            paths.append(gif1)
+        except Exception as e:
+            print("Eruption animation skipped: {}".format(str(e)[:60]))
+
+        try:
+            gif2 = self.animated.fresco_reveal(5, 5, 12, "pompeii_fresco_reveal.gif")
+            paths.append(gif2)
+        except Exception as e:
+            print("Fresco reveal animation skipped: {}".format(str(e)[:60]))
+
+        return paths
+
+
+# ======================================================================
 # Main
 # ======================================================================
 
@@ -1664,31 +2486,45 @@ if __name__ == "__main__":
 
     output_dir = "pompeii_output"
     os.makedirs(output_dir, exist_ok=True)
-    # save into subdirectory
     orig_cwd = os.getcwd()
     os.chdir(output_dir)
 
-    print("=== Pompeii Polynomial Art Generator ===")
+    print("=== Pompeii Polynomial Art Generator (Extended) ===")
     print("")
-    print("Initializing generator...")
-    gen = PompeiiArtGenerator()
+    print("Classes available:")
+    print("  1. PompeiiFrescoStyle     - wall painting styles, panels")
+    print("  2. PompeiiArchitecture    - temples, houses, streets")
+    print("  3. PompeiiDailyLife       - gladiators, bakers, chariots")
+    print("  4. PompeiiMythology       - gods, masks, creatures")
+    print("  5. PompeiiDecorations     - meander, guilloche, garlands")
+    print("  6. PompeiiComposition     - Vesuvius, Last Day, panorama")
+    print("  7. PompeiiWallPainting    - First through Fourth Style")
+    print("  8. PompeiiMosaicGenerator - geometric, diamond, star mosaics")
+    print("  9. PompeiiAnimals         - dolphins, peacocks, horses")
+    print(" 10. PompeiiFragments       - broken fresco pieces")
+    print(" 11. PompeiiAnimated        - animated GIF eruptions")
+    print(" 12. PompeiiSymbols         - SPQR banners, standards")
+    print(" 13. PompeiiFullWall        - complete wall reconstruction")
+    print("")
+    print("Initializing extended generator...")
+    gen = PompeiiArtGeneratorExtended()
 
     start = time.time()
-    print("Generating gallery of Pompeii art...")
+    print("Generating full extended gallery...")
     print("")
 
-    paths = gen.generate_gallery()
+    paths = gen.generate_extended_gallery()
 
     elapsed = time.time() - start
     print("")
     print("--- Generation Complete ---")
     print("")
-    print(f"Time elapsed: {elapsed:.2f} seconds")
-    print(f"Total images generated: {len(paths)}")
+    print("Time elapsed: {:.2f} seconds".format(elapsed))
+    print("Total images generated: {}".format(len(paths)))
     print("")
     print("Files saved to: {}/".format(output_dir))
     print("")
     for i, p in enumerate(paths, 1):
-        print(f"  {i:2d}. {p}")
+        print("  {:2d}. {}".format(i, p))
     print("")
     print("Done.")
