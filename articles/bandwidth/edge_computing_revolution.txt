@@ -1,0 +1,17 @@
+Edge Computing Meets Polynomial Rendering: Computing at the End of the Network
+
+The traditional model of video delivery is simple and centralized. A server stores a video. A client requests it. The data flows from server to client through the network. The client decodes and displays. Every frame travels the full distance from origin to destination.
+
+This model has a fundamental inefficiency. The network carries the entire visual content of the video, even though much of that content is redundant. The same pixels in the same buildings appear in every frame. The same lighting conditions persist across the entire scene. The network transmits the same information millions of times.
+
+PWTP eliminates this inefficiency by shifting computation to the edge. The server transmits a polynomial description of the scene: the static world model, the character trajectories, the camera paths. The total data is 600 kilobytes for a fifteen-minute walk through Pompeii. The client device receives this once and renders every frame locally.
+
+The edge device, whether a smartphone, a laptop, a television, or a virtual reality headset, becomes the rendering engine. It evaluates the polynomials at each frame timestamp. It composites the character into the static world. It produces the final image. No additional data is transmitted after the initial 600 kilobyte download.
+
+The advantages are immediate and substantial. Buffering disappears entirely because there is nothing to buffer. The entire scene description arrives in a single transmission. Latency vanishes because frame generation is local computation, not network retrieval. CDN costs become negligible because the data that must be cached and distributed is 700,000 times smaller than traditional video.
+
+For the fifteen-minute walk through Pompeii, the edge device needs approximately 400 kilobytes of static world data stored locally. This is the Pompeii model, cached after the first viewing. Subsequent viewings of the same walk, or different walks through the same ruins, require only the trajectory polynomials: 200 kilobytes of dynamic data.
+
+The computational requirements for polynomial evaluation are modest. A modern smartphone processor can evaluate thousands of cubic polynomials per frame. The rendering of the static world model, a polynomial surface mesh, requires standard graphics pipeline operations. No specialized hardware is needed beyond what already exists in consumer devices.
+
+This is the revolution. Video delivery becomes a computation problem, not a transmission problem. The network carries mathematics. The edge device produces images. The 700,000 to one compression ratio is achieved not by clever encoding, but by recognizing that the expensive operation, rendering visual content, can be performed at the point of consumption rather than the point of origin.

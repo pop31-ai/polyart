@@ -1,0 +1,19 @@
+When Every Student Can Stream History: Education at 600 Kilobytes
+
+A university professor records a fifteen-minute lecture. She walks across a stage, gestures at diagrams on a screen, writes equations on a board. The lecture is recorded in 4K. The file size: approximately 400 gigabytes.
+
+A student in a rural village in Bangladesh watches the lecture on a smartphone connected to a 2G network. The 2G connection delivers approximately 50 kilobits per second. At this rate, the 400 gigabyte lecture would take over two years to download. The lecture is effectively inaccessible.
+
+PWTP transforms this situation completely. The lecture, described as a polynomial scene, requires 600 kilobytes. The stage is a static surface, 100 kilobytes. The diagrams and board content are static textures, 200 kilobytes. The professor's walking trajectory is a polynomial, 96 bytes. The camera trajectory is another polynomial, 96 bytes.
+
+At 50 kilobits per second, the 600 kilobyte lecture downloads in approximately 96 seconds. Less than two minutes. The student in Bangladesh receives the complete lecture, with full visual fidelity, on a 2G connection.
+
+The educational implications extend beyond bandwidth savings. The polynomial lecture is not a flat video. It is a three-dimensional scene that the student's device renders locally. The student can change the camera angle. They can zoom in on the board. They can view the professor's gestures from a different perspective. The lecture becomes an interactive three-dimensional experience.
+
+This capability eliminates the digital divide in educational content delivery. The same lecture, at the same quality, is accessible to every student with any data connection. A student in Manhattan and a student in Dhaka receive identical educational experiences. The 700,000 to one compression ratio makes this possible.
+
+Historical reconstructions benefit even more. A virtual walk through ancient Rome, guided by a historian, requires the same 600 kilobytes regardless of the viewer's location. The ancient city is a static model. The historian's walking path is a polynomial. The camera follows the historian through the Forum, past the Colosseum, along the Appian Way. Every student, everywhere, walks through ancient Rome at full fidelity on any connection.
+
+The global library of educational video content, currently measured in petabytes, shrinks to terabytes under PWTP. Storage costs for educational institutions decrease by a factor of 700,000. Distribution costs approach zero. The only remaining cost is content creation, which remains constant regardless of the transmission protocol.
+
+Education is the most compelling application of PWTP because it addresses the most important inequity: access to knowledge. Six hundred kilobytes is the bridge across the digital divide.

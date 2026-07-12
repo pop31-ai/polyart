@@ -1,0 +1,17 @@
+15 Minutes of Surgery in 600 Kilobytes: Medical Imaging Revolution
+
+A fifteen-minute surgical procedure, recorded with stereoscopic cameras at high resolution, generates approximately 400 gigabytes of video data. This data is critical for training, for remote consultation, and for post-operative review. But its sheer volume makes it impractical for the applications where it is most needed.
+
+A surgeon in a rural hospital in sub-Saharan Africa needs guidance from a specialist in Boston. The procedure is complex. The visual information is essential. But the hospital's internet connection delivers 256 kilobits per second. Traditional video transmission at this rate would take days to deliver the reference footage. Real-time guidance is impossible.
+
+PWTP reduces the fifteen-minute surgical recording to 600 kilobytes. The operating theater is a static environment: the table, the lighting, the room geometry. These are polynomial surfaces, captured once and stored. The surgical instruments follow smooth trajectories through the tissue: polynomial curves of degree three. The surgeon's hands and arms move with the deliberate smoothness characteristic of skilled manual work: also polynomial trajectories.
+
+The transmission of 600 kilobytes at 256 kilobits per second takes approximately 20 seconds. The receiving hospital downloads the complete procedure description. The local system renders it in three dimensions, allowing the remote specialist to view the procedure from any angle, at any speed, with the ability to pause and examine specific moments.
+
+The clinical implications are profound. Telementoring, the practice of remote surgical guidance, has been limited by bandwidth constraints. Existing systems compress video to the point where tissue detail is lost. PWTP preserves full resolution because the polynomial description reconstructs the original scene without loss of visual information.
+
+Beyond telementoring, the 600 kilobyte surgical recording enables entirely new workflows. Every surgical procedure can be recorded and stored as a polynomial description. A hospital's surgical library, thousands of procedures, occupies megabytes instead of petabytes. Training data for surgical AI systems can be transmitted and shared globally without infrastructure constraints.
+
+The quality of polynomial reconstruction for surgical scenes is high. Tissue surfaces are smooth and follow known geometric patterns. Instrument trajectories are smooth because surgeons move deliberately. The mathematical structure of surgery is inherently polynomial, making PWTP an optimal representation.
+
+Six hundred kilobytes for fifteen minutes of surgery. The specialist in Boston sees the procedure in Boston within seconds of capture in Nairobi. The digital divide in surgical education narrows to a gap that polynomials can bridge.

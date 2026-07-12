@@ -1,0 +1,19 @@
+Copyright in the Polynomial Age: Who Owns the Walk?
+
+A man walks through Pompeii for fifteen minutes. The walk is recorded. The recording is converted to a polynomial description: 12 coefficients for the walking trajectory, 12 coefficients for the camera path, 400 kilobytes of static world model. The total data is 600 kilobytes.
+
+Who owns this 600 kilobytes?
+
+The question is not trivial. Under current copyright law, the original video recording is a creative work protected by copyright. The performer, the camera operator, and the production company all have claims. But the polynomial description is not a video. It is a mathematical formula. It is a set of numbers that describe curves in three-dimensional space.
+
+Mathematical formulas are not copyrightable. This is well established in intellectual property law. You cannot copyright the equation of a circle or the formula for a sine wave. The polynomial coefficients that describe a walking trajectory are mathematical objects. They describe a physical reality using mathematical language.
+
+This creates a novel intellectual property problem. The same walk can be expressed as a video, which is copyrightable, or as a polynomial description, which may not be. The polynomial description produces the same visual experience when rendered, but it is not the same kind of object as the video.
+
+DRM for polynomial descriptions presents additional challenges. Traditional DRM encrypts the video file and controls decryption. Polynomial DRM would need to control the evaluation of mathematical functions. The receiver needs the coefficients to render the scene, but once the coefficients are known, the scene can be rendered indefinitely. There is no way to prevent rendering after the coefficients are disclosed.
+
+The performer's rights are another complication. The walk is a performance. The performer created the physical motion that the polynomials describe. But the polynomials are an abstraction of that motion, not the motion itself. The performer's right to control their likeness may or may not extend to polynomial descriptions of their movement.
+
+These questions are not academic. As PWTP becomes widespread, courts and legislatures will need to address them. The polynomial representation of video content sits in a gap in current intellectual property law. The gap was never anticipated because the technology that creates it did not exist.
+
+The 600 kilobyte walk through Pompeii raises questions that the legal system is not yet equipped to answer. The mathematics are proven. The technology works. The law is catching up.

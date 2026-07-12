@@ -1,0 +1,15 @@
+Military Reconnaissance at 600 Kilobytes: Battlefield Intelligence Revolution
+
+A reconnaissance drone surveys a target area for fifteen minutes. The drone captures 4K video at sixty frames per second. The raw data: approximately 400 gigabytes. Even with military-grade compression, the file size is measured in tens of gigabytes. Transmitting this data over a tactical battlefield network, which may operate at speeds measured in megabits per second, takes minutes to hours.
+
+Battlefield intelligence has a shelf life measured in minutes. A target identified at 14:00 may have moved by 14:05. The value of reconnaissance data degrades rapidly. The time between capture and delivery to the analyst determines the utility of the intelligence.
+
+PWTP changes this equation fundamentally. The fifteen-minute drone survey, transmitted as a polynomial scene description, requires 600 kilobytes. The terrain model, the buildings, the roads, the vegetation: polynomial surfaces, 400 kilobytes. The drone's flight path: 12 polynomial coefficients. Moving objects detected during the survey, vehicles, personnel, each with their own trajectory polynomials.
+
+At a tactical network speed of 1 megabit per second, the 600 kilobyte transmission takes approximately 5 seconds. The analyst receives a complete three-dimensional reconstruction of the surveyed area within seconds of the drone's return. Not a flat video. A three-dimensional model that can be viewed from any angle, measured, and analyzed spatially.
+
+The military value of this capability is difficult to overstate. Traditional reconnaissance delivers video that must be watched linearly. An analyst must spend fifteen minutes watching a fifteen-minute video. With polynomial reconstruction, the analyst receives a three-dimensional model they can explore interactively. They can measure the distance between buildings. They can determine line-of-sight from any position. They can overlay the model on existing maps.
+
+The 700,000 to one compression ratio also enables capabilities that are currently impossible. Multiple drones can survey the same area simultaneously. Each transmits 600 kilobytes. The receiving system merges the polynomial descriptions into a single coherent three-dimensional model. Real-time battlefield awareness from multiple sensor platforms, transmitted over bandwidth-constrained tactical networks.
+
+The same principles apply to naval reconnaissance, satellite imagery, and ground-based sensor networks. Any military application that involves capturing and transmitting visual information benefits from polynomial representation. The 600 kilobyte drone survey is not a theoretical exercise. It is a practical capability that transforms battlefield intelligence from a bandwidth-limited activity to a compute-limited activity.

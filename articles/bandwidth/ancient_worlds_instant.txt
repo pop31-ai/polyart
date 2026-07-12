@@ -1,0 +1,21 @@
+Rebuilding Ancient Worlds in Instant: The Pompeii Protocol
+
+The city of Pompeii was buried by Vesuvius in 79 AD. For centuries, archaeologists have excavated, documented, and reconstructed its streets and buildings. Today, we can walk through those streets in virtual reality. But the data required to do so is enormous. A detailed 3D model of Pompeii with photorealistic textures can easily exceed several gigabytes.
+
+With PWTP, the reconstruction of Pompeii for a fifteen-minute virtual walk requires 600 kilobytes of transmitted data. Here is the complete technical accounting.
+
+The static world model of Pompeii, the buildings, streets, columns, walls, fountains, and ground surfaces, is captured as a polynomial surface mesh. Every visible surface is described by bivariate polynomials: z = f(x, y) for horizontal surfaces, and the appropriate projections for vertical surfaces. The entire ancient city, as seen from walking height, requires approximately 400 kilobytes of polynomial surface coefficients.
+
+This static model is transmitted once. The receiving device stores it locally. It never needs to be retransmitted. Whether the viewer walks the same street once or one hundred times, the Pompeii model sits in local storage, ready to be rendered.
+
+The walking character, the person moving through the ruins, is described by a position polynomial. Over the fifteen-minute interval, the walker's trajectory is a single cubic polynomial in each dimension. Twelve coefficients total: four for x(t), four for y(t), four for z(t). These twelve numbers define every step, every turn, every pause to examine a fresco.
+
+The camera that records or simulates the viewer's perspective follows its own polynomial path. Another twelve coefficients. Perhaps additional coefficients for camera orientation, the subtle pans and tilts that accompany a walking observer. Thirty coefficients for the complete camera description.
+
+At each frame timestamp, the receiving device evaluates the polynomials. The walker's position is computed. The camera's position is computed. The static model is rendered from the camera's perspective. The walker is composited into the scene. The result is indistinguishable from a traditional video recording of the same walk.
+
+Total transmitted data: 600 kilobytes. Total rendered output: fifteen minutes of high-definition video. Total bandwidth required: zero additional data after initial transmission.
+
+The Pompeii Protocol demonstrates a principle that extends far beyond ancient cities. Any static environment with moving characters follows this same structure. Museums, city streets, factory floors, hospital corridors, battlefields. The static world is sent once. The motion is polynomial. The receiver renders everything.
+
+Archaeological reconstruction becomes instant. Historical education becomes universal. The ancient world, buried for two millennia, is rebuilt from six hundred thousand bytes.

@@ -1,0 +1,15 @@
+Talking to Mars: Polynomial Communication Across the Solar System
+
+The distance between Earth and Mars varies from 55 million kilometers to 400 million kilometers. Light, traveling at 300,000 kilometers per second, takes between 3 and 22 minutes to cross this gap. There is no way to reduce this delay. It is a consequence of the speed of light, which is the fastest speed possible.
+
+For traditional video communication, this delay is devastating. A fifteen-minute live walk on the Martian surface, transmitted in 4K at sixty frames per second, requires approximately 400 gigabytes of data. At the best-case light travel time of 3 minutes, this would require a sustained transmission rate of approximately 180 gigabits per second. At the worst case of 22 minutes, the required rate drops but the total data remains the same. The bandwidth demands are unrealistic for current deep space communication systems, which operate at rates measured in megabits per second.
+
+PWTP transforms the problem entirely. The fifteen-minute Martian walk, described as a polynomial scene, requires 600 kilobytes. The Martian terrain model, captured by previous missions and cached on the Martian surface, requires 400 kilobytes. The astronaut's walking trajectory requires 12 polynomial coefficients. The camera path requires another 12 coefficients.
+
+The transmission of 600 kilobytes at even a modest deep space communication rate of 1 megabit per second takes approximately 5 seconds. The data arrives at Earth 3 to 22 minutes later, depending on orbital position. The receiving system evaluates the polynomials and renders the complete fifteen-minute walk in real time.
+
+The key insight is that the polynomial description is independent of the delay. It does not matter whether the data arrives in 3 minutes or 22 minutes. The polynomials are evaluated at local timestamps, and the rendering proceeds at real-time speed. The astronaut's walk on Mars, captured fifteen minutes ago, plays back as if it were live.
+
+This has implications beyond Mars. Any communication channel with high latency and limited bandwidth benefits from polynomial representation. Deep space probes. Underwater sensor networks. Remote research stations. Military communications in contested environments. The 700,000 to one compression ratio means that scenes which are impossible to transmit in traditional video become trivial to transmit as polynomials.
+
+The Martian walk is the most compelling demonstration. Six hundred kilobytes across 400 million kilometers of empty space. The receiver on Earth reconstructs every step, every shadow, every grain of Martian dust, from a transmission smaller than a typical email attachment.

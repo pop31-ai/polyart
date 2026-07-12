@@ -1,0 +1,19 @@
+Real-Time Polynomial Rendering vs Pre-Rendered Video: The Quality Tradeoff
+
+A question arises naturally when considering PWTP: is the polynomial reconstruction as good as the original video? The answer depends on the scene.
+
+For the fifteen-minute walk through Pompeii, the answer is yes. The static world model, a polynomial surface mesh, captures the geometry of every visible surface. The textures and colors are stored as part of the surface description. The walker's trajectory is a cubic polynomial that reproduces every step exactly. The camera trajectory is another cubic polynomial that reproduces every pan and tilt exactly.
+
+At each frame timestamp, the receiver evaluates the polynomials, renders the static world from the camera's perspective, and composites the walker into the scene. The result is visually indistinguishable from the original recording. Every pixel in every frame is in the correct position with the correct color.
+
+The quality is high because the scene has the mathematical structure that polynomials represent well. Buildings are smooth surfaces. Streets are smooth surfaces. The walker moves smoothly. The camera moves smoothly. The polynomial representation captures all of this structure without loss.
+
+For chaotic scenes, the situation is different. A crowd of thousands of people, each moving independently and unpredictably, cannot be efficiently represented by a small number of polynomials. Each person would require their own trajectory polynomial. The total number of coefficients would grow linearly with the number of people. At some point, the polynomial description becomes larger than a compressed video of the same scene.
+
+The quality-bandwidth frontier is the boundary between scenes where polynomials are efficient and scenes where traditional video is more efficient. For the majority of video content, which features a small number of moving objects in a static environment, polynomials win decisively. For dense, chaotic scenes with many independent actors, traditional methods may be more efficient.
+
+Real-time polynomial rendering has an advantage that pre-rendered video lacks: flexibility. The receiver can change the camera angle. The receiver can slow down or speed up the motion. The receiver can examine the scene from positions that were never part of the original recording. The polynomial description is a complete three-dimensional model, not a fixed two-dimensional projection.
+
+For the Pompeii walk, this means the viewer can pause, look around, and resume. They can view the same walk from a different angle. They can follow the walker at a different distance. The polynomial description supports all of these variations without additional data transmission.
+
+The quality tradeoff is simple: for smooth scenes, polynomials match or exceed traditional video quality while reducing bandwidth by 700,000 to 1. For chaotic scenes, the tradeoff is less favorable but still competitive. The real-time rendering advantage is universal.

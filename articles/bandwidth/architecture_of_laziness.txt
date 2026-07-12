@@ -1,0 +1,21 @@
+The Architecture of Laziness: Why Walking is the Perfect Polynomial
+
+Walking is the most studied form of human locomotion. Biomechanists have measured every aspect of it: step frequency, stride length, joint angles, ground reaction forces, center of mass trajectory. The measurements reveal a remarkable consistency across humans.
+
+Walking speed averages 1.4 meters per second. This varies by less than twenty percent across the adult population. Step frequency is approximately 2 hertz, meaning two steps per second. Stride length is approximately 0.7 meters. The vertical oscillation of the center of mass during walking is approximately 4 centimeters.
+
+These are not arbitrary numbers. They are consequences of human anatomy and physics. The leg length of an average adult determines the stride length. The pendulum-like mechanics of the walking gait determine the frequency. The vertical oscillation is a natural byproduct of the exchange between kinetic and potential energy during each step.
+
+From a mathematical perspective, the trajectory of a walking person is a smooth, periodic function of time. The horizontal motion is approximately constant velocity with small variations. The vertical motion is approximately sinusoidal with a period of 0.5 seconds.
+
+A cubic polynomial captures all of this. For the horizontal coordinates, x(t) and y(t), the polynomial x(t) = a + bt + ct^2 + dt^3 provides the starting position, average velocity, gradual acceleration, and gentle curvature of the path. For the vertical coordinate, z(t), the polynomial captures the mean height, the slight forward lean, and the vertical oscillation of walking.
+
+Twelve coefficients. Three polynomials with four coefficients each. This is the complete mathematical description of a human being walking through any environment for any duration.
+
+The architecture of this laziness is the reason PWTP works. The walking trajectory is not complex. It is not high-dimensional. It is not chaotic. It is smooth, periodic, and bounded. It is the kind of function that polynomials were designed to represent.
+
+If humans moved erratically, if walking involved sudden jumps and unpredictable direction changes, the polynomial representation would fail. But humans do not move erratically. We are lazy. We take smooth paths. We maintain steady speeds. We turn gradually. Our motion is the physical embodiment of polynomial smoothness.
+
+The 700,000 to 1 compression ratio exploits this laziness directly. The walk is described by 12 coefficients. The static environment is described by polynomial surfaces. The camera is described by 12 more coefficients. Total data: 600 kilobytes. Total rendered content: fifteen minutes of high-definition video.
+
+Walking is the perfect polynomial because walking is the perfect smooth function. And smooth functions are what polynomials represent best.

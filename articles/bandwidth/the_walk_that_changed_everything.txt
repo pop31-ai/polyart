@@ -1,0 +1,19 @@
+The Walk That Changed Everything: How 15 Minutes Became 600 Kilobytes
+
+In 2026, a man walked through the ruins of ancient Pompeii for fifteen minutes. That is not the remarkable part. The remarkable part is what happened to the data.
+
+Traditional video capture of that walk, recorded in 4K resolution at sixty frames per second, would consume approximately 400 gigabytes of storage. Four hundred billion bytes to document a human being moving through old streets. Every stone, every column, every shadow encoded frame by frame, pixel by pixel, as if each moment were entirely new and unrelated to the one before it.
+
+The same fifteen-minute walk, transmitted using the Polynomial World Transmission Protocol, required exactly 600 kilobytes. Six hundred thousand bytes. A ratio of roughly 700,000 to one.
+
+Here is how it works. The walk through Pompeii contains two kinds of information. The first is the static world: the buildings, the streets, the columns, the walls, the ground. These things do not change during the walk. They were built two thousand years ago and they were there when the man walked through and they will be there tomorrow. This static world, once captured and described as a polynomial surface model, requires about 400 kilobytes of data. It is sent once. The receiver stores it.
+
+The second kind of information is the man himself and the camera that follows him. The man walks at roughly 1.4 meters per second. His path through the ruins is a smooth curve in three-dimensional space. That curve, the exact trajectory of his body over fifteen minutes, is described by a single polynomial of degree three in each spatial dimension. Twelve coefficients total. Three for x, three for y, three for z, each with time as the independent variable. Twelve numbers that define every step.
+
+The camera follows him. The camera operator also moves smoothly. The camera path is another polynomial, another twelve coefficients. Perhaps a few more for orientation. Perhaps thirty coefficients total for the complete camera motion.
+
+The total data transmitted for the entire fifteen-minute walk: approximately 600 kilobytes. The static Pompeii model plus the walking polynomial plus the camera polynomial. The receiver evaluates these polynomials at each frame timestamp and reconstructs the complete scene. The man walks through the ruins. The camera follows. Every frame is generated locally from the polynomial description.
+
+The implications are staggering. A walk that would normally require a high-speed broadband connection to stream can now be transmitted over a connection slower than early dial-up. The 700,000 to one compression ratio is not an incremental improvement. It is not a better codec or a smarter encoding scheme. It is a fundamentally different approach to the problem of transmitting motion through space.
+
+The walk through Pompeii changed everything because it proved that the most bandwidth-intensive thing humans do, moving through the world and showing each other what we see, can be reduced to a handful of numbers.

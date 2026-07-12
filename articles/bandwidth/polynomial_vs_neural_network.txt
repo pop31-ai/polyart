@@ -1,0 +1,19 @@
+Polynomial vs Neural Network: The 700,000x Efficiency Gap
+
+The comparison is stark. Neural networks applied to video compression achieve ratios of approximately 10 to 1 over raw video. The Polynomial World Transmission Protocol achieves 700,000 to 1 for structured scenes. This is not a marginal improvement. It is a five-order-of-magnitude difference in efficiency.
+
+The reason lies in what each approach actually does.
+
+A neural network for video compression learns to predict frames. It observes training data consisting of millions of videos. It builds internal representations that capture statistical regularities: how pixels tend to move, how colors tend to change, how objects tend to behave. When it encounters a new video, it uses these learned patterns to encode the video more efficiently than raw storage.
+
+This approach is powerful and general. It works on any video, regardless of content. But it is also fundamentally limited. The network must learn from scratch what the mathematical structure of motion already provides. It must discover, through gradient descent over billions of parameters, that walking trajectories are smooth curves. It must learn, through exposure to countless training examples, that buildings do not move and streets do not change.
+
+PWTP does not learn these things. PWTP assumes them. The protocol encodes the mathematical structure of the scene directly: static elements as polynomial surfaces, dynamic elements as polynomial trajectories. There is no training. There is no learning. There is a mathematical model that matches the physical reality.
+
+Consider the fifteen-minute walk through Pompeii. A neural network compressor would process this as a sequence of frames. It would find temporal redundancies between frames. It might achieve 100 to 1 or even 1000 to 1 if the scene has enough static content. But it would still transmit frame-level information. It would still need to encode the difference between each frame and its prediction.
+
+PWTP encodes the scene once. The static world is a polynomial surface model. The walking trajectory is a polynomial of degree three. The camera trajectory is another polynomial. There are no frames to encode. There is no temporal redundancy to exploit because the temporal dimension is eliminated entirely. Time is the variable of the polynomial, not a dimension of the data.
+
+The 700,000 to 1 ratio is not achieved by better compression. It is achieved by recognizing that the problem has a known mathematical structure that polynomials express optimally. The neural network wastes bits learning what polynomials already know.
+
+This does not mean neural networks are useless. For chaotic, unpredictable content, neural networks may be the only viable approach. But for the majority of video content, which consists of smooth motion through static environments, polynomials are the superior representation by a vast margin.

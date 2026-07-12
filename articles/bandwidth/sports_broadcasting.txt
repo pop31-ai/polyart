@@ -1,0 +1,23 @@
+The 600-Kilobyte Sports Broadcast: Football at Polynomial Speed
+
+A fifteen-minute segment of a football match contains the following elements. A static field, 100 meters by 64 meters of green turf with white markings. Twenty-two players moving across the field. A ball moving faster than the players. A camera following the action.
+
+Traditional broadcast of this segment at 4K resolution requires approximately 400 gigabytes of data. The same content, transmitted as a PWTP polynomial description, requires approximately 600 kilobytes. Here is the breakdown.
+
+The football field is a static element. The turf, the markings, the goals, the surrounding stadium. Once captured as a polynomial surface model, this data is transmitted once and stored locally. The field model requires approximately 300 kilobytes.
+
+Each of the 22 players has a trajectory polynomial. A cubic polynomial in three dimensions, 12 coefficients per player. 22 players times 12 coefficients equals 264 coefficients. At 8 bytes per coefficient, approximately 2 kilobytes for all player trajectories.
+
+The ball moves faster than the players but its trajectory is also smooth and polynomial. One trajectory polynomial, 12 coefficients, 96 bytes. Negligible.
+
+The camera follows the action. Its trajectory is another polynomial, perhaps degree 5 for the complex pans and zooms of sports broadcasting. Still fewer than 50 coefficients. Less than 1 kilobyte.
+
+The total transmission for fifteen minutes of football: approximately 303 kilobytes. Well under 600 kilobytes. The receiver evaluates all polynomials at each frame timestamp and renders the complete match scene.
+
+The implications for sports broadcasting are transformative. A football match can be watched at 1 kilobits per second. A connection slower than early dial-up delivers live sports at full quality. Every fan on Earth, regardless of their internet infrastructure, can watch every match.
+
+Beyond bandwidth, polynomial sports broadcasting enables new experiences. The viewer can change camera angles. They can follow a specific player by evaluating that player's trajectory polynomial with a different camera polynomial. They can view the match from behind the goal, from the sideline, from above. The polynomial description is a complete three-dimensional representation of the match.
+
+The quality of reconstruction for sports scenes is high. Players move smoothly across the field. Their trajectories are polynomial by the same biomechanical arguments that apply to all human walking. The ball follows a smooth parabolic trajectory during flight. The camera movements are smooth and well-approximated by low-degree polynomials.
+
+Six hundred kilobytes for fifteen minutes of football. The beautiful game, transmitted at polynomial speed.

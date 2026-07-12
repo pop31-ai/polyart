@@ -1,0 +1,17 @@
+When Every Byte Counts: Disaster Response at 600 Kilobytes
+
+An earthquake has struck. Cell towers are destroyed. The only communication link is a satellite connection delivering 1 kilobit per second. Traditional video transmission over this link is impossible. At 1 kilobit per second, a single frame of compressed video takes minutes to transmit. A fifteen-minute assessment video would take weeks.
+
+First responders need to understand the damage. They need to see which buildings have collapsed, where survivors are trapped, which roads are passable. They need three-dimensional spatial information, not text descriptions. They need visual data.
+
+PWTP delivers this data in 600 kilobytes. At 1 kilobit per second, the transmission takes approximately 80 minutes. Still slow, but feasible. More importantly, the 600 kilobytes contain the complete three-dimensional reconstruction of the damaged area, not a flat video recording.
+
+A drone surveys the disaster zone for fifteen minutes. It captures the terrain, the damaged buildings, the debris fields. The static environment is modeled as polynomial surfaces: 400 kilobytes for the complete survey area. The drone's flight path is a polynomial trajectory: 12 coefficients. The areas of damage, the collapsed structures and scattered debris, are polynomial surface patches with different parameters than the intact structures.
+
+The receiving team evaluates the polynomials and renders a three-dimensional model of the disaster zone. They can view it from any angle. They can measure distances between collapsed buildings. They can identify potential access routes. They can locate areas where survivors might be trapped under rubble.
+
+The 700,000 to one compression ratio is not a luxury in this context. It is the difference between receiving actionable visual information and receiving nothing. At 1 kilobit per second, traditional video cannot deliver a single usable frame in a reasonable time. PWTP delivers a complete three-dimensional reconstruction of a fifteen-minute aerial survey.
+
+The same principle applies to any disaster scenario: hurricanes, floods, wildfires, tsunamis. Communication infrastructure is always the first thing destroyed and the last thing restored. During the critical hours after a disaster, bandwidth is the most scarce and most valuable resource. Every byte must carry maximum information.
+
+Six hundred kilobytes. The complete damage assessment of a fifteen-minute aerial survey. Transmitted over the worst communication channel available. Rendered as a full three-dimensional model by the receiving team. This is what bandwidth efficiency means when lives depend on it.

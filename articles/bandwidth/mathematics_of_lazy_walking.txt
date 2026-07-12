@@ -1,0 +1,25 @@
+The Mathematics of Lazy Walking: Why Human Motion is Polynomial
+
+Humans are lazy creatures. Not in the moral sense, but in the mathematical sense. When we walk, we follow paths of least resistance. We take smooth steps. We do not accelerate erratically. We do not teleport. We move through space in ways that are, from a mathematical perspective, remarkably simple and predictable.
+
+This simplicity has a name. It is called smoothness, and smooth functions are precisely the functions that polynomials approximate well.
+
+Consider a person walking down a street. Their position in three-dimensional space is described by three functions of time: x(t), y(t), and z(t). The x-coordinate traces their left-right motion. The y-coordinate traces their forward-backward motion. The z-coordinate traces the slight up-and-down bob of each step.
+
+Each of these functions is smooth. There are no sudden discontinuities. There are no sharp corners in the trajectory. The person does not instantly appear at a new location. They accelerate gradually, maintain a steady pace, and decelerate gradually at corners. Their motion is bounded and continuous.
+
+A degree-three polynomial captures all of this. For each coordinate, a cubic polynomial provides four coefficients: the constant term, the linear term, the quadratic term, and the cubic term. Together, twelve coefficients describe the complete trajectory of a walking person over any reasonable time interval.
+
+The constant term captures the starting position. The linear term captures the average velocity. The quadratic term captures acceleration and deceleration. The cubic term captures the gentle curvature of the path, the way the walker adjusts direction over time.
+
+This is not an approximation in the colloquial sense. It is not a lossy compression that throws away detail. It is a representation that exploits the actual mathematical structure of human locomotion. Walking IS polynomial, to the degree that matters for video reconstruction.
+
+Neural networks approach the same problem differently. They learn from data. They require millions of examples. They build complex non-linear mappings. They consume enormous computational resources. And for the problem of representing a smooth walking trajectory, they achieve compression ratios of perhaps ten to one. Ten to one compared to seven hundred thousand to one.
+
+The reason is not that neural networks are bad. The reason is that they are solving the wrong problem. They are learning to approximate a function that already has a known mathematical form. They are building a lookup table for something that can be written in twelve numbers.
+
+Human walking is periodic. Step frequency is approximately two hertz. Stride length is approximately 0.7 meters. Walking speed averages 1.4 meters per second. These are not facts about a particular walker. These are facts about the biomechanics of bipedal locomotion. Every human walk, everywhere, in every culture, across all of history, follows these parameters.
+
+When you know that the function you are representing is a smooth periodic curve with known frequency and amplitude, the polynomial representation is not just adequate. It is optimal. No other representation of equal size captures more information about the trajectory.
+
+This is why PWTP achieves its extraordinary compression ratio for walking scenes. The walk is not compressed. The walk is simply expressed in the language it was always written in: polynomials.

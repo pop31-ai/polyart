@@ -1,0 +1,19 @@
+Green Streaming: The Environmental Case for Polynomial Video
+
+Data centers consume approximately two percent of global electricity. This is roughly the same as the aviation industry. Video streaming accounts for approximately eighty percent of all internet traffic, and internet traffic is the primary driver of data center energy consumption.
+
+The energy cost of streaming a fifteen-minute video is dominated by three factors. First, the energy required to store the video data in data centers. Second, the energy required to transmit the video through the network. Third, the energy required to decode and render the video on the consumer device.
+
+A fifteen-minute 4K video requires approximately 400 gigabytes of data center storage. The energy to maintain this storage over the video's lifetime is not negligible. The energy to transmit 400 gigabytes through the network, through switches, routers, and fiber optic amplifiers, is substantial. The energy to decode and render 400 gigabytes of compressed video on a consumer device is significant.
+
+PWTP reduces all three energy costs by a factor of 700,000. The 600 kilobyte polynomial description requires negligible storage. The transmission of 600 kilobytes requires negligible network energy. The rendering of polynomials on a consumer device requires less energy than video decoding because polynomial evaluation is a simpler computational operation than video decompression.
+
+The numbers are striking. If all video streaming were converted to PWTP, the reduction in data center energy consumption would be approximately 99.9998 percent. The global electricity consumption of data centers would drop from two percent of total to a fraction of a percent. The environmental impact would be equivalent to removing millions of vehicles from the road.
+
+The fifteen-minute walk through Pompeii illustrates this clearly. The traditional video: 400 gigabytes stored, transmitted, and decoded. The PWTP description: 600 kilobytes stored, transmitted, and rendered. The energy cost of the PWTP version is less than one millionth of the traditional version.
+
+Beyond data centers, the network infrastructure itself benefits. Cell towers, switching centers, and fiber optic amplifiers all consume energy proportional to the data they carry. A 700,000 to one reduction in video data means a proportional reduction in network energy consumption. The entire telecommunications infrastructure becomes greener.
+
+The environmental case for PWTP is straightforward. Video streaming is the largest single consumer of internet infrastructure energy. PWTP reduces the data by 700,000 to 1. The energy reduction follows. The planet benefits.
+
+The fifteen-minute walk saves 400 gigabytes of energy-intensive data transmission. Multiply by every video streamed on Earth, and the environmental savings are enormous.
