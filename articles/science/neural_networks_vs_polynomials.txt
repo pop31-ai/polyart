@@ -1,0 +1,158 @@
+Neural Networks vs Polynomials: Two Approaches to Curve Fitting
+================================================================
+
+The fundamental problem of fitting a function to data has two
+major modern approaches: polynomial fitting and neural network
+approximation. Both aim to find a mapping from inputs to
+outputs, but they differ profoundly in philosophy, properties,
+and practical applications.
+
+---
+
+The Universal Approximation Theorem
+---
+
+The universal approximation theorem (Cybenko, 1989; Hornik,
+1991) states that a feedforward neural network with a single
+hidden layer containing a finite number of neurons can
+approximate any continuous function on a compact subset of
+R^n, provided the activation function is non-constant,
+continuous, and monotonically increasing.
+
+Formally, for any continuous function f: [0,1]^n -> R and
+any epsilon > 0, there exist parameters w_i, b_i, v_i such
+that:
+
+  F(x) = sum_{i=1}^{N} v_i * sigma(w_i^T * x + b_i)
+
+satisfies |F(x) - f(x)| < epsilon for all x in [0,1]^n.
+
+Polynomials have an analogous result: by the Weierstrass
+approximation theorem, any continuous function on [a,b] can
+be uniformly approximated by polynomials to any desired
+accuracy. For degree n, the best polynomial approximation
+satisfies:
+
+  ||f - P_n||_infinity <= C / n^k
+
+where k depends on the smoothness of f.
+
+---
+
+Overfitting and Underfitting
+---
+
+Both methods face the bias-variance tradeoff. A polynomial
+of too low degree underfits: it cannot capture the
+function's complexity. A polynomial of too high degree
+overfits: it captures noise in the training data.
+
+The polynomial P_n(x) = c_n*x^n + ... + c_0 has n+1 free
+parameters. When n approaches the number of training points,
+the polynomial passes through every point exactly but
+oscillates wildly between them (Runge's phenomenon).
+
+Neural networks face the same dilemma but with different
+characteristics. A network with too many parameters can
+memorize training data without generalizing. Regularization
+techniques -- dropout, weight decay, early stopping -- are
+analogous to polynomial degree restriction but operate in
+different mathematical spaces.
+
+The key difference: neural network overfitting often
+produces plausible-looking outputs (photorealistic but
+wrong images), while polynomial overfitting produces
+visually obvious oscillations. This makes polynomial
+overfitting easier to diagnose and correct.
+
+---
+
+When Polynomials Are Better
+---
+
+Polynomials offer several decisive advantages in specific
+contexts:
+
+Interpretability. A polynomial of degree 3 has four
+coefficients, each with clear mathematical meaning.
+The neural network equivalent has thousands of opaque
+parameters. For applications requiring explanation --
+scientific modeling, engineering analysis -- polynomials
+are preferred.
+
+Computational speed. Evaluating a degree-n polynomial
+requires n multiplications and n additions: O(n) operations.
+Evaluating a neural network requires matrix multiplications
+across layers: O(sum of layer widths squared). For real-time
+applications, polynomials often win.
+
+Guaranteed properties. Polynomial interpolation guarantees
+exact fit at given points. Least-squares polynomial fitting
+guarantees minimum squared error. These guarantees have no
+neural network equivalent.
+
+Compact representation. A polynomial curve in polynomial
+art requires storing n+1 coefficients. The neural network
+equivalent requires storing all weights and biases, often
+orders of magnitude more data.
+
+---
+
+When Neural Networks Are Better
+---
+
+Neural networks excel when:
+
+The underlying function has high-dimensional inputs (images,
+audio, text). Polynomials suffer from the curse of
+dimensionality: a degree-d polynomial in n variables has
+O(d^n) terms, making high-degree fitting infeasible.
+
+The function has sharp features (discontinuities, corners).
+Neural networks with ReLU activations naturally produce
+piecewise-linear approximations. Polynomials produce
+oscillations near sharp features.
+
+The dataset is massive. Neural networks scale gracefully
+with data volume; polynomial fitting becomes numerically
+unstable for very large datasets without special algorithms.
+
+---
+
+Hybrid Approaches
+---
+
+Recent research explores combining both methods. Polynomial
+residual networks add polynomial layers to neural
+architectures, capturing smooth global trends with
+polynomials and local variations with neural units.
+
+Chebyshev polynomial networks replace standard activation
+functions with Chebyshev polynomials, inheriting their
+near-minimax approximation properties while maintaining
+neural network flexibility.
+
+Physics-informed neural networks (PINNs) embed known
+polynomial relationships (conservation laws, symmetry
+constraints) into network training, using polynomials
+as inductive bias.
+
+---
+
+Implications for Polynomial Art
+---
+
+Polynomial art leverages the unique strengths of polynomial
+approximation: interpretability, speed, and compactness.
+Each curve is fully described by its coefficients, each
+parameter has a visual meaning, and the entire image can
+be stored in a few hundred bytes. This mathematical
+transparency is itself an aesthetic value -- the beauty
+of polynomial art lies not just in what it shows but in
+how efficiently it shows it.
+
+================================================================
+Keywords: neural networks, polynomial fitting, universal
+approximation theorem, overfitting, underfitting, Weierstrass
+theorem, Chebyshev polynomials, curve fitting, hybrid models,
+interpretability

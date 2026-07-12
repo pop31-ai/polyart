@@ -1,0 +1,152 @@
+Differential Equations in Art: Modeling Motion and Flow
+================================================================
+
+Art has always sought to capture motion. Waves crashing on
+shore, smoke curling upward, flames dancing in the wind --
+these phenomena follow the language of differential equations.
+Understanding these equations reveals why certain artistic
+representations of nature feel convincingly alive.
+
+---
+
+Fluid Dynamics and the Navier-Stokes Equations
+---
+
+The motion of fluids is governed by the Navier-Stokes
+equations:
+
+  rho * (du/dt + u * grad(u)) = -grad(p) + mu * laplacian(u) + f
+
+where u is velocity, p is pressure, rho is density, mu is
+viscosity, and f represents external forces. These nonlinear
+partial differential equations remain unsolved in general --
+their millennium prize problem is one of mathematics'
+greatest open questions.
+
+Despite their complexity, simplified versions produce
+remarkable artistic effects. The 2D incompressible Euler
+equations:
+
+  dv/dt + (v * grad)(v) = -(1/rho) * grad(p)
+
+generate the swirling patterns seen in classical depictions
+of water. Leonardo da Vinci's Deluge drawings capture the
+essential structure of turbulent flow with extraordinary
+accuracy, predating formal fluid dynamics by centuries.
+
+---
+
+Wave Propagation and the Wave Equation
+---
+
+The classical wave equation describes vibrations in
+strings, membranes, and air:
+
+  d^2u/dt^2 = c^2 * laplacian(u)
+
+For a vibrating string of length L with fixed ends, the
+solution is a Fourier series:
+
+  u(x,t) = sum_{n=1}^{infinity} A_n * sin(n*pi*x/L) *
+           cos(n*pi*c*t/L)
+
+Each term represents a harmonic mode. The visual
+representation of standing waves produces the patterns
+seen in Chladni figures (1787), where sand on a vibrating
+plate arranges along nodal lines. These patterns have
+directly inspired decorative arts and textile design.
+
+Artists representing ocean waves intuitively follow the
+superposition principle: complex wave forms arise from
+summing simple sinusoidal components. Hokusai's "The
+Great Wave off Kanagawa" can be decomposed into roughly
+a dozen dominant wave components.
+
+---
+
+Heat Diffusion and Color Mixing
+---
+
+The heat equation governs temperature evolution:
+
+  dT/dt = k * laplacian(T)
+
+where k is thermal diffusivity. The solution describes
+how temperature smooths over time, and its mathematical
+structure is identical to Gaussian blur in image
+processing. This connection means that color gradients
+in paintings implicitly follow diffusion equations.
+
+Impressionist painters like Monet exploited this
+principle. By placing pure colors adjacent to each
+other, they created visual diffusion: from a distance,
+the viewer's visual system "solves" the diffusion
+equation, blending discrete marks into continuous
+color fields. Pointillism is, in a very real sense,
+discrete approximation of continuous diffusion.
+
+---
+
+Polynomial Solutions to Differential Equations
+---
+
+Many differential equations admit polynomial solutions.
+The Hermite polynomials H_n(x) solve:
+
+  H_n''(x) - 2x*H_n'(x) + 2n*H_n(x) = 0
+
+These appear in quantum harmonic oscillator wavefunctions
+and in polynomial approximations of Gaussian diffusion.
+Legendre polynomials P_n(x) satisfy:
+
+  (1-x^2)*P_n''(x) - 2x*P_n'(x) + n(n+1)*P_n(x) = 0
+
+and are used in spherical harmonic expansions of
+physical fields.
+
+In computational art, polynomial solutions provide
+efficient approximations of physically-based phenomena.
+A degree-n polynomial solution captures the essential
+behavior of a system without solving the full PDE,
+reducing computation from hours to milliseconds.
+
+---
+
+Artistic Representation of Natural Phenomena
+---
+
+The challenge of depicting motion in static media has
+driven artists toward mathematical solutions long before
+the mathematics was formalized. Japanese woodblock prints
+use repeating wave forms that follow the superposition
+principle. Baroque ceiling paintings use perspective
+projections that solve the radiative transfer equation.
+
+Modern computational art explicitly uses these
+equations. Particle systems in computer graphics
+solve simplified Navier-Stokes equations to generate
+smoke and fire. Cloth simulation solves the wave
+equation to produce draping effects. These techniques
+are polynomial art in disguise: the underlying
+simulations rely on polynomial basis functions and
+time-stepping schemes that approximate continuous
+dynamics.
+
+---
+
+From Equations to Aesthetic Experience
+---
+
+The deep connection between differential equations
+and artistic representation reveals something
+fundamental about beauty. Nature's most visually
+compelling phenomena -- turbulent flow, flickering
+flames, rippling water -- are governed by the most
+mathematically rich equations. Polynomial art bridges
+this gap, translating the language of calculus into
+the language of the eye.
+
+================================================================
+Keywords: differential equations, Navier-Stokes, wave equation,
+heat equation, fluid dynamics, polynomial solutions, Hermite
+polynomials, Legendre polynomials, computational art, motion

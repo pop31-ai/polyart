@@ -1,0 +1,143 @@
+Polynomial Interpolation: From Lagrange to Least Squares
+================================================================
+
+Polynomial interpolation is one of the oldest and most
+fundamental problems in numerical analysis. Given a set of
+data points, find a polynomial that passes through all of
+them. The solution underpins everything from computer graphics
+to scientific computing.
+
+---
+
+The Lagrange Form
+---
+
+Joseph-Louis Lagrange (1736-1813) gave the first elegant
+solution. For n+1 points (x_0, y_0), ..., (x_n, y_n), the
+interpolating polynomial is:
+
+  P(x) = sum_{k=0}^{n} y_k * L_k(x)
+
+where the Lagrange basis polynomials are:
+
+  L_k(x) = prod_{j=0, j!=k}^{n} (x - x_j) / (x_k - x_j)
+
+Each L_k(x) equals 1 at x = x_k and 0 at all other nodes.
+The formula is theoretically beautiful but computationally
+inefficient: O(n^2) operations to evaluate, and adding a
+new point requires recomputing everything.
+
+---
+
+Newton's Divided Differences
+---
+
+Isaac Newton (1643-1727) developed a more practical approach.
+Define divided differences recursively:
+
+  f[x_i] = y_i
+  f[x_i, ..., x_{i+k}] = (f[x_{i+1},...,x_{i+k}] -
+                           f[x_i,...,x_{i+k-1}]) /
+                          (x_{i+k} - x_i)
+
+The interpolating polynomial becomes:
+
+  P(x) = f[x_0] + f[x_0,x_1](x-x_0) +
+         f[x_0,x_1,x_2](x-x_0)(x-x_1) + ...
+
+This form is computationally superior: adding a new data
+point requires only one additional term, not a full
+recomputation. The Newton form is also easier to analyze
+for error bounds.
+
+---
+
+Chebyshev Nodes and Minimax Approximation
+---
+
+Pafnuty Chebyshev (1821-1894) discovered that the placement
+of interpolation nodes dramatically affects accuracy. For
+equidistant nodes, interpolation error grows exponentially
+as the degree increases -- a problem later identified by
+Carl Runge (1901).
+
+Chebyshev nodes for the interval [-1, 1] are:
+
+  x_k = cos((2k+1)*pi / (2(n+1))), k = 0, 1, ..., n
+
+These nodes cluster near the endpoints, where polynomial
+oscillation is worst. Interpolation at Chebyshev nodes
+achieves near-minimax accuracy: the maximum error is
+close to the theoretical best polynomial approximation.
+
+---
+
+Runge's Phenomenon
+---
+
+Runge showed that for the function f(x) = 1/(1 + 25x^2),
+interpolation at equidistant points diverges as the degree
+increases. The interpolated polynomial oscillates wildly
+near the endpoints, even though the function is smooth.
+
+This counterintuitive result has profound implications:
+higher-degree polynomials are not always better
+approximators. The lesson for polynomial art is clear:
+choosing the right degree matters more than maximizing it.
+
+---
+
+Least Squares Fitting
+---
+
+When data points exceed the polynomial degree, exact
+interpolation becomes impossible. The least squares method
+finds the polynomial that minimizes the total squared error:
+
+  min_{c_0,...,c_n} sum_{i=1}^{m} (y_i - P(x_i))^2
+
+This leads to the normal equations:
+
+  (X^T X) c = X^T y
+
+where X is the Vandermonde matrix with entries X_{ij} = x_i^j.
+
+Least squares is the method behind numpy polyfit and is
+the mathematical engine of polynomial art generation.
+
+---
+
+Error Analysis and Degree Selection
+---
+
+The interpolation error for polynomial P_n of degree n is:
+
+  f(x) - P_n(x) = f^{(n+1)}(xi) / (n+1)! *
+                   prod_{k=0}^{n} (x - x_k)
+
+for some xi in the interval. This reveals two competing
+effects: the derivative factor grows with function
+complexity, while the factorial denominator grows with
+degree. Optimal degree balances these forces.
+
+In practice, the leave-one-out cross-validation error
+or the Akaike Information Criterion (AIC) guides degree
+selection for polynomial art, ensuring curves are smooth
+yet faithful to the underlying data.
+
+---
+
+Application in Polynomial Art
+---
+
+Polynomial art leverages interpolation theory to transform
+raw data into visual beauty. By carefully selecting
+polation nodes, choosing degree via error analysis, and
+using least squares for noisy data, artists and
+programmers create curves that are both mathematically
+sound and aesthetically compelling.
+
+================================================================
+Keywords: polynomial interpolation, Lagrange, Newton, Chebyshev,
+Runge phenomenon, least squares, polyfit, Vandermonde matrix,
+degree selection, error analysis
