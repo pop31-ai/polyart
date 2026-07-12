@@ -1,0 +1,212 @@
+Polynomial Flowers: Mathematical Beauty of Botanical Art
+================================================================
+Zhongwen banben (Chinese Version)
+================================================================
+
+Zhaiyao
+-------
+Benwen tantao le duoxiangshi shuxue yu zhiwu yishu de jiaoji, zhanshi
+canshuqu he jizuo quxian ruhe yimo ziran huahui xingtai, qiejindu
+lingren jingtan. Women tichu PolyArt zhiwu moni kuangjia, yong
+FlowerCurves, PlantCurves he CompositionCurves deng lei lai
+shengcheng huahui moshi. Tongguo yanjiu huangjinjiao, yexu xulie he
+Turing moshi deng shuxue yuanli, women jieshi le suanfa ruhe bianma
+ziran zhong de mei. Women hai taolun le huashu, huayuan changjing,
+huahuan he ikebana deng zuhe jishu.
+
+Guanjianci: duoxiangshi quxian, zhiwu jianmo, shengchengshi yishu,
+jizuo zuobiao, yexu xulie, suanfa mei.
+
+
+1. Shuxue huahui moshi
+-----------------------
+Zui jiandan de zhiwu quxian shi meiguihua, yong jizuo zuobiao
+dingyi:
+
+    r = a * (1 + cos(k * theta))
+
+qizhong 'a' kongzhi daxiao, 'k' jueding huaban shuliang. Dang k
+shi zhengzhengshu shi, meiguihua chansheng zhenghao k pian huaban
+(huo zhe 2k, ru guo k shi oushu). Gaibian k keyi huo de类si
+xiangri kui, maodan he yinhua de xingtai.
+
+Baihehua juyou liuzhou duicheng, keyi tongguo xiugai meiguihua
+fangcheng yong jiaohe xiebo jianmo:
+
+    r = a * (1 + cos(3 * theta)) * (1 + 0.3 * cos(6 * theta))
+
+zhe hui chansheng liu pian mingque de huaban, youxì de neibu jiegou,
+yulei shi Lilium shu.
+
+Xiangrikuizhong de jihua shun Fibonacci shulie. Zhongzi de
+pailie shun:
+
+    theta_n = n * phi,  r_n = c * sqrt(n)
+
+qizhong phi = (1 + sqrt(5)) / 2 shi huangjinbizhi (~1.618), c shi
+suo fang changshu. Mei ge houxian zhongzi rao huangjinjiao
+(~137.508 du) xuanzhuan, xingcheng xiangrikuizhong de jingdian
+luoxuanhuawen.
+
+Qita huaban quxian keyi yong leishisi de canshu fangshi dingyi:
+
+    x(t) = R * cos(t) * (1 + epsilon * cos(m * t))
+    y(t) = R * sin(t) * (1 + epsilon * cos(m * t))
+
+qizhong m jueding bo lang shu, epsilon tiaozhi shendu.
+
+
+2. PolyArt zhiwu moni kuangjia
+-------------------------------
+PolyArt kuangjia jiang zhiwu quxian shengcheng zuzhi cheng san ge
+heixin lei:
+
+  FlowerCurves: Shengcheng geren de huatou. Fangfa bao kuo
+  rose(a, k), lily(a, n), daisy(center, radius, nPetals) he
+  sunflower(nSeeds, scale). Mei ge fangfa fanhui yi zu jizuo huo
+  canshu quxian dian, keyi zhijie huizhi.
+
+  PlantCurves: Moni jing, ye he fenjhi jiegou. Shiyong digui L
+  xitong guize peihe duoxiangshi chajian. Zhuyao fangfa:
+  stem(start, end, curvature), leaf(base, angle, size),
+  branch(point, depth, spread).
+
+  CompositionCurves: Chuli duoge zhiwu yuanke de kongjian fenbu.
+  Zhichi fangshe fenbu, wangge buzhi he zidingyi fangzhi.
+  Fangfa: bouquet(flowers, center, radius), garden(layout, density),
+  wreath(elements, radius, count).
+
+Suo you lei gongxiang tongyi de jiekou, yongyu yanse yingse, xiankuang
+he bianhuan (pingyi, xuanzhuan, suofang). Gai moni kuangjia yong
+Python shixian, kexuan yong NumPy jiasu lai piliang chuli dazhongzi
+shuju.
+
+FlowerCurves lei hai zhichi hunhe xingtai, tongguo xianxing
+chajian hunhe liang tiao jichu quxian:
+
+    r_hunhe = (1 - t) * r_huahui1 + t * r_huaahui2
+
+zhe keyi chuangzao guodu xing zhiwu xingtai, ronghe liangge
+butong wuzhong de tedian.
+
+
+3. Suanfa mei
+-------------
+Ziran de mei zunxun shuxue guize. Huangjinjiao (137.508 du)
+kongzhi yexu xulie -- ye, zhongzi he huaban de pailie. Zhe ge jiao
+tui dao wei:
+
+    alpha = 360 / phi^2 = 360 * (2 - phi) = 360 * (3 - sqrt(5)) / 2
+
+meiyou renhe youlishu neng hao de jinni zhe ge jiao, zhe baozheng
+linjin de liang ge yuanke buhui chongdie, zuida hua guangzhao he
+chuanbozhe de jiechu.
+
+Alan Turing tichu fanying-kuisan xitong chansheng ziran huawen.
+Zai huaban shang, liang ge huaxue morphogen huxiang zuoyong:
+
+    du/dt = D_u * grad^2(u) - u*v^2 + alpha*(1-u)
+    dv/dt = D_v * grad^2(v) + u*v^2 - (alpha+beta)*v
+
+qizhong u shi huojinongdu, v shi yizhiwu, D_u he D_v shi kuisan
+xishu, alpha, beta shi fanying sudu. Tiaozhe zhexie canshu keyi
+chansheng bandian, tiwen he jiedu, moni zhenhuaban de huawen.
+
+Huaban zhong de fenshi fencha zunxun zixiangsi guize. Mei ci
+diehua shi, huaban pian duan cheng gu dingjiao fenlie cheng geng
+xiao de pian duan, xingcheng jingxi de ye mai huawen. Zhenhuaban
+bianyuan de Hausdorff weidu tongchang zai 1.2 dao 1.6 zhijian,
+biaoming zhongdeng fenshi fuzadu.
+
+
+4. Zuhe jishu
+--------------
+Yishu xing zhiwu zuhe zunxun shuxue he chuantong yishu de chengli
+yuanli.
+
+Huashu: Duo ge FlowerCurves shili yong CompositionCurves.bouquet()
+fenbu. Suanfa jiang huahui an Fibonacci luoxuan fangzhi zai yuanxing
+bianjie nei, peihe qingwei de suiji pianyi yi zengqiang ziran gan.
+
+Huayuan changjing: PlantCurves zai butong shendu shengcheng zhi ye,
+FlowerCurves tianjia huaduo. Huayuan buzhi yong Voronoi fenkuai fa
+fenpei shengzhang quyu, quebao ziran de jianju.
+
+Huaquan: Yuanke junyun fenbu zai yuanxing luoxian shang, yong huchang
+canshu hua. Mei ge yuanke chuiyu yuan zai gai dian de qiexian,
+xingsheng lianxu de zhiwu huaquan.
+
+Ikebana: Riben huahua yishu qiangdiao budui chen he liukong. PolyArt
+de ikebana fangfa jiang san gen zhuyao jing an zhiyuan (shi), di (chi)
+he ren (jin) de jiao fangzhi, zunxun gudian Sogetsu xuexiao de
+bili.
+
+Cengci shenjdu tongguo toushi suofang he kongzhi Zxu paixu shixian,
+shizuhe juyou titigan.
+
+
+5. Yingyong
+-----------
+Duoxiangshi huahui moshi you guangfan de shijian yingyong.
+
+Youxi chengxu zhuanyuan ziwu: shishi shengcheng kaifang shijie youxi
+zhong de zhiwu. Canshuhua fangfa yunxu wuxian bianhua, neicun xiaohao
+jidi, yinwei zhi xuyao cunchu quxian canshu.
+
+Shengchengshi yishu: Yishujia shiyong PolyArt chuangzao banhua,
+donghua he hudong shi zhanpin. Shuxue jichu quebao mei jian zuopin
+meiyan qie jingque.
+
+Shuxue jiaoyu: Huahui duoxiangshi moshi zuowei yuansuanhe he
+jiehe jixue kecheng de xingqu anli. Xueshengtongguo dongshou goujian
+quxian tanjiu jizuo zuobiao, canshu fangcheng he duicheng.
+
+Kexue kejihua: Zhiwuxuejia yong quxian moni huahui xingtai, yong
+yu fenleixue jianbie. Canshu biaoda keyi dui butong wuzhong de
+huaban xingtai jinxing dingliang bijiao.
+
+Fangzhi he biaomian sheji: Huahui duoxiangshi quxian yongyu zhipin,
+bihua he taoci zhuangshi, zhe li zhi de zhi de shi keyong de
+jixu mei.
+
+
+Jielun
+------
+Shuxue shi mei de putong yuyan. Cong jiandan de meiguiquxian dao
+xiangrikuizhong de fuza yexu xulie, duoxiangshi quxian jingzhun de
+boduo zhiwu xingtai de benzhi, yu ziran bimeiyi. PolyArt moni
+kuangjia zhengming, suanfa siwei zengqiang le ery fei xiaoshi
+yishu biaoda. Sui zhe women dui ziran xingtai beihou shuxue
+jiegou renshi de jiashen, women budan huo de jishu gongju, geng
+huide zhen qie de xinshang meige huaban, meipian ye he meigen
+jing zhong bencode jingmei.
+
+
+Cankao Wenxian
+--------------
+[1] Thompson, D. W. (1917). On Growth and Form. Cambridge University
+    Press. [Dover chongyin, 1992.]
+
+[2] Jean, R. V. (1994). Phyllotaxis: A Systems Approach in Biology.
+    Cambridge University Press.
+
+[3] Livio, M. (2002). The Golden Ratio: The Story of Phi, the World's
+    Most Astonishing Number. Broadway Books.
+
+[4] Turing, A. M. (1952). The Chemical Basis of Morphogenesis.
+    Philosophical Transactions of the Royal Society of London, B237,
+    37-72.
+
+[5] Prusinkiewicz, P. & Lindenmayer, A. (1990). The Algorithmic Beauty
+    of Plants. Springer-Verlag. [Online: cgl.cs.uwaterloo.ca/
+    projects/cpets/algorithmic-beauty/]
+
+[6] Ball, P. (2016). Patterns in Nature: Why the Natural World Looks
+    the Way It Does. University of Chicago Press.
+
+[7] Kappraff, J. (2002). Beyond Measure: A Guided Tour Through Nature,
+    Myth, and Number. World Scientific.
+
+================================================================
+Wenzhang jieshu -- zhongwen banben
+================================================================

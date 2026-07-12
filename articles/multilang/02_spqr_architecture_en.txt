@@ -1,0 +1,368 @@
+================================================================================
+  SPQR Architecture Through Polynomial Curves: From Rome to Piranesi
+  Language: English
+  Generated: 2026-07-12
+================================================================================
+
+ABSTRACT
+---------
+This article explores the intersection of Roman architectural heritage and
+computational geometry through polynomial curve representation. We examine
+how the classical orders, monumental arches, and the impossible geometries
+of Giovanni Battista Piranesi's "Carceri d'Invenzione" can be encoded as
+sets of polynomial curves. By mapping Doric, Ionic, and Corinthian column
+profiles to parametric equations, and by modeling semicircular arches and
+aqueduct elevations through piecewise polynomials, we establish a formal
+language for architectural rendering. The SPQR composition -- combining
+temple facades, Colosseum wall segments, Pantheon dome curvature, and
+imperial eagle motifs -- is assembled entirely from polynomial primitives.
+We further demonstrate how Piranesi's recursive staircases and Penrose-
+impossible triangles can be expressed through nested polynomial transforms.
+The resulting etching-style output, characterized by thin overlapping lines
+and hatched shadow fields, bridges ancient Roman construction principles
+with modern computer graphics. This work contributes to the growing field
+of mathematical art history and digital archaeology.
+
+Keywords: polynomial curves, Roman architecture, SPQR, Piranesi,
+          computational geometry, Carceri, digital etching
+
+================================================================================
+
+1. ROMAN ARCHITECTURAL ORDERS AS POLYNOMIAL PROFILES
+====================================================
+
+The three classical orders of Roman architecture -- Doric, Ionic, and
+Corinthian -- each define a characteristic column profile that can be
+decomposed into a sequence of polynomial segments. A column shaft, when
+sectioned along its vertical axis, yields a silhouette composed of:
+
+  - The base (plinth and torus molding)
+  - The shaft (entasis curvature)
+  - The capital (echinus, abacus, and volutes or acanthus)
+
+For the Doric order, the shaft entasis follows a subtle convex curve
+traditionally approximated by a conic section. In polynomial form, we
+represent this as a quartic:
+
+  y(x) = a*x^4 + b*x^2 + c
+
+where x is the normalized height (0 at base, 1 at neck) and y is the
+radius offset from the shaft axis. Typical Roman Doric values yield
+a = -0.03, b = 0.08, c = 1.0.
+
+The Ionic capital introduces the volute -- a spiral that Piranesi rendered
+with obsessive precision. A volute can be modeled as an Archimedean spiral
+mapped through a polynomial warp:
+
+  r(theta) = k * theta + epsilon * theta^3
+
+where k controls the spiral pitch and epsilon introduces the tightening
+visible in Roman examples. The abacus above the volute is a simple
+rectangular profile, expressible as degree-1 (linear) segments.
+
+The Corinthian capital is the most ornate, featuring acanthus leaves
+arranged in two tiers. Each leaf profile can be captured by a sixth-
+degree polynomial that traces the serrated margin:
+
+  L(t) = sum_{i=0}^{6} c_i * t^i,  t in [0, 1]
+
+The coefficients c_i encode the characteristic lobed shape, with
+alternating maxima and minima creating the leaf serrations.
+
+Roman builders applied these orders with strict proportional systems.
+Vitruvius documented that the Doric column diameter relates to height
+at a ratio of 1:7, Ionic at 1:8, and Corinthian at 1:9. These ratios
+scale the polynomial domains accordingly, preserving visual fidelity.
+
+================================================================================
+
+2. ARCHES AND AQUEDUCTS: PIECEWISE POLYNOMIAL ELEVATIONS
+=========================================================
+
+The semicircular arch is the defining structural element of Roman
+architecture. Mathematically, a semicircle of radius R centered at
+the origin is:
+
+  x^2 + y^2 = R^2,  y >= 0
+
+For computational rendering, we parameterize as:
+
+  x(t) = R * cos(t)
+  y(t) = R * sin(t),  t in [0, pi]
+
+However, Roman arches are not pure semicircles. The voussoir (wedge-
+shaped stones) introduces a stepped radial profile. Each voussoir
+subtends an angle delta_t = pi / n, where n is the number of stones.
+Within each voussoir, the inner and outer arcs define an annular
+segment:
+
+  R_inner <= r(t) <= R_outer,  t in [t_k, t_{k+1}]
+
+The keystone at the apex is typically oversized, creating a visual
+emphasis that polynomial smoothing can capture with a local cubic
+interpolation at the crown.
+
+The triumphal arch multiplies this unit into a composition of three
+or five bays. The central bay spans wider, with a taller arch ring,
+while lateral bays are reduced. We model the full elevation as a
+piecewise function:
+
+  E(x) = { arch_L(x)   if x in left_lateral
+          { arch_C(x)   if x in central_bay
+          { arch_R(x)   if x in right_lateral
+
+Each sub-arch is a scaled and translated copy of the semicircular
+primitive, with entablature polynomials bridging the spandrels.
+
+The multi-tier aqueduct (e.g., Pont du Gard) stacks three or more
+arcade levels. Each tier repeats the arch unit with diminishing scale:
+tier k uses radius R_k = R_0 / (1 + 0.3*k) and column height
+h_k = h_0 * (1 - 0.15*k). The overall silhouette forms a tapering
+elevation that can be rendered as a composite polynomial surface.
+
+The hydraulic channel atop the structure is a shallow trough,
+modeled as a parabolic cross-section:
+
+  z(y) = alpha * y^2 + beta
+
+with alpha controlling the channel depth and beta the rim height.
+
+================================================================================
+
+3. PIRANESI'S CARCERI: IMPOSSIBLE GEOMETRY AND RECURSIVE DEPTH
+================================================================
+
+Giovanni Battista Piranesi (1720-1778) produced his "Carceri
+d'Invenzione" (Imaginary Prisons) as a series of 14 etchings that
+defy Euclidean spatial logic. The compositions feature:
+
+  - Impossible staircases that ascend and descend simultaneously
+  - Penrose triangle constructions embedded in architectural frames
+  - Recursive vaulted corridors receding into indefinite depth
+  - Stairways that loop back upon themselves
+
+From a polynomial perspective, these impossibilities arise from
+inconsistent depth mappings. A staircase is typically a linear
+function of depth:
+
+  z_step(n) = z_0 + n * delta_z
+
+In Piranesi's rendering, the same staircase simultaneously satisfies
+two depth functions that cannot coexist in Euclidean space:
+
+  z_forward(n) = z_0 + n * delta_z
+  z_return(n)  = z_1 - n * delta_z
+
+The viewer's eye follows one function ascending, then seamlessly
+transitions to the other descending, creating the paradox. We encode
+this as a piecewise polynomial with a discontinuity at the visual
+pivot point:
+
+  z(n) = z_forward(n)  for n < n_pivot
+  z(n) = z_return(n)   for n >= n_pivot
+
+where the continuity constraint z_forward(n_pivot) = z_return(n_pivot)
+is deliberately violated to produce the spatial ambiguity.
+
+The Penrose triangle appears in several Carceri plates as a structural
+beam. Its construction requires three bars, each appearing to meet the
+next at right angles in the local frame, yet forming an impossible
+closed loop globally. Each bar is a rectangular prism whose depth
+mapping follows:
+
+  d_bar_i(x, y) = d_i(x, y) + epsilon_i * sin(2*pi*x/L)
+
+with epsilon_i chosen to create the occlusion paradox at each
+junction. The recursive depth of the Carceri vaults can be modeled
+through iterated polynomial maps:
+
+  V_{k+1}(x, y) = f(V_k(x, y))
+
+where f is a contraction mapping that scales and translates the vault
+profile, and k indexes the recursion depth. After N iterations, the
+superposition of all V_k creates the characteristic infinite recession.
+
+================================================================================
+
+4. THE SPQR COMPOSITION: TEMPLE, COLOSSEUM, PANTHEON, AND EAGLE
+=================================================================
+
+The SPQR (Senatus Populusque Romanus) composition assembles four
+iconic elements into a unified architectural fantasy.
+
+4.1 Temple Facade
+-----------------
+The Roman temple follows the prostyle plan: a raised podium, a
+hexastyle (six-column) portico, and a triangular pediment. The
+pediment tympanum is an isosceles triangle with base B and height
+H = B * tan(30 deg), rendered as:
+
+  pediment(x) = H * (1 - |2*x/B|),  x in [-B/2, B/2]
+
+The frieze below carries the SPQR inscription, modeled as letter
+profiles composed of short polynomial segments forming serif
+characters in the Roman capitalis monumentalis style.
+
+4.2 Colosseum Wall Section
+--------------------------
+The Colosseum exterior presents three superimposed arcaded stories.
+Each story is an arcade of the form described in Section 2, with
+the added complexity of engaged columns in alternating orders:
+Doric on the ground level, Ionic on the second, Corinthian on the
+third. The wall surface between arches is modeled with a subtle
+curvature:
+
+  w(s, t) = s * (1 - s) * A * sin(pi * t)
+
+where s is the horizontal parameter across the wall panel, t is
+the vertical, and A controls the entasis of the engaged column.
+
+4.3 Pantheon Dome
+-----------------
+The Pantheon dome is a semicircular shell with an oculus at the
+apex. The interior profile is:
+
+  dome(theta) = R * (1 - 0.05 * cos(8*theta)),  theta in [0, pi]
+
+where the cos(8*theta) term represents the coffered ceiling panels
+(28 coffers in five rings). The oculus at theta = 0 has radius
+r_0 = R * 0.19, creating the iconic opening. The dome thickness
+varies as:
+
+  thickness(theta) = t_base * (1 - 0.6 * sin(theta))
+
+providing structural realism.
+
+4.4 Imperial Eagle and Laurel
+------------------------------
+The Roman eagle (aquila) is rendered as a collection of polynomial
+curves tracing wing feathers, tail fan, and outstretched talons.
+Each feather is a degree-4 polynomial:
+
+  feather_i(t) = [x_i(t), y_i(t)]
+
+with control points arranged to create the characteristic spread.
+The laurel wreath encircling the SPQR shield uses a toroidal
+parameterization:
+
+  wreath(theta) = [(R + r*cos(n*theta))*cos(theta),
+                   (R + r*cos(n*theta))*sin(theta)]
+
+where R is the wreath radius, r is the leaf radius, and n = 12
+gives the number of leaf clusters.
+
+================================================================================
+
+5. COMPUTER GENERATION: ETCHING STYLE WITH THIN LINES
+======================================================
+
+The final rendering adopts the visual language of Piranesi's etchings,
+characterized by:
+
+  - Uniform thin lines (0.3-0.5 pixel width before anti-aliasing)
+  - Cross-hatching for shadow fields
+  - Parallel hatching for mid-tones
+  - Stipple dots for atmospheric depth
+
+Each polynomial curve is sampled at sufficient density to produce
+smooth anti-aliased lines. The sampling interval delta_t is chosen
+such that the maximum chord deviation does not exceed 0.5 pixels:
+
+  delta_t < 0.5 / max |d^2 P / dt^2|
+
+For cross-hatching, a regular grid of line segments is intersected
+with the shadow regions defined by the architectural forms. The
+hatching angle typically ranges from 45 to 60 degrees, with
+line spacing s_h following:
+
+  s_h = s_0 * (1 + 0.3 * depth_factor)
+
+where depth_factor increases with distance from the viewer, creating
+a sense of atmospheric perspective through line density alone.
+
+The polynomial curves for all architectural elements -- columns,
+arches, domes, stairs, and decorative motifs -- are composited in
+layer order: background sky, distant aqueducts, mid-ground Colosseum
+wall, foreground temple and eagle. Each layer uses a slightly
+different line weight and hatching density to establish spatial
+hierarchy.
+
+The computational pipeline:
+
+  1. Define polynomial coefficients for each element
+  2. Sample curves at adaptive density
+  3. Clip curves to visible regions
+  4. Generate hatching patterns within closed regions
+  5. Composite layers with depth-dependent line attributes
+  6. Apply final contrast and tonal adjustment
+
+The output is a high-resolution monochrome image (minimum 300 DPI)
+suitable for both screen display and print reproduction, faithful
+to the spirit of Piranesi's original copper-plate etchings while
+constructed entirely through mathematical primitives.
+
+================================================================================
+
+CONCLUSION
+==========
+
+Roman architecture, from the proportional systems of the classical
+orders to the monumental scale of the Colosseum and the geometric
+perfection of the Pantheon, provides an ideal testbed for polynomial
+curve representation. The formal vocabulary of polynomial segments --
+linear, quadratic, cubic, and higher-degree -- maps naturally onto
+the architectural vocabulary of columns, arches, vaults, and domes.
+
+Piranesi's Carceri extend this challenge into the domain of
+impossible geometry, where polynomial depth functions can encode
+spatial paradoxes that Euclidean geometry cannot resolve. The
+recursive and self-referential structures of the Carceri anticipate
+modern concepts in fractal geometry and computational topology.
+
+By combining these elements into the SPQR composition, we demonstrate
+that mathematics serves as a bridge between the ancient builders who
+raised Rome's monuments and the digital artists who re-imagine them
+through computational means. The polynomial curve, in its elegant
+simplicity, becomes the common thread connecting Vitruvius to
+Piranesi, and Piranesi to the algorithmic present.
+
+The etching style of the final output -- thin lines, hatched shadows,
+layered composition -- is not merely an aesthetic choice but a
+mathematical one: each line is a sampled polynomial, each shadow a
+computed intersection, each depth cue a function evaluation. In this
+sense, every digital rendering of Roman architecture is already an
+exercise in applied mathematics, whether its creator recognizes it
+or not.
+
+================================================================================
+
+REFERENCES
+==========
+
+[1]  Ward-Perkins, J.B. "Roman Imperial Architecture." Yale University
+     Press, 1994. ISBN 0-300-05919-1.
+
+[2]  Piranesi, G.B. "Carceri d'Invenzione." First edition 1749-1761.
+     Modern reprint: Dover Publications, 1973.
+
+[3]  Wilton-Ely, John. "The Mind and Art of Giovanni Battista
+     Piranesi." Thames and Hudson, 1978. ISBN 0-500-23258-2.
+
+[4]  Vitruvius. "De Architectura" (Ten Books on Architecture).
+     Translated by Morris Hicky Morgan. Harvard University Press, 1914.
+
+[5]  Stamper, John W. "The Architecture of Roman Temples: The
+     Republic to the Middle Empire." Cambridge University Press, 2005.
+
+[6]  Lancaster, Lynne C. "Concrete Vaulted Construction in Imperial
+     Rome: Innovations in Context." Cambridge University Press, 2005.
+
+[7]  Trachtenberg, Marvin. "Building-in-Time: From Giotto to
+     Alberti and Modern Oblivion." Yale University Press, 2010.
+
+[8]  Stolfi, Jorge. "The Mathematics of Piranesi's Impossible
+     Architectures." Proceedings of BRIDGES 2019, pp. 245-252.
+
+================================================================================
+  End of article
+================================================================================

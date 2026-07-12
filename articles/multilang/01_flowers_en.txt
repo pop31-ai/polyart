@@ -1,0 +1,219 @@
+Polynomial Flowers: Mathematical Beauty of Botanical Art
+================================================================
+English Version
+================================================================
+
+Abstract
+--------
+This article explores the intersection of polynomial mathematics and
+botanical art, demonstrating how parametric and polar curves can model
+natural flower forms with remarkable fidelity. We present the PolyArt
+botanical module, a framework for generating flower models using classes
+such as FlowerCurves, PlantCurves, and CompositionCurves. By examining
+mathematical principles including the golden angle, phyllotaxis, and
+Turing patterns, we reveal how algorithms encode the beauty found in
+nature. We further discuss composition techniques for bouquets, garden
+scenes, wreaths, and ikebana arrangements, and outline applications in
+procedural game assets, generative art, and mathematical education.
+
+Keywords: polynomial curves, botanical modeling, generative art,
+polar coordinates, phyllotaxis, algorithmic beauty.
+
+
+1. Mathematical Flower Models
+------------------------------
+The simplest botanical curve is the rose, defined in polar coordinates as:
+
+    r = a * (1 + cos(k * theta))
+
+where 'a' controls size and 'k' determines the number of petals. When k
+is an integer, the rose produces exactly k petals (or 2k if k is even).
+Varying k yields forms reminiscent of daisies, buttercups, and anemones.
+
+The lily exhibits six-fold symmetry and can be modeled by modifying the
+rose equation with angular harmonics:
+
+    r = a * (1 + cos(3 * theta)) * (1 + 0.3 * cos(6 * theta))
+
+This produces six distinct petals with subtle inner structure, closely
+mimicking the Lilium genus.
+
+Sunflower head geometry follows Fibonacci numbers. The arrangement of
+seeds follows:
+
+    theta_n = n * phi,  r_n = c * sqrt(n)
+
+where phi = (1 + sqrt(5)) / 2 is the golden ratio (~1.618) and c is a
+scaling constant. Each successive seed rotates by the golden angle
+(~137.508 degrees), producing the iconic spiral pattern observed in
+Helianthus annuus.
+
+Additional petal curves can be defined using Lissajous-like parametric
+forms:
+
+    x(t) = R * cos(t) * (1 + epsilon * cos(m * t))
+    y(t) = R * sin(t) * (1 + epsilon * cos(m * t))
+
+where m controls the number of undulations and epsilon modulates depth.
+
+
+2. The PolyArt Botanical Module
+--------------------------------
+The PolyArt framework organizes botanical curve generation into three
+core classes:
+
+  FlowerCurves: Generates individual flower heads. Methods include
+  rose(a, k), lily(a, n), daisy(center, radius, nPetals), and
+  sunflower(nSeeds, scale). Each method returns a set of polar or
+  parametric points that can be rendered directly.
+
+  PlantCurves: Models stems, leaves, and branching structures. Uses
+  recursive L-system rules combined with polynomial interpolation. Key
+  methods: stem(start, end, curvature), leaf(base, angle, size),
+  branch(point, depth, spread).
+
+  CompositionCurves: Handles spatial arrangement of multiple botanical
+  elements. Supports radial distribution, grid layouts, and custom
+  placement. Methods: bouquet(flowers, center, radius),
+  garden(layout, density), wreath(elements, radius, count).
+
+All classes share a common interface for color mapping, line weight,
+and transformation (translation, rotation, scaling). The module is
+implemented in Python with optional NumPy acceleration for batch
+processing of large seed arrangements.
+
+The FlowerCurves class also supports hybrid forms by blending two base
+curves using linear interpolation:
+
+    r_blended = (1 - t) * r_flower1 + t * r_flower2
+
+This allows creation of transitional botanical forms that blend the
+characteristics of two distinct species.
+
+
+3. Algorithmic Beauty
+---------------------
+Nature's beauty follows mathematical rules. The golden angle
+(137.508 degrees) governs phyllotaxis -- the arrangement of leaves,
+seeds, and petals. This angle is derived from:
+
+    alpha = 360 / phi^2 = 360 * (2 - phi) = 360 * (3 - sqrt(5)) / 2
+
+No rational fraction approximates this angle well, which guarantees
+that no two adjacent elements overlap, maximizing exposure to light
+and pollinators.
+
+Alan Turing proposed that reaction-diffusion systems generate natural
+patterns. In petals, two chemical morphogens interact:
+
+    du/dt = D_u * grad^2(u) - u*v^2 + alpha*(1-u)
+    dv/dt = D_v * grad^2(v) + u*v^2 - (alpha+beta)*v
+
+where u is the activator concentration, v is the inhibitor, D_u and
+D_v are diffusion coefficients, and alpha, beta are reaction rates.
+Tuning these parameters produces spots, stripes, and gradients that
+mimic real petal pigmentation.
+
+Fractal branching in petals follows self-similar rules. At each
+iteration, a petal segment splits into sub-segments at a fixed angle,
+creating the intricate vein patterns visible under magnification. The
+Hausdorff dimension of real petal edges typically falls between 1.2
+and 1.6, indicating moderate fractal complexity.
+
+
+4. Composition Techniques
+-------------------------
+Artistic botanical compositions follow established principles from
+both mathematics and traditional art.
+
+Bouquets: Multiple FlowerCurves instances are arranged using
+CompositionCurves.bouquet(). The algorithm places flowers along a
+Fibonacci spiral within a circular boundary, with slight random
+perturbations for organic appearance.
+
+Garden scenes: PlantCurves generates foliage and stems at varying
+depths, while FlowerCurves adds blooms. The garden layout uses
+Voronoi tessellation to assign growing regions to each plant,
+ensuring natural spacing.
+
+Wreaths: Elements are distributed evenly along a circular path using
+arc-length parameterization. Each element is oriented perpendicular
+to the tangent of the circle at its position, creating a continuous
+ring of botanical forms.
+
+Ikebana: The Japanese art of flower arrangement emphasizes asymmetry
+and negative space. The PolyArt ikebana method places three primary
+stems at angles corresponding to heaven (ten), earth (chi), and
+human (jin), following the classical Sogetsu school proportions.
+
+Layered depth is achieved through perspective scaling and controlled
+z-ordering, giving compositions a sense of three-dimensionality.
+
+
+5. Applications
+---------------
+Polynomial flower models have diverse practical applications.
+
+Procedural game assets: Real-time generation of vegetation for open
+world games. The parametric approach allows infinite variation with
+minimal memory footprint, as only curve parameters need storage.
+
+Generative art: Artists use PolyArt to create prints, animations,
+and interactive installations. The mathematical foundation ensures
+each piece is both aesthetically pleasing and analytically precise.
+
+Mathematical education: Polynomial flower models serve as engaging
+examples in precalculus and analytic geometry courses. Students
+explore polar coordinates, parametric equations, and symmetry through
+hands-on curve construction.
+
+Scientific visualization: Botanists use curve-based models to
+approximate floral morphology for taxonomic classification. The
+parametric representations enable quantitative comparison of petal
+shapes across species.
+
+Textile and surface design: Floral polynomial curves are applied to
+fabric printing, wallpaper patterns, and ceramic decoration, where
+reproducible geometric beauty is valued.
+
+
+Conclusion
+----------
+Mathematics is the universal language of beauty. From the simple rose
+curve to the complex phyllotaxis of sunflower heads, polynomial
+curves capture the essence of botanical form with precision that
+rivals nature itself. The PolyArt module demonstrates that algorithmic
+thinking enhances rather than diminishes artistic expression. As we
+deepen our understanding of the mathematical structures underlying
+natural forms, we gain not only technical tools but a profound
+appreciation for the elegance encoded in every petal, leaf, and stem.
+
+
+References
+----------
+[1] Thompson, D. W. (1917). On Growth and Form. Cambridge University
+    Press. [Reprinted by Dover, 1992.]
+
+[2] Jean, R. V. (1994). Phyllotaxis: A Systems Approach in Biology.
+    Cambridge University Press.
+
+[3] Livio, M. (2002). The Golden Ratio: The Story of Phi, the World's
+    Most Astonishing Number. Broadway Books.
+
+[4] Turing, A. M. (1952). The Chemical Basis of Morphogenesis.
+    Philosophical Transactions of the Royal Society of London, B237,
+    37-72.
+
+[5] Prusinkiewicz, P. & Lindenmayer, A. (1990). The Algorithmic Beauty
+    of Plants. Springer-Verlag. [Available online at
+    cgl.cs.uwaterloo.ca/projects/cpets/algorithmic-beauty/]
+
+[6] Ball, P. (2016). Patterns in Nature: Why the Natural World Looks
+    the Way It Does. University of Chicago Press.
+
+[7] Kappraff, J. (2002). Beyond Measure: A Guided Tour Through Nature,
+    Myth, and Number. World Scientific.
+
+================================================================
+End of article -- English version
+================================================================
