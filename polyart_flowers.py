@@ -2,14 +2,8 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import warnings
+import warnings, time
 warnings.filterwarnings("ignore")
-
-
-# ============================================================
-#  POLYART BOTANICAL / FLORAL ART MODULE
-#  Polynomial curves for flowers, plants, and compositions
-# ============================================================
 
 PHI = (1 + np.sqrt(5)) / 2
 GOLD = "#c8a040"
@@ -19,11 +13,10 @@ LEAF = "#1e5a12"
 
 
 # ============================================================
-#  FLOWER CURVES  -  Individual flower renderers
+#  FLOWER CURVES v2 - Original + 12 new flowers
 # ============================================================
 
 class FlowerCurves:
-    """Polynomial flower shapes: rose, lily, daisy, tulip, sunflower, orchid, lotus."""
 
     @staticmethod
     def rose(ax, cx=0, cy=0, s=1.0, petals=5, color="#c83060",
@@ -135,10 +128,6 @@ class FlowerCurves:
             ax.add_patch(dx)
         circ = plt.Circle((cx, cy), s * 0.28, color="#403010", alpha=al * 0.3)
         ax.add_patch(circ)
-        for r_val in [0.22, 0.15, 0.08]:
-            c = plt.Circle((cx, cy), s * r_val, fill=False,
-                           edgecolor="#806020", linewidth=lw * 0.4, alpha=al * 0.4)
-            ax.add_patch(c)
 
     @staticmethod
     def orchid(ax, cx=0, cy=0, s=1.0, color="#c070d0",
@@ -170,10 +159,8 @@ class FlowerCurves:
     def lotus(ax, cx=0, cy=0, s=1.0, color="#f0b0c0",
               ec="#c08090", lw=0.5, al=0.9):
         for layer, (n, r_scale, y_off, a_scale) in enumerate([
-            (12, 0.7, -0.05, 0.9),
-            (10, 0.55, 0.1, 0.8),
-            (8, 0.4, 0.2, 0.7),
-            (6, 0.25, 0.28, 0.6),
+            (12, 0.7, -0.05, 0.9), (10, 0.55, 0.1, 0.8),
+            (8, 0.4, 0.2, 0.7), (6, 0.25, 0.28, 0.6),
         ]):
             for p in range(n):
                 ang = p * 2 * np.pi / n + layer * np.pi / n
@@ -188,20 +175,228 @@ class FlowerCurves:
         circ = plt.Circle((cx, cy + s * 0.32), s * 0.06, color="#f0d060", alpha=al * 0.7)
         ax.add_patch(circ)
 
+    # ---- NEW FLOWERS (12) ----
+
+    @staticmethod
+    def chrysanthemum(ax, cx=0, cy=0, s=1.0, color="#e08020",
+                      ec="#a05010", lw=0.5, al=0.9):
+        n = 21
+        for p in range(n):
+            ang = p * 2 * np.pi * PHI
+            r = s * 0.08 * np.sqrt(p + 1)
+            if r > s * 0.7:
+                continue
+            th = np.linspace(0, 2 * np.pi, 50)
+            pw = s * 0.03 * (1 - r / (s * 0.7))
+            px = cx + r * np.cos(th) * np.cos(ang) + pw * np.sin(th) * np.cos(ang + np.pi / 2)
+            py = cy + r * np.sin(th) * np.sin(ang) + pw * np.sin(th) * np.sin(ang + np.pi / 2)
+            ax.fill(px, py, color=color, alpha=al * 0.7, edgecolor=ec, linewidth=lw * 0.2)
+        for layer in range(3):
+            cr = plt.Circle((cx, cy), s * (0.15 - layer * 0.04),
+                            color="#f0a030", alpha=al * 0.8)
+            ax.add_patch(cr)
+
+    @staticmethod
+    def peony(ax, cx=0, cy=0, s=1.0, color="#e87090",
+              ec="#b05060", lw=0.5, al=0.9):
+        for layer in range(4):
+            n = 10 - layer * 2
+            r_base = s * (0.6 - layer * 0.1)
+            alpha_scale = 0.9 - layer * 0.1
+            for p in range(n):
+                ang = p * 2 * np.pi / n + layer * 0.2
+                th = np.linspace(0, np.pi, 50)
+                pw = r_base * 0.2
+                pr = r_base * (1 + 0.3 * np.cos(th))
+                px = cx + pr * np.sin(th) * np.cos(ang) + pw * np.sin(th) * np.sin(ang)
+                py = cy + r_base * 0.3 * np.cos(th * 0.6)
+                ax.fill(px, py, color=color, alpha=al * alpha_scale,
+                        edgecolor=ec, linewidth=lw * 0.3)
+        circ = plt.Circle((cx, cy), s * 0.08, color="#f0d060", alpha=al * 0.8)
+        ax.add_patch(circ)
+
+    @staticmethod
+    def hibiscus(ax, cx=0, cy=0, s=1.0, color="#d02040",
+                 ec="#801020", lw=0.5, al=0.9):
+        for p in range(5):
+            ang = p * 2 * np.pi / 5
+            th = np.linspace(0, np.pi, 80)
+            r = s * 0.65 * (1 + 0.2 * np.sin(3 * th))
+            px = cx + r * np.sin(th) * np.cos(ang)
+            py = cy + r * np.sin(th) * np.sin(ang)
+            ax.fill(px, py, color=color, alpha=al * 0.8,
+                    edgecolor=ec, linewidth=lw * 0.4)
+        for i in range(8):
+            ang = i * 2 * np.pi / 8
+            stamen = np.linspace(0, 1, 30)
+            sx = cx + s * 0.4 * stamen * np.cos(ang)
+            sy = cy + s * 0.4 * stamen * np.sin(ang)
+            ax.plot(sx, sy, color="#f0d040", linewidth=lw * 0.6, alpha=al * 0.7)
+            ax.plot(sx[-1], sy[-1], "o", color="#f0d040", markersize=2, alpha=al * 0.9)
+        circ = plt.Circle((cx, cy), s * 0.06, color="#f0d040", alpha=al * 0.9)
+        ax.add_patch(circ)
+
+    @staticmethod
+    def lavender(ax, cx=0, cy=0, s=1.0, color="#9060c0",
+                 ec="#6040a0", lw=0.4, al=0.85):
+        stem_x = [cx, cx]
+        stem_y = [cy - s * 1.0, cy + s * 0.3]
+        ax.plot(stem_x, stem_y, color=STEM, linewidth=lw * 1.2, alpha=al)
+        for i in range(12):
+            t = i / 12
+            by = cy + s * 0.3 - t * s * 0.5
+            br = s * 0.06 * (1 - 0.5 * abs(t - 0.5))
+            b = plt.Circle((cx, by), br, color=color, alpha=al * (0.7 + 0.3 * t))
+            ax.add_patch(b)
+        for side in [-1, 1]:
+            leaf_th = np.linspace(0, 1, 30)
+            lx = cx + side * s * 0.25 * leaf_th * (1 - leaf_th * 0.5)
+            ly = cy - s * 0.5 + s * 0.1 * np.sin(np.pi * leaf_th)
+            ax.fill(lx, ly, color=LEAF, alpha=al * 0.7, edgecolor=STEM, linewidth=lw * 0.2)
+
+    @staticmethod
+    def forget_me_not(ax, cx=0, cy=0, s=1.0, color="#4080e0",
+                      ec="#2060b0", lw=0.4, al=0.85):
+        positions = [
+            (0, 0), (0.3, 0.2), (-0.25, 0.15), (0.1, 0.35),
+            (-0.15, 0.3), (0.25, -0.1), (-0.3, -0.05), (0.05, -0.2),
+        ]
+        for ox, oy in positions:
+            fx = cx + ox * s
+            fy = cy + oy * s
+            for p in range(5):
+                ang = p * 2 * np.pi / 5 + np.pi / 2
+                th = np.linspace(0, np.pi, 30)
+                pw = s * 0.04
+                pr = s * 0.06 * (1 - 0.3 * np.cos(th))
+                px = fx + pr * np.sin(th) * np.cos(ang)
+                py = fy + pr * np.sin(th) * np.sin(ang)
+                ax.fill(px, py, color=color, alpha=al * 0.8,
+                        edgecolor=ec, linewidth=lw * 0.2)
+            center = plt.Circle((fx, fy), s * 0.015, color="#f0e040", alpha=al * 0.9)
+            ax.add_patch(center)
+
+    @staticmethod
+    def cherry_blossom(ax, cx=0, cy=0, s=1.0, color="#f8b0c8",
+                       ec="#d090a0", lw=0.5, al=0.9):
+        for p in range(5):
+            ang = p * 2 * np.pi / 5 + np.pi / 10
+            th = np.linspace(0, 2 * np.pi, 80)
+            r = s * 0.35 * (1 + 0.4 * np.cos(2 * th) + 0.2 * np.cos(3 * th))
+            px = cx + r * np.cos(th + ang)
+            py = cy + r * np.sin(th + ang)
+            notch_r = s * 0.08
+            for k in range(len(px)):
+                notch_ang = np.arctan2(py[k] - cy, px[k] - cx)
+                notch_d = np.sqrt((px[k] - cx)**2 + (py[k] - cy)**2)
+                if abs(notch_ang - ang) < 0.3 and notch_d > s * 0.25:
+                    px[k] = cx + (notch_d - notch_r) * np.cos(notch_ang)
+                    py[k] = cy + (notch_d - notch_r) * np.sin(notch_ang)
+            ax.fill(px, py, color=color, alpha=al * 0.85,
+                    edgecolor=ec, linewidth=lw * 0.3)
+        circ = plt.Circle((cx, cy), s * 0.06, color="#f0d060", alpha=al * 0.9)
+        ax.add_patch(circ)
+        for i in range(6):
+            a = i * np.pi / 3
+            st = np.linspace(0, 1, 15)
+            sx = cx + s * 0.06 * st * np.cos(a)
+            sy = cy + s * 0.06 * st * np.sin(a)
+            ax.plot(sx, sy, color="#d0a040", linewidth=lw * 0.4, alpha=al * 0.6)
+
+    @staticmethod
+    def cactus_flower(ax, cx=0, cy=0, s=1.0, color="#e03060",
+                      ec="#a01840", lw=0.5, al=0.9):
+        for p in range(8):
+            ang = p * 2 * np.pi / 8
+            th = np.linspace(0, np.pi, 60)
+            r = s * 0.5 * np.sin(th) * (1 + 0.15 * np.cos(3 * th))
+            px = cx + r * np.cos(ang) * (1 - np.cos(th)) + s * 0.05 * np.cos(ang) * np.sin(th)
+            py = cy + r * np.sin(ang) * (1 - np.cos(th)) + s * 0.05 * np.sin(ang) * np.sin(th)
+            ax.fill(px, py, color=color, alpha=al * 0.7,
+                    edgecolor=ec, linewidth=lw * 0.3)
+        for i in range(12):
+            a = i * np.pi / 6
+            stamen = np.linspace(0, 1, 20)
+            sx = cx + s * 0.3 * stamen * np.cos(a)
+            sy = cy + s * 0.3 * stamen * np.sin(a)
+            ax.plot(sx, sy, color="#f0f080", linewidth=lw * 0.3, alpha=al * 0.6)
+            ax.plot(sx[-1], sy[-1], "o", color="#f0e040", markersize=1.5, alpha=al * 0.8)
+
+    @staticmethod
+    def camellia(ax, cx=0, cy=0, s=1.0, color="#e02040",
+                 ec="#a01030", lw=0.5, al=0.9):
+        for layer in range(3):
+            n = 8 + layer * 4
+            r = s * (0.5 - layer * 0.1)
+            for p in range(n):
+                ang = p * 2 * np.pi / n + layer * 0.15
+                th = np.linspace(0, np.pi, 40)
+                pw = r * 0.2
+                px = cx + r * np.sin(th) * np.cos(ang) + pw * np.sin(th) * np.sin(ang)
+                py = cy + r * np.cos(th * 0.5) * 0.3
+                ax.fill(px, py, color=color, alpha=al * (0.85 - layer * 0.1),
+                        edgecolor=ec, linewidth=lw * 0.2)
+        circ = plt.Circle((cx, cy), s * 0.05, color="#f0d040", alpha=al * 0.8)
+        ax.add_patch(circ)
+
+    @staticmethod
+    def pansy(ax, cx=0, cy=0, s=1.0, color="#6030a0",
+              ec="#4020a0", lw=0.5, al=0.9):
+        for p in range(5):
+            ang = p * 2 * np.pi / 5 + np.pi / 2
+            th = np.linspace(0, 2 * np.pi, 80)
+            r = s * 0.35 * (1 + 0.3 * np.cos(3 * th))
+            px = cx + r * np.cos(th + ang)
+            py = cy + r * np.sin(th + ang)
+            ax.fill(px, py, color=color, alpha=al * 0.8,
+                    edgecolor=ec, linewidth=lw * 0.3)
+        for i in range(3):
+            ang = -np.pi / 2 + (i - 1) * 0.3
+            streak_th = np.linspace(0, 0.4, 20)
+            sx = cx + s * 0.3 * streak_th * np.cos(ang)
+            sy = cy + s * 0.3 * streak_th * np.sin(ang)
+            ax.plot(sx, sy, color="#f0e040", linewidth=lw * 0.8, alpha=al * 0.7)
+        circ = plt.Circle((cx, cy), s * 0.06, color="#f0e040", alpha=al * 0.85)
+        ax.add_patch(circ)
+
+    @staticmethod
+    def snowdrop(ax, cx=0, cy=0, s=1.0, color="#e0f0f0",
+                 ec="#a0c0c0", lw=0.4, al=0.85):
+        for p in range(3):
+            ang = p * 2 * np.pi / 3 - np.pi / 2
+            th = np.linspace(0, np.pi, 40)
+            r = s * 0.2 * np.sin(th)
+            px = cx + r * np.cos(ang)
+            py = cy + r * np.sin(ang) + s * 0.1 * np.cos(th)
+            ax.fill(px, py, color=color, alpha=al * 0.9,
+                    edgecolor=ec, linewidth=lw * 0.3)
+        for p in range(3):
+            ang = p * 2 * np.pi / 3 - np.pi / 2
+            inner = plt.Circle((cx + s * 0.05 * np.cos(ang),
+                               cy + s * 0.05 * np.sin(ang)),
+                              s * 0.03, color="#f0e040", alpha=al * 0.7)
+            ax.add_patch(inner)
+        stem_x = [cx, cx, cx + s * 0.05]
+        stem_y = [cy, cy - s * 0.8, cy - s * 1.0]
+        ax.plot(stem_x, stem_y, color=STEM, linewidth=lw * 1.0, alpha=al * 0.8)
+        for side in [-1, 1]:
+            leaf = np.linspace(0, 1, 30)
+            lx = cx + side * s * 0.15 * leaf
+            ly = cy - s * 0.3 + s * 0.6 * leaf * (1 - leaf * 0.7)
+            ax.fill(lx, ly, color=LEAF, alpha=al * 0.6, edgecolor=STEM, linewidth=lw * 0.2)
+
 
 # ============================================================
-#  PLANT CURVES  -  Stems, branches, foliage
+#  PLANT CURVES v2 - Original + new plants
 # ============================================================
 
 class PlantCurves:
-    """Vine, branch, fern, grass, tree canopy polynomial curves."""
 
     @staticmethod
     def vine(ax, x0=0, y0=0, x1=2, y1=3, s=1.0, c=STEM,
              lw=0.6, al=0.85):
         n = 80
         t = np.linspace(0, 1, n)
-        mx = (x0 + x1) / 2 + s * 0.8 * np.sin(np.pi * t)
         vx = x0 + (x1 - x0) * t + s * 0.4 * np.sin(2 * np.pi * t)
         vy = y0 + (y1 - y0) * t + s * 0.2 * np.cos(np.pi * t * 1.5)
         ax.plot(vx, vy, color=c, linewidth=lw, alpha=al)
@@ -277,13 +472,114 @@ class PlantCurves:
                                 color="#2a9a3a", alpha=al * 0.3)
         ax.add_patch(highlight)
 
+    @staticmethod
+    def cactus(ax, cx=0, cy=0, s=1.0, color="#2a7a2a",
+               lw=0.5, al=0.85):
+        body = plt.Rectangle((cx - s * 0.15, cy - s * 0.5), s * 0.3, s * 1.0,
+                              color=color, alpha=al * 0.8, edgecolor="#1a5a1a",
+                              linewidth=lw * 0.5)
+        ax.add_patch(body)
+        for side in [-1, 1]:
+            arm_y = cy + s * 0.1
+            arm = plt.Rectangle((cx + side * s * 0.15, arm_y), side * s * 0.25, s * 0.15,
+                                 color=color, alpha=al * 0.8, edgecolor="#1a5a1a",
+                                 linewidth=lw * 0.3)
+            ax.add_patch(arm)
+            ax.add_patch(plt.Rectangle((cx + side * s * 0.15, arm_y + s * 0.15),
+                                        s * 0.1, s * 0.3, color=color, alpha=al * 0.8))
+        for i in range(8):
+            ry = cy - s * 0.4 + i * s * 0.12
+            ax.plot([cx - s * 0.15, cx + s * 0.15], [ry, ry],
+                    color="#1a5a1a", linewidth=lw * 0.3, alpha=al * 0.5)
+        spines = np.random.uniform(-0.15, 0.15, 12)
+        for sx in spines:
+            sy = np.random.uniform(-0.5, 0.5)
+            ax.plot([cx + sx * s, cx + sx * s + s * 0.03],
+                    [cy + sy * s, cy + sy * s + s * 0.03],
+                    color="#a0a060", linewidth=lw * 0.2, alpha=al * 0.5)
+        for side in [-1, 1]:
+            flower_x = cx + side * s * 0.4
+            flower_y = cy + s * 0.35
+            FlowerCurves.cactus_flower(ax, flower_x, flower_y, s * 0.15, color="#e03060", al=al * 0.8)
+
+    @staticmethod
+    def bonsai(ax, cx=0, cy=0, s=1.0, c="#1a6a1a",
+               lw=0.6, al=0.85):
+        trunk_x = [cx - s * 0.1, cx + s * 0.05, cx - s * 0.15, cx - s * 0.3]
+        trunk_y = [cy - s * 0.5, cy - s * 0.2, cy + s * 0.1, cy + s * 0.2]
+        ax.plot(trunk_x, trunk_y, color="#6a4020", linewidth=lw * 2.5, alpha=al)
+        ax.plot(trunk_x, trunk_y, color="#5a3018", linewidth=lw * 1.5, alpha=al * 0.5)
+        clusters = [
+            (-0.3, 0.3, 0.25), (0.0, 0.2, 0.3), (-0.5, 0.15, 0.18),
+            (-0.1, 0.35, 0.2), (0.1, 0.25, 0.15),
+        ]
+        for ox, oy, r in clusters:
+            cr = plt.Circle((cx + ox * s, cy + oy * s), r * s,
+                             color=c, alpha=al * (0.7 + 0.2 * np.random.rand()))
+            ax.add_patch(cr)
+        pot = plt.Rectangle((cx - s * 0.25, cy - s * 0.7), s * 0.5, s * 0.2,
+                             color="#8a5a30", alpha=al * 0.9, edgecolor="#6a4020",
+                             linewidth=lw * 0.5)
+        ax.add_patch(pot)
+
+    @staticmethod
+    def succulent(ax, cx=0, cy=0, s=1.0, color="#3a8a5a",
+                  lw=0.5, al=0.85):
+        for layer in range(4):
+            n = 5 + layer * 2
+            r = s * (0.15 + layer * 0.1)
+            for p in range(n):
+                ang = p * 2 * np.pi / n + layer * 0.3
+                th = np.linspace(0, np.pi, 30)
+                pw = r * 0.3
+                px = cx + r * np.cos(ang) + pw * np.sin(th) * np.sin(ang)
+                py = cy + r * np.sin(ang) + pw * np.sin(th) * np.cos(ang)
+                ax.fill(px, py, color=color, alpha=al * (0.7 + 0.1 * layer),
+                        edgecolor="#2a6a3a", linewidth=lw * 0.3)
+        center = plt.Circle((cx, cy), s * 0.06, color="#5aaa7a", alpha=al * 0.8)
+        ax.add_patch(center)
+
+    @staticmethod
+    def mushroom(ax, cx=0, cy=0, s=1.0, cap_color="#c04020",
+                 lw=0.5, al=0.85):
+        cap_th = np.linspace(0, np.pi, 80)
+        cap_x = cx + s * 0.5 * np.cos(cap_th)
+        cap_y = cy + s * 0.3 * np.sin(cap_th) * (1 + 0.2 * np.cos(3 * cap_th))
+        ax.fill(cap_x, cap_y, color=cap_color, alpha=al * 0.85,
+                edgecolor="#801810", linewidth=lw * 0.4)
+        for i in range(8):
+            spot_x = cx + s * 0.3 * np.cos(np.random.uniform(0.3, 2.8))
+            spot_y = cy + s * 0.15 + s * 0.1 * np.random.uniform(0, 1)
+            spot = plt.Circle((spot_x, spot_y), s * 0.04, color="#f0e0d0", alpha=al * 0.7)
+            ax.add_patch(spot)
+        stem_w = s * 0.12
+        ax.add_patch(plt.Rectangle((cx - stem_w / 2, cy - s * 0.5), stem_w, s * 0.5,
+                                    color="#f0e0c0", alpha=al * 0.85,
+                                    edgecolor="#c0b090", linewidth=lw * 0.3))
+
+    @staticmethod
+    def seaweed(ax, cx=0, cy=0, s=1.0, n=3, c="#1a7a4a",
+                lw=0.5, al=0.7):
+        for k in range(n):
+            offset_x = (k - n / 2 + 0.5) * s * 0.2
+            t = np.linspace(0, 1, 60)
+            sx = cx + offset_x + s * 0.15 * np.sin(3 * np.pi * t + k)
+            sy = cy + s * 1.5 * t
+            ax.plot(sx, sy, color=c, linewidth=lw, alpha=al)
+            for i in range(0, 60, 8):
+                leaf_side = 1 if i % 16 < 8 else -1
+                lx = sx[i] + leaf_side * s * 0.06
+                ly = sy[i]
+                leaf_dot = plt.Circle((lx, ly), s * 0.02,
+                                       color="#2aaa5a", alpha=al * 0.5)
+                ax.add_patch(leaf_dot)
+
 
 # ============================================================
-#  COMPOSITION CURVES  -  Multi-element floral scenes
+#  COMPOSITION CURVES v2 - Original + new compositions
 # ============================================================
 
 class CompositionCurves:
-    """Arrangements: bouquet, garden, wreath, border."""
 
     @staticmethod
     def bouquet(ax, cx=0, cy=0, s=1.0):
@@ -313,28 +609,15 @@ class CompositionCurves:
     def garden_scene(ax, cx=0, cy=0, s=1.0):
         ground_x = np.linspace(cx - s * 2, cx + s * 2, 100)
         ground_y = cy - s * 0.5 + s * 0.05 * np.sin(3 * ground_x)
-        ax.fill_between(ground_x, cy - s * 1.2, ground_y,
-                        color="#1a3a10", alpha=0.6)
+        ax.fill_between(ground_x, cy - s * 1.2, ground_y, color="#1a3a10", alpha=0.6)
         for gx in np.linspace(cx - s * 1.8, cx + s * 1.8, 12):
             PlantCurves.grass(ax, gx, cy - s * 0.5 + s * 0.02 * np.sin(gx),
                               s * 0.2, n=5, c=STEM2, lw=0.3, al=0.6)
-        FlowerCurves.rose(ax, cx - s * 0.8, cy + s * 0.3, s * 0.35,
-                          petals=6, color="#c83060", al=0.8)
+        FlowerCurves.rose(ax, cx - s * 0.8, cy + s * 0.3, s * 0.35, petals=6, al=0.8)
         FlowerCurves.sunflower(ax, cx + s * 0.5, cy + s * 0.5, s * 0.4, al=0.8)
         FlowerCurves.lily(ax, cx - s * 0.2, cy + s * 0.6, s * 0.3, al=0.75)
         FlowerCurves.tulip(ax, cx + s * 1.0, cy + s * 0.2, s * 0.3, al=0.75)
         FlowerCurves.orchid(ax, cx - s * 1.2, cy + s * 0.15, s * 0.25, al=0.7)
-        th = np.linspace(0, 2 * np.pi, 100)
-        sun_x = cx + s * 1.5 + s * 0.15 * np.cos(th)
-        sun_y = cy + s * 1.3 + s * 0.15 * np.sin(th)
-        ax.fill(sun_x, sun_y, color="#f0c830", alpha=0.3)
-        for i in range(8):
-            ang = i * np.pi / 4
-            ax.plot([cx + s * 1.5 + s * 0.18 * np.cos(ang),
-                     cx + s * 1.5 + s * 0.3 * np.cos(ang)],
-                    [cy + s * 1.3 + s * 0.18 * np.sin(ang),
-                     cy + s * 1.3 + s * 0.3 * np.sin(ang)],
-                    color="#f0c830", linewidth=0.5, alpha=0.3)
 
     @staticmethod
     def wreath(ax, cx=0, cy=0, s=1.0, n_flowers=10):
@@ -351,15 +634,13 @@ class CompositionCurves:
             fs = s * 0.12
             colors = ["#c83060", "#f0b0c0", "#c070d0", "#f0e0c0", "#f0c810"]
             fc = colors[i % len(colors)]
-            FlowerCurves.daisy(ax, fx, fy, fs, petals=8, color=fc,
-                               ec="#804050", lw=0.3, al=0.8)
+            FlowerCurves.daisy(ax, fx, fy, fs, petals=8, color=fc, lw=0.3, al=0.8)
         for i in range(n_flowers * 3):
             ang = np.random.uniform(0, 2 * np.pi)
             lr = ring_r + s * 0.08 * np.random.uniform(-1, 1)
             lx = cx + lr * np.cos(ang)
             ly = cy + lr * np.sin(ang)
-            leaf_dot = plt.Circle((lx, ly), s * 0.025,
-                                   color=LEAF, alpha=0.5)
+            leaf_dot = plt.Circle((lx, ly), s * 0.025, color=LEAF, alpha=0.5)
             ax.add_patch(leaf_dot)
 
     @staticmethod
@@ -372,59 +653,224 @@ class CompositionCurves:
             fs = s * 0.1
             colors = ["#c83060", "#f0b0c0", "#c070d0", "#f0c810"]
             fc = colors[i % len(colors)]
-            FlowerCurves.daisy(ax, fx, fy, fs, petals=6, color=fc,
-                               ec="#804050", lw=0.3, al=0.7)
+            FlowerCurves.daisy(ax, fx, fy, fs, petals=6, color=fc, lw=0.3, al=0.7)
         vine_th = np.linspace(0, 1, 120)
         vx = x0 + (x1 - x0) * vine_th
         vy = y0 + (y1 - y0) * vine_th + s * 0.15 * np.sin(4 * np.pi * vine_th)
         ax.plot(vx, vy, color=STEM, linewidth=1.0, alpha=0.5)
 
+    @staticmethod
+    def terrarium(ax, cx=0, cy=0, s=1.0):
+        dome_th = np.linspace(0, np.pi, 100)
+        dome_x = cx + s * 0.8 * np.cos(dome_th)
+        dome_y = cy + s * 0.1 + s * 0.8 * np.sin(dome_th)
+        ax.plot(dome_x, dome_y, color="#a0c0d0", linewidth=0.8, alpha=0.5)
+        ax.fill_between(dome_x, cy - s * 0.3, dome_y, color="#a0c0d0", alpha=0.05)
+        base = plt.Rectangle((cx - s * 0.7, cy - s * 0.4), s * 1.4, s * 0.15,
+                              color="#8a7a60", alpha=0.8)
+        ax.add_patch(base)
+        soil_x = np.linspace(cx - s * 0.65, cx + s * 0.65, 80)
+        soil_y = cy - s * 0.3 + s * 0.03 * np.sin(5 * soil_x)
+        ax.fill_between(soil_x, cy - s * 0.5, soil_y, color="#3a2a10", alpha=0.7)
+        PlantCurves.succulent(ax, cx - s * 0.3, cy - s * 0.1, s * 0.3, al=0.8)
+        PlantCurves.mushroom(ax, cx + s * 0.2, cy - s * 0.15, s * 0.25, al=0.8)
+        PlantCurves.grass(ax, cx, cy - s * 0.25, s * 0.15, n=5, al=0.6)
+        FlowerCurves.cherry_blossom(ax, cx + s * 0.1, cy + s * 0.2, s * 0.15, al=0.7)
+
+    @staticmethod
+    def ikebana(ax, cx=0, cy=0, s=1.0):
+        PlantCurves.branch(ax, cx, cy - s * 0.5, np.pi / 2 + 0.3,
+                           s * 0.8, depth=3, s=s * 0.4, lw=0.8, al=0.8)
+        PlantCurves.branch(ax, cx, cy - s * 0.5, np.pi / 2 - 0.5,
+                           s * 0.6, depth=2, s=s * 0.3, lw=0.6, al=0.7)
+        FlowerCurves.rose(ax, cx + s * 0.3, cy + s * 0.4, s * 0.25,
+                          petals=5, color="#c83060", al=0.9)
+        FlowerCurves.lily(ax, cx - s * 0.4, cy + s * 0.5, s * 0.2,
+                          color="#f0e0c0", al=0.8)
+        pot = plt.Polygon([
+            (cx - s * 0.2, cy - s * 0.5),
+            (cx + s * 0.2, cy - s * 0.5),
+            (cx + s * 0.15, cy - s * 0.7),
+            (cx - s * 0.15, cy - s * 0.7),
+        ], color="#6a4a30", alpha=0.9, edgecolor="#4a3020", linewidth=0.8)
+        ax.add_patch(pot)
+
+    @staticmethod
+    def flower_crown(ax, cx=0, cy=0, s=1.0, n=12):
+        ring_r = s * 0.7
+        th = np.linspace(0, 2 * np.pi, 200)
+        ring_x = cx + ring_r * np.cos(th)
+        ring_y = cy + ring_r * np.sin(th) * 0.6
+        ax.plot(ring_x, ring_y, color=STEM, linewidth=1.5, alpha=0.7)
+        for i in range(n):
+            ang = i * 2 * np.pi / n
+            fx = cx + ring_r * np.cos(ang)
+            fy = cy + ring_r * np.sin(ang) * 0.6
+            fs = s * 0.08
+            flower_fns = [
+                lambda a, f, fc: FlowerCurves.cherry_blossom(a, f[0], f[1], fc, color="#f8b0c8", al=0.8),
+                lambda a, f, fc: FlowerCurves.daisy(a, f[0], f[1], fc, petals=6, color="#ffffff", al=0.8),
+                lambda a, f, fc: FlowerCurves.forget_me_not(a, f[0], f[1], fc, al=0.8),
+                lambda a, f, fc: FlowerCurves.snowdrop(a, f[0], f[1], fc, al=0.8),
+            ]
+            flower_fns[i % len(flower_fns)](ax, (fx, fy), fs)
+        for i in range(n * 2):
+            ang = np.random.uniform(0, 2 * np.pi)
+            lr = ring_r + s * 0.06 * np.random.uniform(-1, 1)
+            lx = cx + lr * np.cos(ang)
+            ly = cy + lr * np.sin(ang) * 0.6
+            leaf = plt.Circle((lx, ly), s * 0.015, color=LEAF, alpha=0.5)
+            ax.add_patch(leaf)
+
+    @staticmethod
+    def vertical_garden(ax, cx=0, cy=0, s=1.0):
+        wall = plt.Rectangle((cx - s * 1.0, cy - s * 1.0), s * 2.0, s * 2.5,
+                              color="#3a3a3a", alpha=0.6)
+        ax.add_patch(wall)
+        for row in range(5):
+            for col in range(4):
+                wx = cx - s * 0.7 + col * s * 0.5
+                wy = cy - s * 0.8 + row * s * 0.5
+                box = plt.Rectangle((wx - s * 0.05, wy - s * 0.05), s * 0.3, s * 0.2,
+                                     color="#5a4a30", alpha=0.7)
+                ax.add_patch(box)
+                plant_fns = [
+                    lambda: PlantCurves.grass(ax, wx + s * 0.1, wy, s * 0.1, n=3, al=0.7),
+                    lambda: PlantCurves.succulent(ax, wx + s * 0.1, wy + s * 0.05, s * 0.1, al=0.7),
+                    lambda: FlowerCurves.forget_me_not(ax, wx + s * 0.1, wy + s * 0.05, s * 0.08, al=0.7),
+                    lambda: PlantCurves.fern(ax, wx + s * 0.1, wy, s * 0.08, al=0.7),
+                ]
+                plant_fns[(row + col) % len(plant_fns)]()
+
+    @staticmethod
+    def forest_floor(ax, cx=0, cy=0, s=1.0):
+        ground_x = np.linspace(cx - s * 2, cx + s * 2, 100)
+        ground_y = cy + s * 0.05 * np.sin(3 * ground_x)
+        ax.fill_between(ground_x, cy - s * 0.5, ground_y, color="#1a2a10", alpha=0.7)
+        PlantCurves.mushroom(ax, cx - s * 0.5, cy + s * 0.1, s * 0.3, al=0.8)
+        PlantCurves.mushroom(ax, cx + s * 0.3, cy + s * 0.05, s * 0.2, cap_color="#8a6a20", al=0.7)
+        PlantCurves.mushroom(ax, cx + s * 0.6, cy + s * 0.15, s * 0.15, cap_color="#c0a040", al=0.7)
+        PlantCurves.fern(ax, cx - s * 1.0, cy, s * 0.5, al=0.7)
+        PlantCurves.fern(ax, cx + s * 1.2, cy + s * 0.1, s * 0.4, al=0.6)
+        for i in range(6):
+            lx = cx - s * 1.5 + i * s * 0.6
+            ly = cy - s * 0.1 + s * 0.05 * np.random.uniform(-1, 1)
+            dead_leaf = plt.Circle((lx, ly), s * 0.03, color="#8a6a30", alpha=0.4)
+            ax.add_patch(dead_leaf)
+
 
 # ============================================================
-#  MAIN  -  Showcase demo
+#  MAIN - Enhanced showcase
 # ============================================================
 
 if __name__ == "__main__":
-    print("=== PolyArt Botanical / Floral Art Module ===")
-    print("Creating 3x2 showcase figure...")
+    t0 = time.time()
+    print("[START] Generating enhanced botanical showcase...")
 
-    fig, axes = plt.subplots(3, 2, figsize=(12, 18), dpi=150)
+    fig, axes = plt.subplots(4, 3, figsize=(18, 24), dpi=150)
     fig.patch.set_facecolor("#0d0a1a")
-    fig.suptitle("POLYART: Botanical Art - Polynomial Flowers",
-                 fontsize=16, color=GOLD, fontweight="bold", fontfamily="serif")
+    fig.suptitle("POLYART: Botanical Art v2 - Flowers, Plants & Compositions",
+                 fontsize=18, color=GOLD, fontweight="bold", fontfamily="serif", y=0.98)
 
     panels = [
-        ("Rose", lambda ax: FlowerCurves.rose(ax, 0, 0.5, 1.5, petals=7, color="#c83060")),
-        ("Lily & Daisy", lambda ax: (
-            FlowerCurves.lily(ax, -0.8, 0.8, 1.0, color="#f0e0c0"),
-            FlowerCurves.daisy(ax, 0.8, 0.6, 1.0, petals=14, color="#ffffff"),
-        )),
-        ("Sunflower & Lotus", lambda ax: (
-            FlowerCurves.sunflower(ax, -0.6, 0.6, 1.2),
-            FlowerCurves.lotus(ax, 0.7, 0.0, 1.0, color="#f0b0c0"),
-        )),
-        ("Tulip & Orchid", lambda ax: (
-            FlowerCurves.tulip(ax, -0.6, 0.5, 1.0, color="#d03060"),
-            FlowerCurves.orchid(ax, 0.7, 0.6, 1.0, color="#c070d0"),
-        )),
-        ("Garden Scene", lambda ax: CompositionCurves.garden_scene(ax, 0, 0, 1.5)),
-        ("Wreath", lambda ax: CompositionCurves.wreath(ax, 0, 0, 1.5, n_flowers=12)),
+        ("Rose", lambda ax: FlowerCurves.rose(ax, 0, 0.3, 1.2, petals=7)),
+        ("Peony", lambda ax: FlowerCurves.peony(ax, 0, 0.3, 1.2)),
+        ("Chrysanthemum", lambda ax: FlowerCurves.chrysanthemum(ax, 0, 0.3, 1.2)),
+        ("Lily", lambda ax: FlowerCurves.lily(ax, 0, 0.3, 1.2, color="#f0e0c0")),
+        ("Hibiscus", lambda ax: FlowerCurves.hibiscus(ax, 0, 0.3, 1.2)),
+        ("Sunflower", lambda ax: FlowerCurves.sunflower(ax, 0, 0.3, 1.2)),
+        ("Tulip", lambda ax: FlowerCurves.tulip(ax, 0, 0.3, 1.0)),
+        ("Orchid", lambda ax: FlowerCurves.orchid(ax, 0, 0.3, 1.2)),
+        ("Camellia", lambda ax: FlowerCurves.camellia(ax, 0, 0.3, 1.2)),
+        ("Cherry Blossom", lambda ax: FlowerCurves.cherry_blossom(ax, 0, 0.3, 1.2)),
+        ("Pansy", lambda ax: FlowerCurves.pansy(ax, 0, 0.3, 1.2)),
+        ("Lavender", lambda ax: FlowerCurves.lavender(ax, 0, 0.2, 1.2)),
     ]
 
     for idx, (name, func) in enumerate(panels):
         ax = axes.flatten()[idx]
-        ax.set_xlim(-2.5, 2.5)
-        ax.set_ylim(-2.5, 2.5)
+        ax.set_xlim(-2, 2)
+        ax.set_ylim(-2, 2)
         ax.set_aspect("equal")
         ax.axis("off")
         ax.set_facecolor("#0d0a1a")
-        ax.set_title(name, fontsize=12, color=GOLD, fontfamily="serif")
+        ax.set_title(name, fontsize=11, color=GOLD, fontfamily="serif")
         func(ax)
 
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
-    out = r"C:\Users\e\Desktop\6756756756756756\flowers_showcase.png"
-    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor="#0d0a1a")
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    out1 = r"C:\Users\e\Desktop\6756756756756756\flowers_v2_flowers.png"
+    fig.savefig(out1, dpi=150, bbox_inches="tight", facecolor="#0d0a1a")
     plt.close(fig)
+    print("[OK] Saved: flowers_v2_flowers.png")
 
-    print(f"[OK] Saved: {out}")
-    print("[DONE] All botanical curves complete.")
+    fig2, axes2 = plt.subplots(4, 3, figsize=(18, 24), dpi=150)
+    fig2.patch.set_facecolor("#0d0a1a")
+    fig2.suptitle("POLYART: Plants, Fungi & Compositions",
+                  fontsize=18, color=GOLD, fontweight="bold", fontfamily="serif", y=0.98)
+
+    panels2 = [
+        ("Cactus", lambda ax: PlantCurves.cactus(ax, 0, 0, 1.0)),
+        ("Bonsai", lambda ax: PlantCurves.bonsai(ax, 0, 0, 1.0)),
+        ("Succulent", lambda ax: PlantCurves.succulent(ax, 0, 0.2, 1.0)),
+        ("Mushroom", lambda ax: PlantCurves.mushroom(ax, 0, 0.2, 1.2)),
+        ("Seaweed", lambda ax: PlantCurves.seaweed(ax, 0, -0.5, 1.0)),
+        ("Fern", lambda ax: PlantCurves.fern(ax, 0, -0.5, 1.0)),
+        ("Terrarium", lambda ax: CompositionCurves.terrarium(ax, 0, 0, 1.3)),
+        ("Ikebana", lambda ax: CompositionCurves.ikebana(ax, 0, 0, 1.3)),
+        ("Flower Crown", lambda ax: CompositionCurves.flower_crown(ax, 0, 0.3, 1.3)),
+        ("Vertical Garden", lambda ax: CompositionCurves.vertical_garden(ax, 0, 0, 1.0)),
+        ("Forest Floor", lambda ax: CompositionCurves.forest_floor(ax, 0, 0, 1.2)),
+        ("Wreath", lambda ax: CompositionCurves.wreath(ax, 0, 0.2, 1.3, n_flowers=12)),
+    ]
+
+    for idx, (name, func) in enumerate(panels2):
+        ax = axes2.flatten()[idx]
+        ax.set_xlim(-2, 2)
+        ax.set_ylim(-2, 2)
+        ax.set_aspect("equal")
+        ax.axis("off")
+        ax.set_facecolor("#0d0a1a")
+        ax.set_title(name, fontsize=11, color=GOLD, fontfamily="serif")
+        func(ax)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    out2 = r"C:\Users\e\Desktop\6756756756756756\flowers_v2_plants.png"
+    fig2.savefig(out2, dpi=150, bbox_inches="tight", facecolor="#0d0a1a")
+    plt.close(fig2)
+    print("[OK] Saved: flowers_v2_plants.png")
+
+    fig3, axes3 = plt.subplots(2, 3, figsize=(18, 12), dpi=150)
+    fig3.patch.set_facecolor("#0d0a1a")
+    fig3.suptitle("POLYART: Grand Compositions",
+                  fontsize=18, color=GOLD, fontweight="bold", fontfamily="serif", y=0.98)
+
+    panels3 = [
+        ("Garden Scene", lambda ax: CompositionCurves.garden_scene(ax, 0, 0, 1.2)),
+        ("Bouquet", lambda ax: CompositionCurves.bouquet(ax, 0, 0.3, 1.5)),
+        ("Floral Border", lambda ax: (
+            CompositionCurves.floral_border(ax, -2, 0, 2, 0, s=1.0),
+            ax.set_xlim(-2.5, 2.5), ax.set_ylim(-1, 1)
+        )),
+        ("Forget-me-not", lambda ax: FlowerCurves.forget_me_not(ax, 0, 0.3, 1.5)),
+        ("Snowdrop", lambda ax: FlowerCurves.snowdrop(ax, 0, 0.3, 1.5)),
+        ("Lotus", lambda ax: FlowerCurves.lotus(ax, 0, 0.2, 1.5)),
+    ]
+
+    for idx, (name, func) in enumerate(panels3):
+        ax = axes3.flatten()[idx]
+        ax.set_xlim(-2.5, 2.5)
+        ax.set_ylim(-2, 2)
+        ax.set_aspect("equal")
+        ax.axis("off")
+        ax.set_facecolor("#0d0a1a")
+        ax.set_title(name, fontsize=11, color=GOLD, fontfamily="serif")
+        func(ax)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    out3 = r"C:\Users\e\Desktop\6756756756756756\flowers_v2_compositions.png"
+    fig3.savefig(out3, dpi=150, bbox_inches="tight", facecolor="#0d0a1a")
+    plt.close(fig3)
+    print("[OK] Saved: flowers_v2_compositions.png")
+
+    elapsed = time.time() - t0
+    print("[DONE] 3 showcase images generated in %.1fs" % elapsed)
