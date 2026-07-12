@@ -1,0 +1,826 @@
+============================================================================
+  PWTP-003: Camera Control Protocol
+  Version: 1.0
+  Date: 2026-07-12
+  Status: Proposed Standard
+  Author: PWTP Working Group
+============================================================================
+
+Table of Contents
+-----------------
+  1.  Overview
+  2.  Definitions and Notation
+  3.  Camera State Vector
+  4.  Polynomial Degree Requirements
+  5.  Smooth Camera Paths
+  6.  View-Target Encoding
+  7.  FOV Control
+  8.  Camera Handoff
+  9.  Multi-Camera Support
+  10. Cinematic Mode
+  11. Error Handling
+  12. Security Considerations
+  13. Appendix A: Example Packet Captures
+
+
+============================================================================
+1. Overview
+============================================================================
+
+1.1. Purpose
+------------
+  PWTP-003 defines the protocol for transmitting camera state, camera paths,
+  and camera control commands over a network. Cameras are represented using
+  polynomial trajectories for smooth, efficient, and bandwidth-friendly
+  camera movement.
+
+1.2. Scope
+----------
+  This specification covers:
+    - Camera state vector (position, orientation, FOV)
+    - Polynomial camera path encoding
+    - View-target (look-at point) encoding
+    - Field of view (FOV) control
+    - Camera handoff between controllers
+    - Multi-camera management
+    - Cinematic camera sequences
+
+1.3. Design Goals
+-----------------
+    a) Smooth camera motion at any frame rate
+    b) Minimal bandwidth for camera updates
+    c) Support for complex cinematic camera paths
+    d) Deterministic camera for replay systems
+    e) Low-latency camera response for interactive control
+
+1.4. Relationship to Other PWTP Protocols
+-----------------------------------------
+    PWTP-001: World context for camera placement
+    PWTP-002: Object state protocol (cameras can track objects)
+    PWTP-004: Transport layer for camera messages
+    PWTP-005: Time synchronization for camera playback
+
+
+============================================================================
+2. Definitions and Notation
+============================================================================
+
+2.1. Data Types
+---------------
+  All data types from PWTP-001 Section 2.2 apply. Additional types:
+
+    Type        Size       Description
+    ----------  --------   ----------------------------------------
+    vec3        12 bytes   3x float32 (x, y, z)
+    quat        16 bytes   4x float32 (x, y, z, w) unit quaternion
+    euler       12 bytes   3x float32 (pitch, yaw, roll) in radians
+    frustum     40 bytes   5 planes (left, right, top, bottom, near)
+
+2.2. Coordinate System
+-----------------------
+  Camera space follows right-hand rule:
+    +X = right
+    +Y = up
+    -Z = forward (view direction)
+
+  World space: right-handed Y-up (same as PWTP-002).
+
+2.3. Constants
+--------------
+  MAX_CAMERAS           = 256
+  MAX_PATH_POINTS       = 1024
+  MIN_FOV               = 1.0    (degrees, narrow telephoto)
+  MAX_FOV               = 179.0  (degrees, ultra-wide)
+  DEFAULT_FOV           = 60.0   (degrees)
+  DEFAULT_NEAR_PLANE    = 0.1    (meters)
+  DEFAULT_FAR_PLANE     = 10000.0 (meters)
+  PROTOCOL_ID           = 0x00000003
+  CAMERA_MAGIC          = 0x434D5241  ("CMRA")
+  HEADER_SIZE           = 16 bytes
+
+
+============================================================================
+3. Camera State Vector
+============================================================================
+
+3.1. Camera State Structure
+-----------------------------
+
+  The camera state vector defines the complete state of a camera at a
+  specific point in time.
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         camera_id       Camera identifier (uint32)
+    4       8         timestamp       State time (float64, seconds)
+    12      1         state_flags     Camera state flags (see 3.2)
+    13      1         camera_type     Camera type code (see 3.3)
+    14      2         sequence        State sequence number (uint16)
+
+  Total fixed header: 16 bytes
+
+3.2. Camera State Flags
+-------------------------
+
+    Bit    Name              Description
+    ----   ----------------  ----------------------------------------
+    0      POS_VALID         Position is present
+    1      ORIENT_VALID      Orientation is present
+    2      FOV_VALID         FOV value is present
+    3      TARGET_VALID      Look-at target is present
+    4      CLIP_VALID        Clip planes are present
+    5      POLY_VALID        Polynomial path data present
+    6      CONSTRAINT_ACTIVE Camera constraints active
+    7      CINEMATIC_MODE    Camera is in cinematic mode
+
+3.3. Camera Type Codes
+------------------------
+
+    Code    Type            Description
+    ------  --------------  ----------------------------------------
+    0x00    FIRST_PERSON    First-person camera
+    0x01    THIRD_PERSON    Third-person follow camera
+    0x02    FREE_CAMERA     Unconstrained free camera
+    0x03    ORBIT_CAMERA    Orbiting camera around target
+    0x04    TRACKING_CAMERA Following a target object
+    0x05    CINEMATIC       Scripted cinematic camera
+    0x06    OVERHEAD        Top-down overhead camera
+    0x07    FIXED           Fixed position camera
+    0xFF    CUSTOM          Custom camera type
+
+3.4. Position Component
+------------------------
+
+  When POS_VALID flag is set:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         pos_x           Position X (float32, meters)
+    4       4         pos_y           Position Y (float32, meters)
+    8       4         pos_z           Position Z (float32, meters)
+
+    Total: 12 bytes
+
+3.5. Orientation Component
+---------------------------
+
+  When ORIENT_VALID flag is set:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         orient_x        Quaternion X (float32)
+    4       4         orient_y        Quaternion Y (float32)
+    8       4         orient_z        Quaternion Z (float32)
+    12      4         orient_w        Quaternion W (float32)
+
+    Total: 16 bytes
+
+3.6. FOV Component
+-------------------
+
+  When FOV_VALID flag is set:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         fov_h           Horizontal FOV (float32, degrees)
+    4       4         fov_v           Vertical FOV (float32, degrees)
+    8       1         fov_mode        FOV mode (see 3.7)
+
+    Total: 9 bytes
+
+3.7. FOV Mode
+--------------
+
+    Value   Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    HORIZONTAL      Horizontal FOV primary
+    0x01    VERTICAL        Vertical FOV primary
+    0x02    DIAGONAL        Diagonal FOV primary
+    0x03    ASPECT_LOCK     FOV maintains aspect ratio
+
+3.8. View-Target Component
+----------------------------
+
+  When TARGET_VALID flag is set:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         target_x        Target X (float32, meters)
+    4       4         target_y        Target Y (float32, meters)
+    8       4         target_z        Target Z (float32, meters)
+    12      4         target_object   Target object ID (uint32, 0=point)
+    16      1         blend_mode      Target blend mode (see 3.9)
+
+    Total: 17 bytes
+
+3.9. Target Blend Mode
+------------------------
+
+    Value   Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    INSTANT         Immediate look-at
+    0x01    SMOOTH          Smooth blend to target
+    0x02    SPRING          Spring-damper follow
+    0x03    LOOK_AHEAD      Predict target movement
+
+3.10. Clip Planes Component
+-----------------------------
+
+  When CLIP_VALID flag is set:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         near_plane      Near clip plane (float32, meters)
+    4       4         far_plane       Far clip plane (float32, meters)
+
+    Total: 8 bytes
+
+
+============================================================================
+4. Polynomial Degree Requirements
+============================================================================
+
+4.1. Position Polynomial
+--------------------------
+
+  Camera position is encoded as a 3D polynomial function of time:
+
+    pos(t) = SUM_{k=0}^{degree} C_pos[k] * (t - t_ref)^k
+
+  where C_pos[k] is a vec3 coefficient.
+
+  Minimum degree requirements by camera type:
+
+    Camera Type       Min Degree    Recommended    Rationale
+    ----------------  -----------   -----------    ----------------------------
+    FIRST_PERSON      1             2              Responsive to input
+    THIRD_PERSON      2             3              Smooth follow
+    FREE_CAMERA       2             4              User-controlled smoothness
+    ORBIT_CAMERA      1             2              Circular motion
+    TRACKING_CAMERA   2             3              Target following
+    CINEMATIC         3             5-8            Complex scripted motion
+    OVERHEAD          1             2              Simple panning
+    FIXED             0             0              No movement
+
+4.2. Orientation Polynomial
+-----------------------------
+
+  Camera orientation is encoded as a quaternion polynomial:
+
+    orient(t) = normalize(SUM_{k=0}^{degree} C_orient[k] * (t - t_ref)^k)
+
+  Quaternion polynomial evaluation requires normalization after each
+  evaluation to maintain unit quaternion property.
+
+4.3. FOV Polynomial
+---------------------
+
+  Camera FOV can be animated using a scalar polynomial:
+
+    fov(t) = SUM_{k=0}^{degree} C_fov[k] * (t - t_ref)^k
+
+  FOV is clamped to [MIN_FOV, MAX_FOV] after evaluation.
+
+4.4. Polynomial Degree Selection Rules
+----------------------------------------
+
+  a) Degree MUST NOT exceed MAX_POLY_DEGREE (8)
+  b) Degree MUST be >= minimum for the camera type (see 4.1)
+  c) Degree SHOULD be as low as possible for bandwidth efficiency
+  d) Server MAY reduce degree based on QoS level (see PWTP-006)
+  e) Client MAY evaluate at higher degree via subdivision if needed
+
+
+============================================================================
+5. Smooth Camera Paths
+============================================================================
+
+5.1. Path Definition
+----------------------
+
+  A camera path is a sequence of keyframes, each with a polynomial segment.
+  Paths are transmitted as CAMERA_PATH messages.
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         path_id         Path identifier (uint32)
+    4       2         keyframe_count  Number of keyframes (uint16)
+    6       1         default_degree  Default polynomial degree (uint8)
+    7       1         loop_mode       Loop mode (see 5.2)
+    8       4         total_duration  Total path duration (float32, seconds)
+    12      var       keyframes       Keyframe array
+
+5.2. Loop Modes
+-----------------
+
+    Value   Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    ONCE            Play once and stop
+    0x01    LOOP            Loop continuously
+    0x02    PING_PONG       Forward then reverse
+    0x03    RANDOM          Random order
+    0x04    MANUAL          Advance only on command
+
+5.3. Keyframe Structure
+-------------------------
+
+  Each keyframe in a camera path:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         time            Keyframe time (float32, seconds)
+    4       4         position_x      Position X (float32)
+    8       4         position_y      Position Y (float32)
+    12      4         position_z      Position Z (float32)
+    16      16        orientation     Quaternion (4x float32)
+    32      4         fov             Field of view (float32, degrees)
+    36      4         target_x        Look-at target X (float32)
+    40      4         target_y        Look-at target Y (float32)
+    44      4         target_z        Look-at target Z (float32)
+    48      1         degree          Polynomial degree for this segment
+    49      var       polynomial      Polynomial coefficients
+
+    Total fixed: 50 bytes + polynomial data
+
+5.4. Interpolation Between Keyframes
+--------------------------------------
+
+  Between keyframe i and keyframe i+1, the camera state is computed
+  using the polynomial from keyframe i, evaluated relative to keyframe i's
+  time:
+
+    t_rel = clamp(t - kf[i].time, 0, kf[i+1].time - kf[i].time)
+
+    pos(t) = kf[i].polynomial_pos.evaluate(t_rel)
+    orient(t) = normalize(kf[i].polynomial_orient.evaluate(t_rel))
+    fov(t) = kf[i].polynomial_fov.evaluate(t_rel)
+
+  Smoothness at keyframe boundaries is ensured by:
+    a) Continuity of position (C0)
+    b) Continuity of velocity (C1) when degree >= 1
+    c) Continuity of acceleration (C2) when degree >= 2
+
+5.5. Hermite Interpolation Option
+-----------------------------------
+
+  When polynomial degree is 1, keyframes use Hermite interpolation:
+
+    P(t) = (2t^3 - 3t^2 + 1) * P0 + (t^3 - 2t^2 + t) * M0
+          + (-2t^3 + 3t^2) * P1 + (t^3 - t^2) * M1
+
+  where P0, P1 are positions and M0, M1 are tangent vectors.
+
+
+============================================================================
+6. View-Target Encoding
+============================================================================
+
+6.1. Static Target
+-------------------
+
+  A camera target that remains at a fixed world position:
+
+    target_point = vec3(target_x, target_y, target_z)
+
+  Encoded directly in the state vector.
+
+6.2. Dynamic Target
+---------------------
+
+  A camera target that follows a moving object:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         target_object   Object ID to track (uint32)
+    4       4         offset_x        Offset from object X (float32)
+    8       4         offset_y        Offset from object Y (float32)
+    12      4         offset_z        Offset from object Z (float32)
+    16      4         look_ahead      Look-ahead distance (float32, meters)
+    20      4         smoothing       Smoothing factor (float32, 0.0-1.0)
+
+    Total: 24 bytes
+
+6.3. Polynomial Target
+------------------------
+
+  A target that moves along a polynomial path:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         degree          Polynomial degree (uint8)
+    1       4         t_start         Start time (float32)
+    5       4         t_end           End time (float32)
+    9       var       coefficients    Target polynomial data (3D)
+
+  Target position at time t:
+    target(t) = SUM C[k] * (t - t_start)^k
+
+
+============================================================================
+7. FOV Control
+============================================================================
+
+7.1. FOV Transmission
+-----------------------
+
+  FOV values are transmitted in degrees. The relationship between
+  horizontal and vertical FOV:
+
+    fov_v = 2 * atan(tan(fov_h / 2) * (1 / aspect_ratio))
+
+  where aspect_ratio = viewport_width / viewport_height.
+
+7.2. FOV Animation
+--------------------
+
+  FOV changes can be animated using polynomial encoding:
+
+    fov(t) = SUM_{k=0}^{degree} C_fov[k] * (t - t_ref)^k
+
+  This enables effects like:
+    - Speed zoom (wider FOV when moving fast)
+    - Focus zoom (narrower FOV on target)
+    - Dramatic zoom (cinematic FOV changes)
+
+7.3. FOV Constraints
+----------------------
+
+    Parameter           Default     Range           Description
+    -------------------  ----------  --------------  --------------------------
+    MIN_FOV              1.0         0.5 - 10.0     Narrowest FOV
+    MAX_FOV              179.0       120.0 - 179.0  Widest FOV
+    DEFAULT_FOV          60.0        30.0 - 90.0    Default FOV
+    MAX_FOV_RATE         90.0        10.0 - 180.0   Max FOV change per second
+
+7.4. FOV Message Format
+-------------------------
+
+  For dedicated FOV updates (without full camera state):
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         camera_id       Camera ID (uint32)
+    4       8         timestamp       Update time (float64)
+    12      4         fov             New FOV (float32, degrees)
+    16      1         blend_time      Blend duration (uint8, 0=instant)
+    17      1         reserved        Must be 0x00
+
+    Total: 18 bytes
+
+
+============================================================================
+8. Camera Handoff
+============================================================================
+
+8.1. Handoff Mechanism
+-----------------------
+
+  Camera control can be transferred between clients or from server to
+  client. The handoff process ensures smooth transitions.
+
+  Handoff Sequence:
+
+    +-----------+                      +-----------+
+    | CONTROLLER|                      | RECIPIENT |
+    +-----------+                      +-----------+
+         |                                 |
+         |<-- HANDOFF_REQUEST (0x30) ------|
+         |                                 |
+         |---- HANDOFF_GRANT (0x31) ----->|
+         |                                 |
+         |    [current camera state]       |
+         |<-- CAMERA_STATE (0x32) ---------|
+         |                                 |
+         |---- HANDOFF_COMPLETE (0x33) -->|
+         |                                 |
+
+8.2. HANDOFF_REQUEST Message
+------------------------------
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         camera_id       Camera to take over (uint32)
+    4       4         requester_id    Requesting client ID (uint32)
+    8       1         handoff_type    Type of handoff (see 8.3)
+    9       var       reason          Reason string (UTF-8, null-terminated)
+
+    Total: 10 bytes + reason string
+
+8.3. Handoff Types
+--------------------
+
+    Value   Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    TEMPORARY       Temporary transfer, returns later
+    0x01    PERMANENT       Permanent transfer
+    0x02    SHARED          Both controllers can control
+    0x03    EMERGENCY       Emergency override
+
+8.4. HANDOFF_GRANT Message
+----------------------------
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         camera_id       Camera ID (uint32)
+    4       4         grantor_id      Granting client ID (uint32)
+    8       4         grantee_id      Receiving client ID (uint32)
+    12      1         conditions      Handoff conditions (see 8.5)
+
+    Total: 13 bytes
+
+8.5. Handoff Conditions
+-------------------------
+
+    Bit    Name              Description
+    ----   ----------------  ----------------------------------------
+    0      SNAP              Transfer immediately
+    1      BLEND             Blend over 0.5 seconds
+    2      ON_NEXT_FRAME     Transfer on next frame boundary
+    3      AFTER_ANIMATION   Transfer after current animation completes
+
+
+============================================================================
+9. Multi-Camera Support
+============================================================================
+
+9.1. Camera Registry
+----------------------
+
+  The server maintains a registry of all active cameras:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         camera_id       Camera identifier (uint32)
+    4       4         owner_id        Owner client ID (uint32)
+    8       1         camera_type     Camera type (see 3.3)
+    9       1         priority        Camera priority (0-255)
+    10      1         flags           Camera flags
+    11      4         target_object   Tracked object ID (uint32, 0=none)
+
+    Total: 15 bytes per camera entry
+
+9.2. Active Camera Selection
+------------------------------
+
+  Only one camera is active (rendered) per client at any time. The
+  active camera is selected based on:
+
+    a) Explicit client selection (highest authority)
+    b) Server override (for cutscenes, events)
+    c) Priority-based automatic selection
+    d) Context-based selection (in-vehicle, on-foot, etc.)
+
+9.3. Camera Priority
+----------------------
+
+    Priority Range    Usage
+    ----------------  ----------------------------------------
+    0-49              Background/ambient cameras
+    50-99             Normal gameplay cameras
+    100-149           Important event cameras
+    150-199           Server-controlled cameras
+    200-249           Cutscene cameras
+    250-255           Emergency/override cameras
+
+  Higher priority cameras can override lower priority cameras with
+  explicit permission.
+
+9.4. CAMERA_SWITCH Message
+----------------------------
+
+  Sent to switch the active camera:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         camera_id       New active camera (uint32)
+    4       4         from_camera     Previous camera (uint32, 0=none)
+    8       1         transition      Transition type (see 9.5)
+    9       4         transition_time Transition duration (float32, seconds)
+
+    Total: 13 bytes
+
+9.5. Transition Types
+-----------------------
+
+    Value   Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    CUT             Instant switch
+    0x01    CROSSFADE       Fade to black and back
+    0x02    BLEND           Position/orientation blend
+    0x03    WIPE            Wipe transition effect
+    0x04    ZOOM            Zoom through point
+    0x05    SPIN            360-degree spin transition
+
+
+============================================================================
+10. Cinematic Mode
+============================================================================
+
+10.1. Cinematic Mode Overview
+-------------------------------
+
+  Cinematic mode enables scripted camera sequences with precise timing,
+  easing functions, and coordinated multi-camera setups.
+
+10.2. CINEMATIC_START Message
+-------------------------------
+
+  Initiates a cinematic sequence:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         cinematic_id    Sequence identifier (uint32)
+    4       4         total_duration  Total sequence duration (float32)
+    8       2         shot_count      Number of shots (uint16)
+    10      1         letterbox       Letterbox mode (0=off, 1=2.35:1, 2=1.85:1)
+    11      1         audio_track     Music/sound track ID (uint8)
+    12      1         skip_mode       Skip controls (see 10.3)
+    13      var       shots           Shot definitions
+
+10.3. Skip Mode Flags
+-----------------------
+
+    Bit    Name              Description
+    ----   ----------------  ----------------------------------------
+    0      ALLOW_SKIP        Player can skip with button
+    1      SKIP_TO_END       Can skip entire sequence
+    2      PAUSE_ALLOWED     Player can pause
+    3      SPEED_CONTROL     Allow speed adjustment
+
+10.4. Shot Definition
+-----------------------
+
+  Each shot in a cinematic sequence:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         shot_id         Shot identifier (uint32)
+    4       4         camera_id       Camera for this shot (uint32)
+    8       4         start_time      Shot start time (float32)
+    12      4         duration        Shot duration (float32)
+    16      1         easing_in       Easing function (see 10.5)
+    17      1         easing_out      Easing function (see 10.5)
+    18      1         focus_change    Focus change type (0=none, 1=blur, 2=rack)
+    19      var       camera_path     Camera path polynomial data
+
+10.5. Easing Functions
+------------------------
+
+    Value   Name            Formula Description
+    ------  --------------  ----------------------------------------
+    0x00    LINEAR          f(t) = t
+    0x01    EASE_IN         f(t) = t^2
+    0x02    EASE_OUT        f(t) = 1 - (1-t)^2
+    0x03    EASE_IN_OUT     f(t) = 3t^2 - 2t^3
+    0x04    BOUNCE          f(t) = bouncing curve
+    0x05    ELASTIC         f(t) = spring-like oscillation
+    0x06    BACK            f(t) = slight overshoot
+    0x07    SMOOTH          f(t) = hermite interpolation
+
+10.6. CINEMATIC_END Message
+------------------------------
+
+  Terminates a cinematic sequence:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         cinematic_id    Sequence identifier (uint32)
+    4       1         end_reason      End reason (see 10.7)
+    5       4         resume_camera   Camera to resume (uint32)
+
+    Total: 9 bytes
+
+10.7. End Reason Codes
+------------------------
+
+    Value   Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    COMPLETED       Sequence finished naturally
+    0x01    SKIPPED         Skipped by user
+    0x02    INTERRUPTED     Interrupted by server event
+    0x03    ERROR           Sequence error
+
+
+============================================================================
+11. Error Handling
+============================================================================
+
+11.1. Error Codes for PWTP-003
+--------------------------------
+
+  Code    Name                    Description
+  ------  ----------------------  ----------------------------------------
+  0x0000  SUCCESS                 Operation succeeded
+  0x0100  INVALID_CAMERA_ID       Unknown camera ID
+  0x0101  CAMERA_LIMIT_EXCEEDED   Max camera count reached
+  0x0200  INVALID_STATE           Camera state is inconsistent
+  0x0201  POLYNOMIAL_ERROR        Invalid polynomial data
+  0x0300  HANDOFF_DENIED          Handoff request denied
+  0x0301  HANDOFF_TIMEOUT         Handoff timed out
+  0x0400  CINEMATIC_ERROR         Cinematic sequence error
+  0x0401  PATH_NOT_FOUND          Camera path not found
+  0x0500  AUTHORITY_DENIED        Insufficient authority
+  0x0501  CAMERA_LOCKED           Camera is locked by another controller
+
+
+============================================================================
+12. Security Considerations
+============================================================================
+
+12.1. Camera Authority
+------------------------
+  Camera control authority follows the same model as PWTP-002 object
+  authority. Only the camera owner or the server may modify camera state.
+
+12.2. Cinematic Immunity
+--------------------------
+  During cinematic sequences, client camera input SHOULD be disabled
+  to prevent disruption of scripted sequences.
+
+12.3. Anti-Cheat Considerations
+---------------------------------
+  Server SHOULD validate camera positions to prevent:
+    - Seeing through walls
+    - Achieving impossible camera angles
+    - Gaining unfair visual information
+
+
+============================================================================
+13. Appendix A: Example Packet Captures
+============================================================================
+
+A.1. Camera State Update
+--------------------------
+
+  << SERVER -> CLIENT: CAMERA_STATE (0x20)
+     0000: 50 57 54 50 00 00 00 03 00 01 20 00 00 00 00 0A
+     0010: 00 00 00 01 40 3C 00 00 00 00 00 00
+     001C: 00 01 00 02
+     0020: 3F 80 00 00 3F A0 00 00 3F C0 00 00
+     002C: 3F 00 00 00 00 00 00 00 00 00 00 00
+     0038: 3F 80 00 00 00 00 00 00
+
+     Decoded:
+       magic:          "PWTP"
+       protocol_id:    0x00000003 (PWTP-003)
+       version:        0x0001
+       message_type:   0x20 (CAMERA_STATE)
+       sequence_num:   0x0000000A (10)
+       camera_id:      0x00000001
+       timestamp:      (from transport)
+       state_flags:    0x07 (POS+ORIENT+FOV)
+       camera_type:    0x02 (FREE_CAMERA)
+       sequence:       2
+       position:       (1.0, 2.0, 3.0)
+       orientation:    (0.5, 0.0, 0.0, 0.5) normalized
+       fov_h:          90.0
+       fov_mode:       0x00 (HORIZONTAL)
+
+A.2. Camera Path
+------------------
+
+  << SERVER -> CLIENT: CAMERA_PATH (0x21)
+     0000: 50 57 54 50 00 00 00 03 00 01 21 00 00 00 00 14
+     0010: 00 00 00 05 00 02 03 00 41 20 00 00
+     001C: [keyframe 0 data...]
+     00XX: [keyframe 1 data...]
+     00XX: [keyframe 2 data...]
+
+     Decoded:
+       magic:          "PWTP"
+       protocol_id:    0x00000003 (PWTP-003)
+       version:        0x0001
+       message_type:   0x21 (CAMERA_PATH)
+       sequence_num:   0x00000014 (20)
+       path_id:        0x00000005
+       keyframe_count: 2
+       default_degree: 3
+       loop_mode:      0x00 (ONCE)
+       total_duration: 10.0 seconds
+
+A.3. Cinematic Start
+---------------------
+
+  << SERVER -> CLIENT: CINEMATIC_START (0x35)
+     0000: 50 57 54 50 00 00 00 03 00 01 35 00 00 00 00 1E
+     0010: 00 00 00 0A 41 A0 00 00 00 03 01 05 00
+     001B: [shot 1 data]
+     00XX: [shot 2 data]
+     00XX: [shot 3 data]
+
+     Decoded:
+       magic:          "PWTP"
+       protocol_id:    0x00000003 (PWTP-003)
+       version:        0x0001
+       message_type:   0x35 (CINEMATIC_START)
+       sequence_num:   0x0000001E (30)
+       cinematic_id:   0x0000000A
+       total_duration: 20.0 seconds
+       shot_count:     3
+       letterbox:      0x01 (2.35:1)
+       audio_track:    5
+       skip_mode:      0x00 (no skip allowed)
+
+============================================================================
+  End of PWTP-003: Camera Control Protocol
+============================================================================

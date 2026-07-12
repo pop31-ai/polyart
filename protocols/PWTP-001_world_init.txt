@@ -1,0 +1,802 @@
+============================================================================
+  PWTP-001: World Initialization Protocol
+  Version: 1.0
+  Date: 2026-07-12
+  Status: Proposed Standard
+  Author: PWTP Working Group
+============================================================================
+
+Table of Contents
+-----------------
+  1.  Overview
+  2.  Definitions and Notation
+  3.  Message Format
+  4.  Terrain Encoding
+  5.  Building Encoding
+  6.  Material Library
+  7.  Handshake Sequence
+  8.  Error Handling
+  9.  Security Considerations
+  10. IANA Considerations
+  11. References
+  12. Appendix A: Example Packet Captures
+
+
+============================================================================
+1. Overview
+============================================================================
+
+1.1. Purpose
+------------
+  PWTP-001 defines the protocol for transmitting the initial state of a
+  polynomial world from a sender (server) to one or more receivers
+  (clients). This protocol ensures that the receiver can reconstruct a
+  visually and geometrically accurate representation of the world using
+  polynomial representations for terrain, buildings, and static objects.
+
+1.2. Scope
+----------
+  This specification covers:
+    - Initial world state transmission
+    - Terrain patch encoding via polynomial coefficients
+    - Building geometry encoding
+    - Material and texture library synchronization
+    - Handshake and acknowledgment sequences
+
+1.3. Design Goals
+-----------------
+    a) Minimize bandwidth for world state transmission
+    b) Support progressive loading of world regions
+    c) Enable parallel transmission of independent world patches
+    d) Ensure atomicity: world is either complete or in a known partial state
+    e) Support world updates without full retransmission
+
+1.4. Terminology
+----------------
+    Sender:    The entity transmitting world data (typically server).
+    Receiver:  The entity consuming world data (typically client).
+    Patch:     A contiguous rectangular region of terrain or building data.
+    Polynomial: A mathematical function used to encode smooth continuous data.
+    Coefficient: A numeric value in a polynomial representation.
+    Material:  A rendering property set (color, texture, reflectivity, etc.)
+
+
+============================================================================
+2. Definitions and Notation
+============================================================================
+
+2.1. Byte Order
+---------------
+  All multi-byte fields are transmitted in NETWORK BYTE ORDER (big-endian)
+  unless explicitly stated otherwise.
+
+2.2. Data Types
+---------------
+  The following data types are used throughout this specification:
+
+    Type        Size       Range                     Description
+    ----------  --------   -----------------------   ----------------------
+    uint8       1 byte     0x00 - 0xFF               Unsigned 8-bit integer
+    uint16      2 bytes    0x0000 - 0xFFFF            Unsigned 16-bit integer
+    uint32      4 bytes    0x00000000 - 0xFFFFFFFF    Unsigned 32-bit integer
+    uint64      8 bytes    0..2^64-1                  Unsigned 64-bit integer
+    int8        1 byte     -128 to 127                Signed 8-bit integer
+    int16       2 bytes    -32768 to 32767            Signed 16-bit integer
+    int32       4 bytes    -2^31 to 2^31-1            Signed 32-bit integer
+    float32     4 bytes    IEEE 754 single            32-bit floating point
+    float64     8 bytes    IEEE 754 double            64-bit floating point
+    bool        1 byte     0x00 or 0x01               Boolean value
+    string      variable   UTF-8 encoded              Null-terminated string
+    bytes       variable   Raw binary                 Length-prefixed
+
+2.3. Constants
+--------------
+  MAX_PATCH_SIZE        = 1024 bytes
+  MAX_MATERIALS         = 256
+  MAX_BUILDINGS         = 65536
+  MAX_TERRAIN_PATCHES   = 65536
+  PROTOCOL_VERSION      = 0x00010000  (v1.0.0)
+  WORLD_MAGIC           = 0x50575450  ("PWTP")
+  HEADER_SIZE           = 16 bytes
+
+
+============================================================================
+3. Message Format
+============================================================================
+
+3.1. Generic Message Header
+----------------------------
+
+  All PWTP-001 messages begin with the following fixed-size header:
+
+    Offset  Size    Field           Description
+    ------  ------  --------------  ----------------------------------------
+    0       4       magic           Magic number: 0x50575450 ("PWTP")
+    4       4       protocol_id     Protocol identifier: 0x00000001 (PWTP-001)
+    8       2       version         Protocol version (major.minor as uint16)
+    10      1       message_type    Message type code (see section 3.2)
+    11      1       flags           Bit flags (see section 3.3)
+    12      4       sequence_num    Monotonic sequence number
+
+  Total header size: 16 bytes
+
+3.2. Message Types
+------------------
+
+    Code    Name                    Direction       Description
+    ------  ----------------------  --------------  -------------------------
+    0x01    HANDSHAKE_INIT          C->S            Initial handshake request
+    0x02    HANDSHAKE_RESPONSE      S->C            Handshake response
+    0x03    HANDSHAKE_ACK           C->S            Handshake acknowledgment
+    0x04    WORLD_REQUEST           C->S            Request world data
+    0x05    WORLD_HEADER            S->C            World metadata
+    0x06    TERRAIN_PATCH           S->C            Terrain polynomial data
+    0x07    BUILDING_DATA           S->C            Building geometry data
+    0x08    MATERIAL_LIBRARY        S->C            Material definitions
+    0x09    WORLD_COMPLETE          S->C            World transmission done
+    0x0A    WORLD_ACK               C->S            World received OK
+    0x0B    PATCH_REQUEST           C->S            Request specific patch
+    0x0C    PATCH_NACK              C->S            Negative acknowledgment
+    0x0D    WORLD_UPDATE            S->C            Incremental world update
+    0xFE    ERROR                   S->C            Error response
+    0xFF    PING                   双向             Keepalive ping
+
+3.3. Flags
+----------
+
+    Bit    Name              Description
+    ----   ----------------  --------------------------------------------------
+    0      FLAG_FRAGMENTED   Message is fragmented; more fragments follow
+    1      FLAG_COMPRESSED   Payload is zlib-compressed
+    2      FLAG_PRIORITY     High-priority message; process immediately
+    3      FLAG_RELIABLE     Requires acknowledgment
+    4-7    (reserved)        Must be zero
+
+3.4. Generic Message Body
+--------------------------
+
+  After the 16-byte header, each message type defines its own body format.
+  The body size is determined by the enclosing transport layer (PWTP-004).
+
+
+============================================================================
+4. Terrain Encoding
+============================================================================
+
+4.1. Terrain Patch Structure
+-----------------------------
+
+  A terrain patch represents a rectangular region of heightfield data encoded
+  as a 2D polynomial. Each patch is transmitted as a single TERRAIN_PATCH
+  message (type 0x06).
+
+  TERRAIN_PATCH Body Format:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         patch_id        Unique patch identifier (uint32)
+    4       4         parent_id       Parent patch ID (0 if root) (uint32)
+    8       4         x               World-space X origin (float32, meters)
+    12      4         y               World-space Y origin (float32, meters)
+    16      4         width           Patch width in world units (float32)
+    20      4         height          Patch height in world units (float32)
+    24      1         degree_x        Polynomial degree in X (uint8, 1-8)
+    25      1         degree_y        Polynomial degree in Y (uint8, 1-8)
+    26      2         coeff_count     Number of coefficients (uint16)
+    28      1         quantization    Quantization bits per coefficient (uint8)
+    29      1         reserved        Reserved, must be 0x00
+    30      2         checksum        CRC-16 of coefficient data (uint16)
+    32      var       coefficients    Polynomial coefficient array
+
+  Total fixed header: 32 bytes + variable coefficient data
+
+4.2. Polynomial Coefficient Encoding
+-------------------------------------
+
+  The terrain height at any point (u, v) within the patch is computed as:
+
+    height(u, v) = SUM_{i=0}^{degree_x} SUM_{j=0}^{degree_y}
+                   C[i][j] * u^i * v^j
+
+  where u and v are normalized coordinates in [0, 1] mapping to the patch
+  extents.
+
+  Coefficients are stored in row-major order: C[0][0], C[0][1], ...,
+  C[0][degree_y], C[1][0], ..., C[degree_x][degree_y].
+
+  Total coefficient count = (degree_x + 1) * (degree_y + 1)
+
+  When quantization > 0, coefficients are quantized to the specified bit
+  depth before transmission. The quantization parameters are:
+
+    min_val:   float32 - minimum coefficient value
+    max_val:   float32 - maximum coefficient value
+    qbits:     uint8   - quantization bits (8, 10, 12, or 16)
+
+  Quantized value = round((coeff - min_val) / (max_val - min_val)
+                     * (2^qbits - 1))
+
+  When quantization == 0, coefficients are transmitted as raw float32.
+
+4.3. Coefficient Array Layout
+------------------------------
+
+  Before the coefficient array, the following metadata is present:
+
+    Offset  Size    Field       Description
+    ------  ------  ----------  ----------------------------------------
+    0       4       min_val     Minimum coefficient value (float32)
+    4       4       max_val     Maximum coefficient value (float32)
+    8       var     data        Coefficient data (packed or float32)
+
+  If quantization == 0 (raw float32):
+    Data = coeff_count * 4 bytes of float32 values
+
+  If quantization > 0:
+    Data = coeff_count * quantization bits, packed into bytes, padded to
+           byte boundary
+
+4.4. Terrain Patch Example
+---------------------------
+
+  Example: A 4th-degree terrain patch covering 100m x 100m:
+
+    patch_id:     0x00001A2F
+    parent_id:    0x00000000
+    x:            500.0
+    y:            300.0
+    width:        100.0
+    height:       100.0
+    degree_x:     4
+    degree_y:     4
+    coeff_count:  25  (5 * 5)
+    quantization: 12
+    checksum:     0xB7A1
+
+    Coefficient range: min=-50.0, max=250.0
+
+    Encoded coefficients: 25 values * 12 bits = 300 bits = 38 bytes (rounded)
+
+  Total message size: 16 (header) + 32 (patch header) + 8 (coeff metadata)
+                    + 38 (coefficients) = 94 bytes
+
+
+============================================================================
+5. Building Encoding
+============================================================================
+
+5.1. Building Overview
+-----------------------
+
+  Buildings are encoded as collections of 3D polynomial surfaces. Each
+  building is assigned a unique Building ID and consists of one or more
+  Building Parts (walls, roof, floors).
+
+5.2. BUILDING_DATA Message Format (Type 0x07)
+----------------------------------------------
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         building_id     Unique building identifier (uint32)
+    4       4         terrain_patch   Parent terrain patch ID (uint32)
+    8       3         origin_x/y/z    Building origin (3x float32, meters)
+    20      2         part_count      Number of building parts (uint16)
+    22      1         building_type   Type code (see 5.3)
+    23      1         lod_level       Level of detail (uint8, 0=full)
+    24      4         bounding_sphere Bounding sphere radius (float32)
+    28      var       parts           Array of building parts
+
+  Total fixed header: 28 bytes
+
+5.3. Building Type Codes
+-------------------------
+
+    Code    Type                Description
+    ------  ------------------  ----------------------------------------
+    0x00    GENERIC             Generic building
+    0x01    RESIDENTIAL         Residential structure
+    0x02    COMMERCIAL          Commercial/retail
+    0x03    INDUSTRIAL          Industrial facility
+    0x04    INFRASTRUCTURE      Bridge, tower, etc.
+    0x05    DECORATIVE          Non-interactive decoration
+    0xFF    UNKNOWN             Unclassified
+
+5.4. Building Part Structure
+-----------------------------
+
+  Each building part consists of:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       2         part_id         Part identifier within building (uint16)
+    2       1         part_type       Wall/Roof/Floor/Window/Door (enum)
+    3       1         surface_count   Number of polynomial surfaces (uint8)
+    4       4         material_id     Material reference (uint32)
+    8       var       surfaces        Array of polynomial surfaces
+
+  Part Type Enumerations:
+
+    Value   Name        Description
+    ------  ----------  ----------------------------------------
+    0x00    WALL        Vertical surface
+    0x01    ROOF        Top covering surface
+    0x02    FLOOR       Horizontal interior surface
+    0x03    WINDOW      Transparent/opening surface
+    0x04    DOOR        Entry/exit surface
+    0x05    ACCENT      Decorative surface
+    0xFF    GENERIC     Unclassified surface
+
+5.5. Polynomial Surface Encoding
+---------------------------------
+
+  Each surface within a building part is a 3D parametric polynomial patch:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       1         degree_u        Polynomial degree in U direction (uint8)
+    1       1         degree_v        Polynomial degree in V direction (uint8)
+    2       1         normal_method   Normal computation method (uint8)
+    3       1         reserved        Reserved, must be 0x00
+    4       4*3       control_origin  Origin point (3x float32)
+    16      4*3       control_u       U-axis vector (3x float32)
+    28      4*3       control_v       V-axis vector (3x float32)
+    40      4*3       control_w       W-axis/normal vector (3x float32)
+    52      var       coefficients    Polynomial coefficient data
+
+  The 3D position at parametric coordinates (u, v) is:
+
+    P(u, v) = origin + u*U + v*V + w * SUM C[i][j] * u^i * v^j
+
+  Normal computation methods:
+    0 = Analytical (exact derivative of polynomial)
+    1 = Finite difference (numerical approximation)
+    2 = Flat (use W vector as constant normal)
+
+5.6. Building Part Array Layout
+--------------------------------
+
+  Each surface's coefficient data follows the same quantization scheme
+  defined in section 4.2, applied per-component (x, y, z independently).
+
+  Surface coefficient header:
+
+    Offset  Size    Field       Description
+    ------  ------  ----------  ----------------------------------------
+    0       4       min_x       Min X coefficient (float32)
+    4       4       max_x       Max X coefficient (float32)
+    8       4       min_y       Min Y coefficient (float32)
+    12      4       max_y       Max Y coefficient (float32)
+    16      4       min_z       Min Z coefficient (float32)
+    20      4       max_z       Max Z coefficient (float32)
+    24      1       qbits_x     Quantization bits for X (uint8)
+    25      1       qbits_y     Quantization bits for Y (uint8)
+    26      1       qbits_z     Quantization bits for Z (uint8)
+    27      1       reserved    Must be 0x00
+    28      var     data        Packed coefficient data
+
+
+============================================================================
+6. Material Library
+============================================================================
+
+6.1. MATERIAL_LIBRARY Message Format (Type 0x08)
+-------------------------------------------------
+
+  Materials are transmitted as a batch in a single message, or in multiple
+  messages if the library exceeds MAX_PATCH_SIZE.
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       2         material_count  Number of materials (uint16)
+    2       2         batch_index     Current batch index (uint16)
+    4       2         batch_total     Total batches (uint16)
+    6       var       materials       Material definition array
+
+6.2. Material Definition Structure
+------------------------------------
+
+  Each material has the following fixed-size properties:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         material_id     Unique material identifier (uint32)
+    4       1         material_type   Type code (see 6.3)
+    5       1         blend_mode      Alpha blending mode (uint8)
+    6       1         cull_mode       Face culling mode (uint8)
+    7       1         flags           Material flags (see 6.4)
+    8       4*4       base_color      RGBA base color (4x float32, 0.0-1.0)
+    24      4         metallic        Metallic factor (float32, 0.0-1.0)
+    28      4         roughness       Roughness factor (float32, 0.0-1.0)
+    32      4         emissive_str    Emissive strength (float32)
+    36      3*4       emissive_color  Emissive RGB (3x float32)
+    48      4         normal_scale    Normal map intensity (float32)
+    52      4         texture_id      Albedo texture reference (uint32, 0=none)
+    56      4         normal_map_id   Normal map reference (uint32, 0=none)
+    60      4         emissive_tex_id Emissive texture reference (uint32)
+    64      16        name            Material name (ASCII, null-padded)
+
+  Total per-material size: 80 bytes (fixed) + optional texture data
+
+6.3. Material Type Codes
+--------------------------
+
+    Code    Type            Description
+    ------  --------------  ----------------------------------------
+    0x00    OPAQUE          Fully opaque material
+    0x01    TRANSPARENT     Semi-transparent material
+    0x02    EMISSIVE        Self-illuminating material
+    0x03    REFLECTIVE      Mirror-like reflective material
+    0x04    TRANSLUCENT     Subsurface scattering material
+    0x05    WATER           Animated water surface
+    0x06    FOLIAGE         Vegetation with wind animation
+    0x07    TERRAIN_BLEND   Multi-texture terrain blend
+    0xFF    CUSTOM          Custom shader material
+
+6.4. Material Flags
+--------------------
+
+    Bit    Name                Description
+    ----   ------------------  ----------------------------------------
+    0      DOUBLE_SIDED        Render both faces
+    1     receives_shadows    Material receives shadows
+    2      CASTS_SHADOWS       Material casts shadows
+    3      NOISE_ENABLED       Has procedural noise overlay
+    4      POLYNOMIAL_UV       UV coords from polynomial
+    5-7    (reserved)          Must be zero
+
+6.5. Blend Mode Values
+------------------------
+
+    Value   Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    OPAQUE          No blending
+    0x01    ALPHA_BLEND     Standard alpha blending
+    0x02    ADDITIVE        Additive blending
+    0x03    MULTIPLY        Multiplicative blending
+    0x04    PREMULTIPLIED   Pre-multiplied alpha blending
+
+
+============================================================================
+7. Handshake Sequence
+============================================================================
+
+7.1. State Machine
+-------------------
+
+  The handshake follows a three-way exchange to establish a world session:
+
+  +-----------+                         +-----------+
+  |  CLIENT   |                         |  SERVER   |
+  +-----------+                         +-----------+
+       |                                    |
+       |------ HANDSHAKE_INIT (0x01) ----->|
+       |                                    |
+       |<----- HANDSHAKE_RESPONSE (0x02) --|
+       |                                    |
+       |------ HANDSHAKE_ACK (0x03) ------>|
+       |                                    |
+       |<------ WORLD_HEADER (0x05) -------|
+       |                                    |
+       |  [World data transmission]        |
+       |                                    |
+       |<------ WORLD_COMPLETE (0x09) -----|
+       |                                    |
+       |------- WORLD_ACK (0x0A) --------->|
+       |                                    |
+
+7.2. HANDSHAKE_INIT (Type 0x01)
+--------------------------------
+
+  Client sends to server to initiate connection.
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         client_id       Client identifier (uint32)
+    4       4         protocol_ver    Requested protocol version (uint32)
+    8       4         capabilities    Client capability flags (see 7.3)
+    12      4         max_patch_size  Max patch size client can handle (uint32)
+    16      16        nonce           Random nonce for authentication
+    32      4         timestamp       Client timestamp (uint32, Unix epoch)
+
+  Total size: 36 bytes
+
+7.3. Capability Flags
+-----------------------
+
+  Bit    Name                    Description
+  ----   ----------------------  ----------------------------------------
+  0      CAP_TERRAIN_POLY        Supports polynomial terrain
+  1      CAP_BUILDING_POLY       Supports polynomial buildings
+  2      CAP_COMPRESSION         Supports zlib decompression
+  3      CAP_QUANTIZATION        Supports quantized coefficients
+  4      CAP_STREAMING           Supports streaming/partial updates
+  5      CAP_64BIT_IDS           Supports 64-bit identifiers
+  6-31   (reserved)              Must be zero
+
+7.4. HANDSHAKE_RESPONSE (Type 0x02)
+-------------------------------------
+
+  Server responds with accepted parameters.
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         server_id       Server identifier (uint32)
+    4       4         session_id      Session identifier (uint32)
+    8       4         protocol_ver    Accepted protocol version (uint32)
+    12      4         capabilities    Negotiated capabilities (AND of both)
+    16      4         world_size      Total world data size in bytes (uint32)
+    20      2         patch_count     Total terrain patches (uint16)
+    22      2         building_count  Total buildings (uint16)
+    24      4         material_count  Total materials (uint32)
+    28      16        server_nonce    Server random nonce
+    44      4         timestamp       Server timestamp (uint32, Unix epoch)
+
+  Total size: 48 bytes
+
+7.5. HANDSHAKE_ACK (Type 0x03)
+--------------------------------
+
+  Client acknowledges the handshake.
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         session_id      Session identifier from response (uint32)
+    4       4         ack_timestamp   Acknowledged server timestamp (uint32)
+    8       4         client_flags    Client-specific flags (uint32)
+
+  Total size: 12 bytes
+
+7.6. WORLD_HEADER (Type 0x05)
+-------------------------------
+
+  Server sends world metadata before data transmission.
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         world_id        World identifier (uint32)
+    4       4         world_version   World version (uint32)
+    8       4         total_size      Total world data bytes (uint32)
+    12      2         patch_count     Number of terrain patches (uint16)
+    14      2         building_count  Number of buildings (uint16)
+    16      4         material_count  Number of materials (uint32)
+    20      4         origin_x        World origin X (float32)
+    24      4         origin_y        World origin Y (float32)
+    28      4         extent_x        World extent X (float32)
+    32      4         extent_y        World extent Y (float32)
+    36      16        world_name      World name (UTF-8, null-padded)
+
+  Total size: 52 bytes
+
+
+============================================================================
+8. Error Handling
+============================================================================
+
+8.1. ERROR Message (Type 0xFE)
+-------------------------------
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         ref_sequence    Sequence number of failed message (uint32)
+    4       2         error_code      Error code (see 8.2)
+    6       1         severity        Severity level (see 8.3)
+    7       var       message         Human-readable error description (UTF-8)
+
+8.2. Error Codes
+------------------
+
+  Code    Name                    Description
+  ------  ----------------------  ----------------------------------------
+  0x0000  SUCCESS                 Operation succeeded (informational)
+  0x0001  UNKNOWN_ERROR           Unspecified error
+  0x0100  INVALID_PROTOCOL        Protocol version mismatch
+  0x0101  INVALID_MAGIC           Bad magic number
+  0x0102  INVALID_MESSAGE_TYPE    Unrecognized message type
+  0x0103  INVALID_FLAGS           Invalid flag combination
+  0x0200  HANDSHAKE_FAILED        Handshake not completed
+  0x0201  SESSION_EXPIRED         Session timed out
+  0x0202  AUTH_FAILED             Authentication failure
+  0x0300  PATCH_NOT_FOUND         Requested patch does not exist
+  0x0301  BUILDING_NOT_FOUND      Requested building not found
+  0x0302  MATERIAL_NOT_FOUND      Requested material not found
+  0x0303  WORLD_NOT_READY         World data not yet available
+  0x0400  COEFFICIENT_ERROR        Invalid polynomial coefficients
+  0x0401  DEGREE_OUT_OF_RANGE     Polynomial degree out of bounds
+  0x0402  QUANTIZATION_ERROR      Quantization parameters invalid
+  0x0500  CHECKSUM_MISMATCH       Data integrity check failed
+  0x0501  FRAGMENT_MISSING        Missing message fragment
+  0x0502  BUFFER_OVERFLOW         Receive buffer overflow
+  0x0600  SERVER_BUSY             Server at capacity
+  0x0601  RATE_LIMITED            Client rate limited
+
+8.3. Severity Levels
+----------------------
+
+  Value   Name        Description
+  ------  ----------  ----------------------------------------
+  0x00    INFO        Informational, no action needed
+  0x01    WARNING     Non-fatal issue, may affect quality
+  0x02    ERROR       Operation failed, retry possible
+  0x03    FATAL       Connection must be terminated
+
+8.4. Recovery Procedures
+--------------------------
+
+  On CHECKSUM_MISMATCH:
+    Receiver discards the corrupted message and sends PATCH_NACK (0x0C)
+    with the patch_id of the missing/corrupt data.
+
+  On FRAGMENT_MISSING:
+    Receiver sends PATCH_NACK for the specific missing fragment sequence.
+
+  On BUFFER_OVERFLOW:
+    Receiver sends ERROR with BUFFER_OVERFLOW and reduces requested
+    update frequency.
+
+  On RATE_LIMITED:
+    Client must back off exponentially: wait = 2^retry_count * 1000ms,
+    up to maximum 30 seconds.
+
+
+============================================================================
+9. Security Considerations
+============================================================================
+
+9.1. Authentication
+--------------------
+  All sessions require authentication via the HANDSHAKE_INIT/RESPONSE/ACK
+  sequence. The nonce values must be used to derive a session key (see
+  PWTP-007 for full details).
+
+9.2. Data Integrity
+--------------------
+  Every TERRAIN_PATCH and BUILDING_DATA message includes a CRC-16 checksum
+  of the coefficient data. For high-security deployments, HMAC-SHA256
+  should be used (see PWTP-007).
+
+9.3. Confidentiality
+---------------------
+  Polynomial coefficient data may contain sensitive world geometry.
+  Encryption using AES-256-CTR is RECOMMENDED for production deployments
+  (see PWTP-007).
+
+9.4. Replay Prevention
+-----------------------
+  The sequence_num field in the message header is monotonically increasing.
+  Receivers MUST reject any message with a sequence number less than or
+  equal to the last processed message for the current session.
+
+9.5. DoS Mitigation
+---------------------
+  Servers SHOULD implement:
+    - Maximum handshake rate per IP (recommended: 10/second)
+    - Maximum concurrent sessions per IP (recommended: 5)
+    - Timeout for incomplete handshakes (recommended: 10 seconds)
+    - Maximum message size (recommended: 65536 bytes)
+
+
+============================================================================
+10. IANA Considerations
+============================================================================
+
+  This document registers the following in the PWTP Protocol Registry:
+
+    Protocol ID:  0x00000001
+    Name:         PWTP-001: World Initialization Protocol
+    Reference:    This document
+    Status:       Proposed Standard
+
+
+============================================================================
+11. References
+============================================================================
+
+  [RFC791]   Internet Protocol
+  [RFC793]   Transmission Control Protocol
+  [RFC768]   User Datagram Protocol
+  [IEEE754]  IEEE Standard for Binary Floating-Point Arithmetic
+  [CRC16]    CRC-16-CCITT Polynomial
+  [PWTP-004] PWTP Network Transport Layer
+
+
+============================================================================
+12. Appendix A: Example Packet Captures
+============================================================================
+
+A.1. Complete Handshake Example
+---------------------------------
+
+  >> CLIENT -> SERVER: HANDSHAKE_INIT (0x01)
+     0000: 50 57 54 50 00 00 00 01 00 01 01 00 00 00 00 01
+     0010: 00 00 04 D2 00 00 00 1F 7F FF FF FF A1 B2 C3 D4
+     0020: E5 F6 07 08 09 0A 0B 0C 66 9F 12 34
+
+     Decoded:
+       magic:          "PWTP" (0x50575450)
+       protocol_id:    0x00000001
+       version:        0x0001
+       message_type:   0x01 (HANDSHAKE_INIT)
+       flags:          0x00
+       sequence_num:   0x00000001
+       client_id:      0x000004D2 (1234)
+       protocol_ver:   0x0000001F (v0.31)
+       capabilities:   0x7FFFFFFF
+       max_patch_size: 0xA1B2C3D4 (2712847316)
+       nonce:          A1B2C3D4 E5F60708 090A0B0C 669F1234
+       timestamp:      (from transport layer)
+
+  << SERVER -> CLIENT: HANDSHAKE_RESPONSE (0x02)
+     0000: 50 57 54 50 00 00 00 01 00 01 02 00 00 00 00 02
+     0010: 00 00 16 2E 00 00 00 42 00 00 00 1F 00 00 00 1F
+     0020: 00 10 00 00 03 E8 00 10 00 64 00 00 00 0A
+     002C: DE AD BE EF CA FE BA BE 01 23 45 67 89 AB CD EF
+     003C: 02 34 56 78 66 9F 12 34
+
+     Decoded:
+       magic:          "PWTP"
+       protocol_id:    0x00000001
+       version:        0x0001
+       message_type:   0x02 (HANDSHAKE_RESPONSE)
+       flags:          0x00
+       sequence_num:   0x00000002
+       server_id:      0x0000162E (5678)
+       session_id:     0x00000042 (66)
+       protocol_ver:   0x0000001F
+       capabilities:   0x0000001F
+       world_size:     0x00100000 (1MB)
+       patch_count:    1000
+       building_count: 16
+       material_count: 10
+       server_nonce:   DEADBEEF CAFEBABE 01234567 89ABCDEF
+       timestamp:      0x02345678
+
+  >> CLIENT -> SERVER: HANDSHAKE_ACK (0x03)
+     0000: 50 57 54 50 00 00 00 01 00 01 03 00 00 00 00 03
+     0010: 00 00 00 42 02 34 56 78 00 00 00 00
+
+     Decoded:
+       magic:          "PWTP"
+       protocol_id:    0x00000001
+       version:        0x0001
+       message_type:   0x03 (HANDSHAKE_ACK)
+       flags:          0x00
+       sequence_num:   0x00000003
+       session_id:     0x00000042
+       ack_timestamp:  0x02345678
+       client_flags:   0x00000000
+
+A.2. Terrain Patch Example
+----------------------------
+
+  << SERVER -> CLIENT: TERRAIN_PATCH (0x06)
+     0000: 50 57 54 50 00 00 00 01 00 01 06 00 00 00 00 0A
+     0010: 00 00 1A 2F 00 00 00 00 43 FA 00 00 43 96 00 00
+     0020: 42 C8 00 00 42 C8 00 00 04 04 00 19 0C 00 B7 A1
+     0030: C3 48 00 00 43 48 00 00 [38 bytes of quantized coeffs]
+
+     Decoded:
+       magic:          "PWTP"
+       protocol_id:    0x00000001
+       version:        0x0001
+       message_type:   0x06 (TERRAIN_PATCH)
+       flags:          0x00
+       sequence_num:   0x0000000A
+       patch_id:       0x00001A2F (6703)
+       parent_id:      0x00000000 (root)
+       x:              500.0
+       y:              300.0
+       width:          100.0
+       height:         100.0
+       degree_x:       4
+       degree_y:       4
+       coeff_count:    25
+       quantization:   12
+       reserved:       0x00
+       checksum:       0xB7A1
+       min_val:        -200.0
+       max_val:        200.0
+       coefficients:   [25 quantized values at 12 bits each]
+
+============================================================================
+  End of PWTP-001: World Initialization Protocol
+============================================================================

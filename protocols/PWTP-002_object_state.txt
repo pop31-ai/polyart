@@ -1,0 +1,758 @@
+============================================================================
+  PWTP-002: Dynamic Object State Protocol
+  Version: 1.0
+  Date: 2026-07-12
+  Status: Proposed Standard
+  Author: PWTP Working Group
+============================================================================
+
+Table of Contents
+-----------------
+  1.  Overview
+  2.  Definitions and Notation
+  3.  Object ID Assignment
+  4.  State Vector Format
+  5.  Polynomial Encoding
+  6.  Update Frequency
+  7.  Interpolation Rules
+  8.  Extrapolation on Packet Loss
+  9.  Object Lifecycle
+  10. Error Handling
+  11. Security Considerations
+  12. Appendix A: Example Packet Captures
+
+
+============================================================================
+1. Overview
+============================================================================
+
+1.1. Purpose
+------------
+  PWTP-002 defines the protocol for transmitting dynamic object states
+  including position, rotation, scale, and custom properties over a network.
+  Objects are encoded using polynomial trajectories, enabling smooth
+  interpolation and efficient bandwidth usage.
+
+1.2. Scope
+----------
+  This specification covers:
+    - Dynamic object identification and assignment
+    - State vector encoding (position, rotation, scale)
+    - Polynomial trajectory representation
+    - Update scheduling and frequency control
+    - Interpolation and extrapolation rules
+    - Object lifecycle management (spawn, update, destroy)
+
+1.3. Design Goals
+-----------------
+    a) Efficient bandwidth usage via polynomial compression
+    b) Smooth visual representation at any frame rate
+    c) Graceful degradation on packet loss
+    d) Support for thousands of simultaneous objects
+    e) Deterministic state for physics validation
+
+1.4. Relationship to Other PWTP Protocols
+-----------------------------------------
+    PWTP-001: World initialization provides static world context
+    PWTP-003: Camera control uses similar polynomial techniques
+    PWTP-004: Transport layer provides reliable/unreliable delivery
+    PWTP-006: QoS levels determine update frequency and precision
+
+
+============================================================================
+2. Definitions and Notation
+============================================================================
+
+2.1. Byte Order
+---------------
+  All multi-byte fields are transmitted in NETWORK BYTE ORDER (big-endian).
+
+2.2. Data Types
+---------------
+  All data types from PWTP-001 Section 2.2 apply. Additional types:
+
+    Type        Size       Description
+    ----------  --------   ----------------------------------------
+    vec3        12 bytes   3x float32 (x, y, z)
+    quat        16 bytes   4x float32 (x, y, z, w) quaternion
+    bbox        24 bytes   2x vec3 (min, max)
+    color       4 bytes    RGBA (4x uint8, 0-255)
+
+2.3. Coordinate System
+-----------------------
+  Position:    Right-handed Y-up coordinate system (meters)
+  Rotation:    Quaternion representation (unit quaternions)
+  Scale:       Non-uniform scaling per axis (meters)
+  Time:        Seconds since session start (float64)
+
+2.4. Constants
+--------------
+  MAX_OBJECTS            = 65536
+  MAX_OBJECT_SIZE        = 512 bytes
+  MIN_UPDATE_INTERVAL    = 0.016  (60 Hz max)
+  MAX_UPDATE_INTERVAL    = 2.0    (0.5 Hz min)
+  DEFAULT_POLY_DEGREE    = 3
+  MAX_POLY_DEGREE        = 8
+  PROTOCOL_ID            = 0x00000002
+  OBJECT_STATE_MAGIC     = 0x4F424A53  ("OBJS")
+  HEADER_SIZE            = 16 bytes
+
+
+============================================================================
+3. Object ID Assignment
+============================================================================
+
+3.1. ID Space
+--------------
+  Objects are identified by a 32-bit Object ID (OID). The ID space is
+  partitioned as follows:
+
+    Range                   Allocation
+    ----------------------  ----------------------------------------
+    0x00000000 - 0x0000FFFF  Static world objects (reserved)
+    0x00010000 - 0x7FFFFFFF  Dynamic objects (server-assigned)
+    0x80000000 - 0xBFFFFFFF  Client-owned objects
+    0xC0000000 - 0xFFFFFFFE  Temporary/session objects
+    0xFFFFFFFF               Invalid/null object
+
+3.2. ID Assignment Protocol
+-----------------------------
+
+  Object IDs are assigned by the server and communicated to clients via
+  OBJECT_SPAWN messages. Clients may request IDs for locally-created
+  objects via OBJECT_REQUEST.
+
+  Server maintains a monotonically increasing counter for dynamic object
+  IDs, starting at 0x00010000.
+
+3.3. ID Recycling
+-------------------
+
+  IDs are recycled using the following algorithm:
+
+    a) When an object is destroyed, its ID enters a "cooldown" pool
+    b) Cooldown period: 30 seconds (configurable)
+    c) After cooldown, ID is available for reuse
+    d) Client-cached objects may extend cooldown by up to 60 seconds
+
+  ID Cooldown Structure:
+
+    Offset  Size    Field         Description
+    ------  ------  -----------   ----------------------------------------
+    0       4       object_id     Recycled object ID (uint32)
+    4       8       destroy_time  Timestamp of destruction (float64)
+    12      4       owner_id      Previous owner (uint32)
+
+  Total: 16 bytes per cooldown entry
+
+
+============================================================================
+4. State Vector Format
+============================================================================
+
+4.1. State Vector Structure
+-----------------------------
+
+  The state vector defines the complete observable state of an object at
+  a given point in time.
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         object_id       Object identifier (uint32)
+    4       8         timestamp       State time (float64, seconds since start)
+    12      1         state_flags     State flags (see 4.2)
+    13      1         priority        Update priority (0-255, higher=more)
+    14      2         sequence        State sequence number (uint16)
+
+  4.2. State Flags
+  -----------------
+
+    Bit    Name              Description
+    ----   ----------------  ----------------------------------------
+    0      POSITION_VALID    Position polynomial is present
+    1      ROTATION_VALID    Rotation polynomial is present
+    2      SCALE_VALID       Scale polynomial is present
+    3      VELOCITY_VALID    Velocity data is present
+    4      CUSTOM_VALID      Custom properties present
+    5      COLLISION_BOUNDS  Collision bounds follow
+    6      INTERACTABLE      Object can be interacted with
+    7      OCCLUDED          Object is occluded/hidden
+
+4.3. Position Component
+------------------------
+
+  When POSITION_VALID flag is set:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         pos_x           Position X (float32, meters)
+    4       4         pos_y           Position Y (float32, meters)
+    8       4         pos_z           Position Z (float32, meters)
+    12      1         pos_degree      Polynomial degree for position (uint8)
+    13      var       pos_poly        Position polynomial data
+
+4.4. Rotation Component
+------------------------
+
+  When ROTATION_VALID flag is set:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         rot_x           Quaternion X (float32)
+    4       4         rot_y           Quaternion Y (float32)
+    8       4         rot_z           Quaternion Z (float32)
+    12      4         rot_w           Quaternion W (float32)
+    16      1         rot_degree      Polynomial degree for rotation (uint8)
+    17      var       rot_poly        Rotation polynomial data
+
+4.5. Scale Component
+---------------------
+
+  When SCALE_VALID flag is set:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         scale_x         Scale X (float32, 1.0 = normal)
+    4       4         scale_y         Scale Y (float32)
+    8       4         scale_z         Scale Z (float32)
+    12      1         scale_degree    Polynomial degree for scale (uint8)
+    13      var       scale_poly      Scale polynomial data
+
+4.6. Velocity Component
+------------------------
+
+  When VELOCITY_VALID flag is set:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       12        velocity        Linear velocity vec3 (float32 x3)
+    12      12        angular_vel     Angular velocity vec3 (float32 x3)
+
+
+============================================================================
+5. Polynomial Encoding
+============================================================================
+
+5.1. Polynomial Trajectory Model
+----------------------------------
+
+  Each component (position, rotation, scale) can be encoded as a polynomial
+  function of time:
+
+    f(t) = SUM_{k=0}^{degree} C[k] * (t - t_ref)^k
+
+  where:
+    t       = evaluation time (seconds since session start)
+    t_ref   = reference time (timestamp from state vector)
+    C[k]    = k-th polynomial coefficient
+    degree  = polynomial degree (1-8)
+
+  This allows smooth evaluation of the object's state at any time within
+  the validity window.
+
+5.2. Polynomial Data Format
+-----------------------------
+
+  Each polynomial component uses the following encoding:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       8         t_start         Start of validity window (float64)
+    8       8         t_end           End of validity window (float64)
+    16      1         qbits           Quantization bits per coefficient (uint8)
+    17      1         component_dim   Dimensionality (2=2D, 3=3D, 4=4D quat)
+    18      2         reserved        Reserved, must be 0x0000
+    20      var       coefficients    Quantized coefficient data
+
+  For position (3D, degree D):
+    component_dim = 3
+    Total coefficients = 3 * (D + 1)
+    Example: degree 3 = 3 * 4 = 12 coefficients
+
+  For rotation (quaternion, degree D):
+    component_dim = 4
+    Total coefficients = 4 * (D + 1)
+    Quaternion components are normalized after polynomial evaluation.
+
+  For scale (3D, degree D):
+    component_dim = 3
+    Total coefficients = 3 * (D + 1)
+
+5.3. Coefficient Quantization
+-------------------------------
+
+  Similar to PWTP-001, polynomial coefficients can be quantized:
+
+    min_val:   float32 - minimum coefficient value across all components
+    max_val:   float32 - maximum coefficient value across all components
+    qbits:     uint8   - bits per quantized coefficient
+
+  All component values (x, y, z for position) share the same min/max
+  range for unified quantization. Individual component ranges are stored
+  separately when needed.
+
+  When qbits == 0: raw float32 coefficients (no quantization)
+  When qbits > 0:  quantized to specified bit depth
+
+5.4. Multi-Component Polynomial Packet
+----------------------------------------
+
+  A complete object state with polynomial encoding:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       16        state_vector    State vector (see 4.1)
+    16      var       position        Position polynomial (if valid)
+    var     var       rotation        Rotation polynomial (if valid)
+    var     var       scale           Scale polynomial (if valid)
+    var     24        velocity        Velocity vector (if valid)
+    var     var       custom_data     Custom properties (if valid)
+    var     24        collision_bbox  Collision bounds (if set)
+
+5.5. Polynomial Degree Selection
+----------------------------------
+
+  The polynomial degree is chosen based on the object's motion complexity:
+
+    Motion Type           Recommended Degree    Rationale
+    --------------------  --------------------  ----------------------------
+    Stationary            0                     Constant position
+    Constant velocity     1                     Linear interpolation
+    Accelerating          2                     Quadratic curve
+    Curved path           3                     Cubic spline
+    Complex animation     4-5                   Higher-order curves
+    Organic/chaotic       6-8                   Maximum smoothness
+
+  Server selects degree per-object based on observed or authored motion.
+
+
+============================================================================
+6. Update Frequency
+============================================================================
+
+6.1. Update Rate Control
+--------------------------
+
+  Object updates are sent at rates determined by:
+    - Object priority (higher = more frequent)
+    - Object distance from viewer
+    - Available bandwidth
+    - Object motion complexity
+
+  Base update rates by priority tier:
+
+    Priority Range    Base Rate    Description
+    ----------------  -----------  --------------------------------
+    200-255           20 Hz        Critical objects (player avatars)
+    150-199           10 Hz        Important objects (vehicles)
+    100-149           5 Hz         Normal objects (NPCs)
+    50-99             2 Hz         Background objects
+    0-49              0.5 Hz       Ambient objects
+
+6.2. Adaptive Rate Adjustment
+-------------------------------
+
+  The server dynamically adjusts update rates based on:
+
+    Bandwidth Factor = available_bandwidth / required_bandwidth
+
+  If Bandwidth Factor < 0.5:
+    Reduce all update rates by 50%
+  If Bandwidth Factor < 0.25:
+    Reduce all update rates by 75%
+  If Bandwidth Factor > 2.0:
+    Increase update rates by up to 50%
+
+6.3. Distance-Based Rate Scaling
+----------------------------------
+
+  Update rate scales inversely with distance:
+
+    effective_rate = base_rate * (1.0 / (1.0 + distance / ref_distance))
+
+  where ref_distance is configurable (default: 100 meters).
+
+  At ref_distance, update rate is halved.
+  At 3x ref_distance, update rate is quartered.
+
+
+============================================================================
+7. Interpolation Rules
+============================================================================
+
+7.1. Client-Side Interpolation
+--------------------------------
+
+  Clients interpolate between received state vectors to produce smooth
+  visual motion. The interpolation window spans:
+
+    t_render = t_now - render_delay
+
+  where render_delay is configurable (default: 100ms / 0.1 seconds).
+
+  The client maintains a buffer of recent state vectors and evaluates
+  the polynomial at t_render.
+
+7.2. Interpolation Algorithm
+------------------------------
+
+  For each object at render time t_render:
+
+    a) Find state vector S_prev with t_ref <= t_render
+    b) Find state vector S_next with t_ref > t_render
+    c) If both exist:
+         Evaluate S_prev polynomial at t_render
+    d) If only S_prev exists:
+         Evaluate S_prev polynomial at t_render (extrapolation)
+    e) If neither exists:
+         Use last known state (dead reckoning)
+
+7.3. Polynomial Evaluation
+----------------------------
+
+  Horner's method for efficient polynomial evaluation:
+
+    result = C[degree]
+    for k = degree-1 down to 0:
+      result = result * dt + C[k]
+    where dt = t_render - t_ref
+
+  This is numerically stable and computationally efficient (O(degree)
+  multiplications and additions).
+
+7.4. Quaternion Interpolation
+-------------------------------
+
+  Quaternion polynomial values are normalized after evaluation:
+
+    q = (x, y, z, w)
+    q_normalized = q / ||q||
+
+  Slerp is used for interpolation between discrete quaternion keyframes
+  when polynomial degree is 0 (constant rotation between updates).
+
+
+============================================================================
+8. Extrapolation on Packet Loss
+============================================================================
+
+8.1. Dead Reckoning
+---------------------
+
+  When state updates are lost, clients extrapolate using the last known
+  state and velocity:
+
+    pos(t) = pos(t_last) + velocity * (t - t_last)
+    rot(t) = rot(t_last) * exp(angular_vel * (t - t_last))
+
+  Dead reckoning continues for a maximum of MAX_EXTRAPOLATION_TIME seconds
+  before the object is considered stale.
+
+8.2. Extrapolation Limits
+---------------------------
+
+    Parameter                   Default     Range
+    --------------------------  ----------  ----------------
+    MAX_EXTRAPOLATION_TIME      2.0 sec     0.5 - 5.0 sec
+    MAX_POSITION_ERROR          10.0 m      1.0 - 50.0 m
+    MAX_ROTATION_ERROR          0.5 rad     0.1 - 3.14 rad
+    STALE_OBJECT_TIMEOUT        5.0 sec     1.0 - 10.0 sec
+
+8.3. Extrapolation Confidence
+-------------------------------
+
+  Extrapolation confidence decreases with time:
+
+    confidence = max(0, 1.0 - (t - t_last) / MAX_EXTRAPOLATION_TIME)
+
+  When confidence < 0.5, the object is rendered with reduced quality
+  (e.g., lower LOD, transparency, motion blur).
+
+8.4. Packet Loss Recovery
+---------------------------
+
+  When a state update is received after extrapolation:
+
+    a) Compute error between extrapolated and actual state
+    b) If error < snap_threshold:
+         Smoothly interpolate to corrected state over snap_duration
+    c) If error >= snap_threshold:
+         Immediately snap to corrected state
+
+    snap_threshold (position): 0.5 meters
+    snap_threshold (rotation): 0.1 radians
+    snap_duration:              0.1 seconds (smooth transition)
+
+
+============================================================================
+9. Object Lifecycle
+============================================================================
+
+9.1. State Machine
+-------------------
+
+  Objects follow a defined lifecycle:
+
+    +----------+     SPAWN     +----------+     UPDATE    +----------+
+    |  (none)  | ------------> | SPAWNED  | -----------> |  ACTIVE  |
+    +----------+               +----------+               +----------+
+                                    |                         |
+                                    |                         v
+                                    |                    +----------+
+                                    |                    | UPDATING |
+                                    |                    +----------+
+                                    |                         |
+                                    +-------- DESTROY ------->|
+                                                             v
+                                                        +----------+
+                                                        | DESTROYED|
+                                                        +----------+
+
+9.2. OBJECT_SPAWN Message
+---------------------------
+
+  Sent when a new object enters a client's area of interest.
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         object_id       New object ID (uint32)
+    4       1         object_type     Object type code (see 9.3)
+    5       1         initial_state   Initial state flags (see 4.2)
+    6       2         model_id        Visual model reference (uint16)
+    8       16        initial_state_vec  Initial state vector (see 4.1)
+    24      var       initial_poly    Initial polynomial data
+    var     4         owner_id        Object owner (uint32)
+
+9.3. Object Type Codes
+------------------------
+
+    Code    Type            Description
+    ------  --------------  ----------------------------------------
+    0x00    AVATAR          Player avatar
+    0x01    NPC             Non-player character
+    0x02    VEHICLE         Vehicle entity
+    0x03    PROJECTILE      Projectile/bullet
+    0x04    PICKUP          Collectible item
+    0x05    DECORATION      Visual decoration
+    0x06    EFFECT          Particle effect
+    0x07    TRIGGER         Interaction trigger
+    0x08    LIGHT           Dynamic light source
+    0xFF    UNKNOWN         Unclassified
+
+9.4. OBJECT_UPDATE Message
+----------------------------
+
+  Sent to update an existing object's state.
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         object_id       Object ID (uint32)
+    4       16        state_vector    State vector (see 4.1)
+    20      var       state_data      Polynomial/property data
+
+9.5. OBJECT_DESTROY Message
+-----------------------------
+
+  Sent when an object is removed from the world.
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         object_id       Object ID (uint32)
+    4       4         timestamp       Destruction time (uint32, ms since start)
+    8       1         reason          Destruction reason (see 9.6)
+    9       1         flags           Destruction flags
+
+9.6. Destruction Reason Codes
+-------------------------------
+
+    Code    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    EXPIRED         Natural lifetime ended
+    0x01    DESTROYED       Health reached zero
+    0x02    DESPAWNED       Server removed object
+    0x03    OUT_OF_RANGE    Moved out of interest area
+    0x04    CLIENT_LEFT     Owning client disconnected
+    0x05    REPLACED        Object replaced by new version
+
+9.7. OBJECT_BATCH_UPDATE Message
+----------------------------------
+
+  For efficiency, multiple object updates can be batched in a single message.
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       2         object_count    Number of objects in batch (uint16)
+    2       var       updates         Array of compressed object updates
+
+  Each compressed update within the batch:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         object_id       Object ID (uint32)
+    4       1         flags           What changed (bitmask)
+    5       var       delta_data      Only the changed components
+
+  Change flags:
+
+    Bit    Name              Description
+    ----   ----------------  ----------------------------------------
+    0      POS_CHANGED       Position updated
+    1      ROT_CHANGED       Rotation updated
+    2      SCALE_CHANGED     Scale updated
+    3      VEL_CHANGED       Velocity updated
+    4      CUSTOM_CHANGED    Custom properties changed
+    5      SPAWN             Object spawned in this batch
+    6      DESTROY           Object destroyed in this batch
+    7      PRIORITY_CHANGED  Priority level changed
+
+
+============================================================================
+10. Error Handling
+============================================================================
+
+10.1. Error Codes for PWTP-002
+-------------------------------
+
+  Code    Name                    Description
+  ------  ----------------------  ----------------------------------------
+  0x0000  SUCCESS                 Operation succeeded
+  0x0100  INVALID_OBJECT_ID       Unknown or expired object ID
+  0x0101  DUPLICATE_SPAWN         Object already exists
+  0x0102  OBJECT_LIMIT_EXCEEDED   Max object count reached
+  0x0200  INVALID_STATE_VECTOR    Malformed state vector data
+  0x0201  POLYNOMIAL_ERROR        Invalid polynomial coefficients
+  0x0202  QUANTIZATION_ERROR      Quantization parameters invalid
+  0x0203  DEGREE_OUT_OF_RANGE     Polynomial degree out of bounds
+  0x0300  UPDATE_RATE_EXCEEDED    Client sending updates too fast
+  0x0301  SEQUENCE_OUT_OF_ORDER   State sequence numbers not monotonic
+  0x0400  OBJECT_NOT_VISIBLE      Update for non-visible object
+  0x0401  AUTHORITY_DENIED        Client lacks authority for operation
+
+10.2. Recovery Procedures
+---------------------------
+
+  On INVALID_OBJECT_ID:
+    Client removes object from local state and requests full state sync.
+
+  On DUPLICATE_SPAWN:
+    Client ignores duplicate spawn and acknowledges existing object.
+
+  On UPDATE_RATE_EXCEEDED:
+    Server drops excess updates and notifies client of acceptable rate.
+
+  On SEQUENCE_OUT_OF_ORDER:
+    Server logs warning and processes update if newer than last accepted.
+
+
+============================================================================
+11. Security Considerations
+============================================================================
+
+11.1. Object Authority
+-----------------------
+  Only the object's owner (server or owning client) may send updates.
+  Servers MUST validate that update senders have authority over the
+  object being modified.
+
+11.2. State Validation
+-----------------------
+  Servers should validate polynomial coefficients to prevent:
+    - Infinite acceleration values
+    - Objects passing through solid geometry
+    - Coordinate values exceeding world bounds
+
+11.3. Rate Limiting
+--------------------
+  Object update rates MUST be enforced to prevent bandwidth flooding.
+  See PWTP-004 for transport-level rate limiting.
+
+11.4. Object Spoofing
+-----------------------
+  Object IDs are server-assigned. Clients MUST NOT create object IDs
+  in the 0x00000000-0x7FFFFFFF range without server permission.
+
+
+============================================================================
+12. Appendix A: Example Packet Captures
+============================================================================
+
+A.1. Object Spawn Example
+---------------------------
+
+  << SERVER -> CLIENT: OBJECT_SPAWN (0x10)
+     0000: 50 57 54 50 00 00 00 02 00 01 10 00 00 00 00 14
+     0010: 00 00 01 00 00 07 00 03 00 00 00 00
+     001C: 40 00 00 00 40 40 00 00 40 80 00 00
+     0028: 3F 80 00 00 00 00 00 00 00 00 00 00
+     0034: 3F 80 00 00 00 00 00 00
+     003C: [polynomial data follows]
+
+     Decoded:
+       magic:          "PWTP"
+       protocol_id:    0x00000002 (PWTP-002)
+       version:        0x0001
+       message_type:   0x10 (OBJECT_SPAWN)
+       sequence_num:   0x00000014 (20)
+       object_id:      0x00000100 (256)
+       object_type:    0x00 (AVATAR)
+       initial_state:  0x07 (POS+ROT+SCALE)
+       model_id:       3
+       position:       (2.0, 3.0, 4.0)
+       rotation:       (0.5, 0.0, 0.0, 0.5) normalized
+       scale:          (1.0, 1.0, 1.0)
+       owner_id:       (from context)
+
+A.2. Batch Update Example
+---------------------------
+
+  << SERVER -> CLIENT: OBJECT_BATCH_UPDATE (0x12)
+     0000: 50 57 54 50 00 00 00 02 00 01 12 00 00 00 00 1E
+     0010: 00 03
+     0012: [Object 1: ID=0x100, flags=0x03, pos update]
+     00XX: [Object 2: ID=0x101, flags=0x01, pos update]
+     00XX: [Object 3: ID=0x102, flags=0x40, destroy]
+
+     Decoded:
+       magic:          "PWTP"
+       protocol_id:    0x00000002 (PWTP-002)
+       version:        0x0001
+       message_type:   0x12 (OBJECT_BATCH_UPDATE)
+       sequence_num:   0x0000001E (30)
+       object_count:   3
+
+       Update 1:
+         object_id:    0x00000100
+         flags:        0x03 (POS_CHANGED | ROT_CHANGED)
+         data:         Position and rotation delta
+
+       Update 2:
+         object_id:    0x00000101
+         flags:        0x01 (POS_CHANGED)
+         data:         Position delta only
+
+       Update 3:
+         object_id:    0x00000102
+         flags:        0x40 (DESTROY)
+         data:         Destruction info
+
+A.3. Object Destroy Example
+-----------------------------
+
+  << SERVER -> CLIENT: OBJECT_DESTROY (0x11)
+     0000: 50 57 54 50 00 00 00 02 00 01 11 00 00 00 00 28
+     0010: 00 00 01 00 00 00 27 10 01 00
+
+     Decoded:
+       magic:          "PWTP"
+       protocol_id:    0x00000002 (PWTP-002)
+       version:        0x0001
+       message_type:   0x11 (OBJECT_DESTROY)
+       sequence_num:   0x00000028 (40)
+       object_id:      0x00000100 (256)
+       timestamp:      0x00002710 (10000 ms)
+       reason:         0x01 (DESTROYED)
+       flags:          0x00
+
+============================================================================
+  End of PWTP-002: Dynamic Object State Protocol
+============================================================================

@@ -1,0 +1,637 @@
+============================================================================
+  PWTP-005: Time Synchronization Protocol
+  Version: 1.0
+  Date: 2026-07-12
+  Status: Proposed Standard
+  Author: PWTP Working Group
+============================================================================
+
+Table of Contents
+-----------------
+  1.  Overview
+  2.  Definitions and Notation
+  3.  NTP Integration
+  4.  Tick-Based Timing
+  5.  Polynomial Time Windows
+  6.  Latency Compensation
+  7.  Clock Drift Handling
+  8.  Buffer Management
+  9.  Frame Pacing
+  10. Error Handling
+  11. Security Considerations
+  12. Appendix A: Example Packet Captures
+
+
+============================================================================
+1. Overview
+============================================================================
+
+1.1. Purpose
+------------
+  PWTP-005 defines the time synchronization protocol between PWTP senders
+  and receivers. Accurate time sync is critical for polynomial evaluation,
+  interpolation, and smooth rendering of world state.
+
+1.2. Scope
+----------
+  This specification covers:
+    - NTP-style clock synchronization
+    - Tick-based timing for deterministic updates
+    - Polynomial time windows for valid state periods
+    - Latency compensation algorithms
+    - Clock drift detection and correction
+    - Receive buffer management
+    - Frame pacing for smooth rendering
+
+1.3. Design Goals
+-----------------
+    a) Sub-millisecond time synchronization accuracy
+    b) Robust handling of network jitter
+    c) Smooth polynomial evaluation at any frame rate
+    d) Minimal overhead for time-critical messages
+    e) Support for replay/deterministic playback
+
+1.4. Time Representation
+--------------------------
+  All times in PWTP are represented as float64 (double-precision)
+  seconds since a well-defined epoch:
+
+    Epoch:  2026-01-01T00:00:00.000Z (Unix timestamp 1767225600)
+    Unit:   Seconds (float64)
+    Range:  Approximately 285 million years from epoch
+
+  For transport headers, 32-bit millisecond timestamps are used:
+    timestamp_ms = (current_time - epoch) * 1000 mod 2^32
+
+
+============================================================================
+2. Definitions and Notation
+============================================================================
+
+2.1. Data Types
+---------------
+  All data types from PWTP-001 Section 2.2 apply.
+
+2.2. Constants
+--------------
+  SYNC_INTERVAL         = 1.0 second (default sync exchange interval)
+  MAX_CLOCK_DRIFT       = 0.01 (10 ms/second maximum drift)
+  DRIFT_THRESHOLD       = 0.001 (1 ms/second correction threshold)
+  BUFFER_SIZE           = 64 (state buffer entries)
+  MIN_BUFFER_SIZE       = 8 (minimum buffer for operation)
+  MAX_BUFFER_SIZE       = 256 (maximum buffer entries)
+  FRAME_TIME_DEFAULT    = 16.667 ms (60 FPS)
+  PROTOCOL_ID           = 0x00000005
+  SYNC_MAGIC            = 0x53594E43  ("SYNC")
+  HEADER_SIZE           = 16 bytes
+
+
+============================================================================
+3. NTP Integration
+============================================================================
+
+3.1. NTP Synchronization Method
+---------------------------------
+
+  PWTP uses an NTP-style four-timestamp exchange to compute clock
+  offset and round-trip time between sender and receiver.
+
+  Timestamp Exchange:
+
+    Client (t1) -----------------> Server (t2)
+    Client (t4) <----------------- Server (t3)
+
+  Where:
+    t1 = Client send time (client clock)
+    t2 = Server receive time (server clock)
+    t3 = Server send time (server clock)
+    t4 = Client receive time (client clock)
+
+3.2. Clock Offset Calculation
+-------------------------------
+
+    offset = ((t2 - t1) + (t3 - t4)) / 2
+
+  This gives the estimated difference between client and server clocks.
+
+3.3. Round-Trip Time Calculation
+----------------------------------
+
+    rtt = (t4 - t1) - (t3 - t2)
+
+  This gives the total network round-trip time excluding server processing.
+
+3.4. NTP Message Format
+-------------------------
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         mode            Message mode (see 3.5)
+    4       8         t1              Timestamp 1 (float64)
+    12      8         t2              Timestamp 2 (float64)
+    20      8         t3              Timestamp 3 (float64)
+    28      8         t4              Timestamp 4 (float64)
+    36      4         root_delay      Root delay (float32, seconds)
+    40      4         root_dispersion Root dispersion (float32, seconds)
+    44      4         ref_id          Reference clock ID (uint32)
+
+    Total: 48 bytes
+
+3.5. NTP Message Modes
+-------------------------
+
+    Value   Name            Description
+    ------  --------------  ----------------------------------------
+    0x01    CLIENT          Client request
+    0x02    SERVER          Server response
+    0x03    BROADCAST       Server broadcast
+    0x04    SYM_ACTIVE      Symmetric active
+    0x05    SYM_PASSIVE    Symmetric passive
+
+
+============================================================================
+4. Tick-Based Timing
+============================================================================
+
+4.1. Tick Concept
+-------------------
+
+  The PWTP world operates on a tick-based timing system. Each tick
+  represents a discrete time step at which the world state advances.
+
+  Tick Rate: 60 ticks/second (configurable: 30, 60, 120)
+  Tick Duration: 1.0 / tick_rate seconds
+
+4.2. Tick Timing Message
+--------------------------
+
+  Sent periodically by the server to synchronize client tick counters.
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         server_tick     Current server tick number (uint32)
+    4       8         server_time     Server time at tick (float64)
+    12      2         tick_rate       Server tick rate (uint16)
+    14      1         drift_status    Clock drift status (see 4.3)
+    15      var       timing_data     Optional timing history
+
+    Total: 16 bytes + optional data
+
+4.3. Drift Status Codes
+--------------------------
+
+    Value   Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    NOMINAL         Clock sync is within tolerance
+    0x01    MINOR_DRIFT     Small drift detected, correcting
+    0x02    MAJOR_DRIFT     Significant drift, correction active
+    0x03    CRITICAL_DRIFT  Clock sync lost, resync needed
+
+4.4. Client Tick Synchronization
+----------------------------------
+
+  On receiving a tick timing message:
+
+    a) Compute offset: offset = server_time - local_time
+    b) Compute expected tick: expected_tick = server_tick + (offset / tick_duration)
+    c) If |expected_tick - local_tick| > tick_threshold:
+         Adjust local tick counter to match
+    d) Otherwise: apply gradual correction over N frames
+
+  Gradual correction:
+    correction_per_frame = (expected_tick - local_tick) / correction_window
+    Apply correction_per_frame each frame until synchronized
+
+4.5. Deterministic Tick Advancement
+--------------------------------------
+
+  For deterministic playback (replay mode), tick advancement is fixed:
+
+    tick_time(n) = tick_0 + n * (1.0 / tick_rate)
+
+  Where tick_0 is the session start time. This ensures identical
+  polynomial evaluation at any playback position.
+
+
+============================================================================
+5. Polynomial Time Windows
+============================================================================
+
+5.1. Time Window Concept
+--------------------------
+
+  Each polynomial state vector has an associated time window during which
+  it is valid. The time window is defined by [t_start, t_end].
+
+  t_start:  Time at which this state vector becomes valid
+  t_end:    Time at which the next state vector takes over
+
+5.2. Time Window Overlap
+--------------------------
+
+  To prevent visual discontinuities, consecutive time windows SHOULD
+  overlap by a small margin:
+
+    overlap_duration = 0.01 seconds (10 ms, configurable)
+
+  During the overlap period, both state vectors are valid and can be
+  blended for smooth transitions.
+
+5.3. Time Window Evaluation
+-----------------------------
+
+  Given a render time t_render:
+
+    if t_render < t_start:
+      Use previous state vector (if available) or hold first position
+    elif t_render <= t_end:
+      Evaluate polynomial at t_render - t_start
+    else:
+      Use next state vector or extrapolate using last state
+
+5.4. Time Window Encoding
+---------------------------
+
+  Time windows are encoded in state vectors:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       8         t_start         Window start time (float64)
+    8       8         t_end           Window end time (float64)
+    16      4         overlap         Overlap duration (float32)
+
+    Total: 20 bytes per time window
+
+
+============================================================================
+6. Latency Compensation
+============================================================================
+
+6.1. Latency Estimation
+-------------------------
+
+  The client estimates one-way latency as:
+
+    one_way_latency = rtt / 2
+
+  For more accurate estimation, the client can use:
+
+    one_way_latency = min(
+      (t2 - t1),  // server processing time estimate
+      (t4 - t3)   // client processing time estimate
+    ) + network_delay
+
+6.2. Latency Compensation Modes
+---------------------------------
+
+    Mode        Name            Description
+    ----------  --------------  ----------------------------------------
+    0x00        NONE            No compensation (raw state)
+    0x01        PREDICT         Predict state at render time
+    0x02        DELAY           Delay render to match network time
+    0x03        BLEND           Blend between predicted and delayed
+
+6.3. Prediction Algorithm
+---------------------------
+
+  For PREDICT mode:
+
+    t_predict = t_now + one_way_latency
+    Evaluate state polynomial at t_predict
+
+  This shows the state as it is on the server, accounting for network
+  delay. However, this may show future states if latency is variable.
+
+6.4. Delay Algorithm
+----------------------
+
+  For DELAY mode:
+
+    t_render = t_now - one_way_latency
+    Render state as it was one_way_latency seconds ago
+
+  This always shows past state, providing stability at the cost of
+  visual delay.
+
+6.5. Blend Algorithm
+----------------------
+
+  For BLEND mode:
+
+    t_past = t_now - one_way_latency
+    t_future = t_now + one_way_latency
+
+    state_past = evaluate(t_past)
+    state_future = evaluate(t_future)
+
+    blend_factor = 0.5 + 0.5 * cos(jitter_angle)
+    state_render = lerp(state_past, state_future, blend_factor)
+
+  Where jitter_angle is derived from recent jitter measurements.
+
+
+============================================================================
+7. Clock Drift Handling
+============================================================================
+
+7.1. Drift Detection
+----------------------
+
+  Clock drift is detected by comparing successive offset measurements:
+
+    drift_rate = (offset_new - offset_old) / (time_new - time_old)
+
+  If |drift_rate| > DRIFT_THRESHOLD, drift correction is activated.
+
+7.2. Drift Correction
+-----------------------
+
+  Correction is applied gradually to avoid visual discontinuities:
+
+    correction_per_second = drift_rate * correction_factor
+
+  Where correction_factor = 0.1 (10% correction per second, configurable).
+
+  The correction is applied by adjusting the client's time reference:
+
+    adjusted_time = raw_time + accumulated_correction
+
+7.3. Drift Correction Limits
+-------------------------------
+
+    Parameter               Default     Description
+    ----------------------  ----------  --------------------------------
+    MAX_CORRECTION_RATE     0.001       Max correction per second
+    MIN_CORRECTION_WINDOW   10.0        Min window to measure drift
+    MAX_ACCUMULATED_DRIFT   0.1         Max total correction (100ms)
+    RESYNC_THRESHOLD        0.05        Trigger full resync at 50ms
+
+7.4. Drift Status Message
+---------------------------
+
+  Sent when drift exceeds thresholds:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         drift_rate      Measured drift (float32, sec/sec)
+    4       4         correction      Applied correction (float32, sec/sec)
+    8       4         accumulated     Total accumulated correction (float32)
+    12      1         status          Drift status code (see 4.3)
+
+    Total: 13 bytes
+
+
+============================================================================
+8. Buffer Management
+============================================================================
+
+8.1. Receive Buffer Structure
+-------------------------------
+
+  The receive buffer stores recent state vectors for interpolation:
+
+    Buffer Entry:
+      sequence:       uint32   - State sequence number
+      timestamp:      float64  - State timestamp
+      object_id:      uint32   - Associated object (0=world)
+      state_data:     bytes    - Encoded state vector
+      polynomial:     bytes    - Polynomial coefficients
+
+8.2. Buffer Operations
+------------------------
+
+    INSERT(sequence, timestamp, data):
+      if buffer full and oldest entry < timestamp - max_age:
+        Remove oldest entry
+      Insert new entry at correct position (sorted by timestamp)
+      Mark duplicates for removal
+
+    LOOKUP(timestamp):
+      Find entry with closest timestamp <= requested
+      Return entry and interpolation factor
+
+    PRUNE(max_age):
+      Remove all entries older than max_age
+      Default max_age = 5.0 seconds
+
+8.3. Buffer Sizing
+--------------------
+
+  Buffer size depends on network conditions:
+
+    Network Condition    Recommended Buffer Size
+    -------------------  ----------------------
+    Low jitter (<5ms)    8 entries
+    Medium jitter        16 entries
+    High jitter          32 entries
+    Variable/jittery     64 entries
+
+  Buffer size is adaptive: the client adjusts based on observed jitter.
+
+8.4. Buffer Overflow Handling
+-------------------------------
+
+  When the buffer is full:
+    a) Newer entries replace oldest entries
+    b) Entries within the interpolation window are never replaced
+    c) Overflow counter is incremented for monitoring
+
+
+============================================================================
+9. Frame Pacing
+============================================================================
+
+9.1. Frame Pacing Concept
+----------------------------
+
+  Frame pacing ensures that the client renders at a consistent rate,
+  independent of network conditions and processing load.
+
+9.2. Target Frame Rate
+------------------------
+
+  The target frame rate is negotiated during handshake:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       2         target_fps      Target frame rate (uint16)
+    2       1         vsync           V-sync mode (0=off, 1=on, 2=adaptive)
+    3       1         frame_pacing    Pacing mode (see 9.3)
+
+9.3. Frame Pacing Modes
+--------------------------
+
+    Value   Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    FIXED           Fixed frame intervals
+    0x01    ADAPTIVE        Adjust to processing time
+    0x02    VARIABLE        Allow variable frame time
+    0x03    LOCKED          Lock to fixed time step
+
+9.4. Frame Time Calculation
+-----------------------------
+
+  For FIXED pacing:
+    frame_time = 1.0 / target_fps
+
+  For ADAPTIVE pacing:
+    frame_time = max(1.0 / target_fps, processing_time + margin)
+
+  For VARIABLE pacing:
+    frame_time = processing_time (no enforced minimum)
+
+  For LOCKED pacing (deterministic):
+    frame_time = 1.0 / tick_rate (must equal tick rate)
+
+9.5. Frame Pacing Message
+---------------------------
+
+  Sent by server to assist client frame pacing:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       8         server_frame    Server frame timestamp (float64)
+    8       4         server_fps      Server actual FPS (float32)
+    12      4         target_fps      Target FPS (float32)
+    16      4         frame_jitter    Frame time jitter (float32)
+    20      1         pacing_status   Pacing status (see 9.6)
+
+    Total: 21 bytes
+
+9.6. Pacing Status Codes
+---------------------------
+
+    Value   Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    ON_TARGET       Frame pacing is on target
+    0x01    FALLING_BEHIND  Server is falling behind target
+    0x02    AHEAD           Server is ahead of target
+    0x03    UNSTABLE        Frame pacing is unstable
+
+
+============================================================================
+10. Error Handling
+============================================================================
+
+10.1. Error Codes for PWTP-005
+--------------------------------
+
+  Code    Name                    Description
+  ------  ----------------------  ----------------------------------------
+  0x0000  SUCCESS                 Operation succeeded
+  0x0100  SYNC_FAILED             NTP synchronization failed
+  0x0101  TIMEOUT                 Sync exchange timed out
+  0x0102  CLOCK_DRIFT_EXCEEDED    Clock drift exceeds tolerance
+  0x0200  TICK_MISMATCH           Tick counter mismatch detected
+  0x0201  TICK_RATE_MISMATCH      Tick rates disagree
+  0x0300  BUFFER_OVERFLOW         Receive buffer overflow
+  0x0301  BUFFER_UNDERFLOW        Receive buffer empty
+  0x0400  FRAME_PACE_ERROR        Frame pacing error
+  0x0401  LATENCY_SPIKE           Latency exceeded threshold
+
+10.2. Recovery Procedures
+---------------------------
+
+  On SYNC_FAILED:
+    Client initiates full NTP resynchronization (3 exchanges).
+
+  On CLOCK_DRIFT_EXCEEDED:
+    Client increases correction rate and notifies server.
+
+  On BUFFER_UNDERFLOW:
+    Client enters hold mode, holding last known state until buffer
+    receives new data.
+
+
+============================================================================
+11. Security Considerations
+============================================================================
+
+11.1. Time Spoofing Prevention
+--------------------------------
+  Timestamps are authenticated via HMAC-SHA1 (see PWTP-007) to prevent
+  attackers from manipulating clock synchronization.
+
+11.2. Replay Attack Prevention
+--------------------------------
+  Timestamp exchange uses nonces to prevent replay of old sync messages.
+
+11.3. Rate Limiting
+---------------------
+  Sync messages are rate-limited to prevent flooding:
+    - Maximum 10 sync exchanges per second
+    - Minimum interval: 100ms between exchanges
+
+
+============================================================================
+12. Appendix A: Example Packet Captures
+============================================================================
+
+A.1. NTP Sync Exchange
+------------------------
+
+  >> CLIENT -> SERVER: NTP_CLIENT (0x30)
+     0000: 50 54 52 4E 00 01 03 06 00 00 00 01 00 00 27 10
+     0010: 00 00 00 30
+     0014: 00 00 00 01 41 DC 8F 5C 00 00 00 00 00 00 00 00
+     0024: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+     0034: 00 00 00 00 00 00 00 00
+
+     Decoded:
+       transport header:
+         magic:          "PTRN"
+         flags:          0x03 (ACK | RELIABLE)
+         qos_level:      6 (SYSTEM)
+         sequence_num:   1
+         timestamp:      10000 ms
+
+       NTP payload:
+         mode:           0x01 (CLIENT)
+         t1:             1767225600.0 + 50.0 = 1767225650.0
+         t2, t3, t4:     0 (not yet filled)
+
+  << SERVER -> CLIENT: NTP_SERVER (0x31)
+     0000: 50 54 52 4E 00 01 01 06 00 00 00 02 00 00 27 11
+     0010: 00 00 00 30
+     0014: 00 00 00 02 41 DC 8F 5C 00 00 00 00
+     0024: 41 DC 8F 5E 80 00 00 00
+     0034: 41 DC 8F 5E 80 00 00 00 00 00 00 00 00 00 00 00
+     0044: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+     Decoded:
+       mode:           0x02 (SERVER)
+       t1:             1767225650.0 (echoed from client)
+       t2:             1767225652.0 (server receive time)
+       t3:             1767225652.0 (server send time)
+
+  >> CLIENT computes:
+     t4:              1767225652.5 (client receive time)
+     offset:          ((t2-t1) + (t3-t4)) / 2
+                    = ((2.0) + (-0.5)) / 2
+                    = 0.75 seconds
+     rtt:             (t4-t1) - (t3-t2)
+                    = (2.5) - (0.0)
+                    = 2.5 seconds
+
+A.2. Tick Timing Message
+--------------------------
+
+  << SERVER -> CLIENT: TICK_TIMING (0x32)
+     0000: 50 54 52 4E 00 01 01 06 00 00 00 64 00 00 27 12
+     0010: 00 00 00 32
+     0014: 00 00 03 E8 41 DC 8F 5C 00 00 00 00 00 3C 00
+
+     Decoded:
+       transport header:
+         sequence_num:   100
+         qos_level:      6 (SYSTEM)
+
+       Tick payload:
+         server_tick:    0x000003E8 (1000)
+         server_time:    1767225650.0
+         tick_rate:      60
+         drift_status:   0x00 (NOMINAL)
+
+============================================================================
+  End of PWTP-005: Time Synchronization Protocol
+============================================================================

@@ -1,0 +1,660 @@
+============================================================================
+  PWTP-009: Effects and Particle System Protocol
+  Version: 1.0
+  Date: 2026-07-12
+  Status: Proposed Standard
+  Author: PWTP Working Group
+============================================================================
+
+Table of Contents
+-----------------
+  1.  Overview
+  2.  Definitions and Notation
+  3.  Effect Types
+  4.  Particle Polynomial Encoding
+  5.  Emitter Parameters
+  6.  Lifetime Management
+  7.  LOD for Particles
+  8.  Batch Transmission
+  9.  Effect Triggers
+  10. Error Handling
+  11. Security Considerations
+  12. Appendix A: Example Packet Captures
+
+
+============================================================================
+1. Overview
+============================================================================
+
+1.1. Purpose
+------------
+  PWTP-009 defines the protocol for transmitting visual effects and
+  particle system data in polynomial worlds. Effects include rain, fire,
+  smoke, explosions, ambient particles, and other visual phenomena.
+
+1.2. Scope
+----------
+  This specification covers:
+    - Effect type definitions and categorization
+    - Particle polynomial encoding for smooth trajectories
+    - Emitter parameter specification
+    - Particle lifetime management
+    - LOD systems for particle effects
+    - Batch transmission of particle data
+    - Effect trigger mechanisms
+
+1.3. Design Goals
+-----------------
+    a) Efficient encoding of large particle counts
+    b) Smooth particle motion via polynomial trajectories
+    c) Bandwidth-adaptive particle quality
+    d) Deterministic particle playback for replays
+    e) Support for complex multi-emitter effects
+
+1.4. Relationship to Other PWTP Protocols
+-----------------------------------------
+    PWTP-001: World context for effect placement
+    PWTP-002: Object state for attached effects
+    PWTP-006: QoS levels for particle LOD
+    PWTP-008: Multi-user effect synchronization
+
+
+============================================================================
+2. Definitions and Notation
+============================================================================
+
+2.1. Data Types
+---------------
+  All data types from PWTP-001 Section 2.2 apply. Additional:
+
+    Type        Size       Description
+    ----------  --------   ----------------------------------------
+    vec3        12 bytes   3x float32 (x, y, z)
+    color       4 bytes    RGBA (4x uint8, 0-255)
+    bbox        24 bytes   2x vec3 (min, max)
+
+2.2. Constants
+--------------
+  MAX_EFFECTS            = 1024
+  MAX_PARTICLES          = 100000
+  MAX_EMITTERS_PER_EFFECT = 16
+  MAX_PARTICLE_LIFETIME  = 30.0 seconds
+  MIN_PARTICLE_LIFETIME  = 0.1 seconds
+  PROTOCOL_ID            = 0x00000009
+  EFFECT_MAGIC           = 0x45464654  ("EFFT")
+  HEADER_SIZE            = 16 bytes
+
+
+============================================================================
+3. Effect Types
+============================================================================
+
+3.1. Effect Type Categories
+------------------------------
+
+  PWTP defines the following effect type categories:
+
+    Code    Type            Category        Description
+    ------  --------------  --------------  --------------------------------
+    0x00    RAIN            WEATHER         Rain particles
+    0x01    SNOW            WEATHER         Snow particles
+    0x02    FOG             WEATHER         Fog volume effect
+    0x03    WIND            WEATHER         Wind visualization
+    0x04    FIRE            ELEMENT         Fire particles
+    0x05    SMOKE           ELEMENT         Smoke particles
+    0x06    SPARKS          ELEMENT         Spark particles
+    0x07    EXPLOSION       ELEMENT         Explosion effect
+    0x08    DUST            ELEMENT         Dust particles
+    0x09    LEAVES          NATURE          Falling leaves
+    0x0A    PETALS          NATURE          Flower petals
+    0x0B    DEBRIS          DESTRUCTION     Debris particles
+    0x0C    BLOOD           COMBAT          Blood splatter
+    0x0D    TRAIL           LOCOMOTION      Movement trail
+    0x0E    SPARKLE         MAGICAL         Magical sparkle
+    0x0F    GLOW            MAGICAL         Ambient glow
+    0x10    SHOCKWAVE       COMBAT          Shockwave effect
+    0x11    BEAM            ENERGY          Beam/laser effect
+    0x12    PORTAL          MAGICAL         Portal effect
+    0x13    WATER_SPLASH    WATER           Water splash
+    0x14    BUBBLE          WATER           Underwater bubbles
+    0xFF    CUSTOM          -               Custom effect
+
+3.2. Effect Flags
+-------------------
+
+    Bit    Name              Description
+    ----   ----------------  ----------------------------------------
+    0      LOOP              Effect loops continuously
+    1      ATTACHED          Effect attached to object
+    2      WORLD_SPACE       Effect in world coordinates
+    3      LOCAL_SPACE       Effect in local/object coordinates
+    4      SORTED            Particles sorted back-to-front
+    5      LIGHT_EMITTER     Effect emits dynamic light
+    6      SOUND_TRIGGER     Effect triggers associated sound
+    7      POLYNOMIAL_PATH   Particles use polynomial trajectories
+
+
+============================================================================
+4. Particle Polynomial Encoding
+============================================================================
+
+4.1. Particle State
+---------------------
+
+  Each particle has a state vector:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         particle_id     Particle identifier (uint32)
+    4       1         flags           Particle flags (see 4.2)
+    5       1         lod_level       LOD level (uint8)
+    6       2         effect_id       Parent effect (uint16)
+    8       4         spawn_time      Spawn time offset (float32, seconds)
+    12      4         lifetime        Particle lifetime (float32, seconds)
+    16      var       position_data   Position polynomial data
+    var     var       velocity_data   Velocity polynomial data (optional)
+    var     var       color_data      Color/alpha polynomial data
+    var     var       size_data       Size polynomial data
+
+    Total fixed: 16 bytes + polynomial data
+
+4.2. Particle Flags
+---------------------
+
+    Bit    Name              Description
+    ----   ----------------  ----------------------------------------
+    0      ALIVE             Particle is active
+    1      HAS_VELOCITY      Velocity data present
+    2      HAS_COLOR         Color data present
+    3      HAS_SIZE          Size data present
+    4      BILLBOARD         Particle always faces camera
+    5      ROTATED           Particle has rotation
+    6      TRAIL             Particle has trail
+    7      GLOW              Particle glows
+
+4.3. Particle Position Polynomial
+-----------------------------------
+
+  Particle position as a function of time:
+
+    pos(t) = SUM_{k=0}^{degree} C_pos[k] * (t - t_spawn)^k
+
+  Where:
+    t:         Current time (seconds)
+    t_spawn:   Particle spawn time
+    degree:    Polynomial degree (0-4 typical)
+    C_pos[k]:  3D coefficient (vec3)
+
+  This enables smooth, bandwidth-efficient particle trajectories:
+    - Degree 0: Static position (rarely used for particles)
+    - Degree 1: Linear motion (constant velocity)
+    - Degree 2: Accelerated motion (gravity, drag)
+    - Degree 3: Complex curves (wind, turbulence)
+    - Degree 4: Organic motion (leaves, petals)
+
+4.4. Particle Color Polynomial
+--------------------------------
+
+  Particle color as a function of time:
+
+    color(t) = SUM_{k=0}^{degree} C_color[k] * (t - t_spawn)^k
+
+  Where C_color[k] is RGBA (4 components).
+
+  Color components are clamped to [0.0, 1.0] after evaluation.
+
+4.5. Particle Size Polynomial
+-------------------------------
+
+  Particle size as a function of time:
+
+    size(t) = SUM_{k=0}^{degree} C_size[k] * (t - t_spawn)^k
+
+  Where C_size[k] is a single float32.
+
+  Size is clamped to [0.0, max_size] after evaluation.
+
+4.6. Particle Batch Encoding
+-------------------------------
+
+  Multiple particles can be batched in a single message:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         effect_id       Effect identifier (uint32)
+    4       2         particle_count  Number of particles (uint16)
+    6       1         lod_level       LOD level for batch (uint8)
+    7       1         degree          Common polynomial degree (uint8)
+    8       var       particles       Particle data array
+
+    Total fixed: 8 bytes + particle data
+
+  When all particles share the same degree, the degree is specified once
+  in the batch header, reducing overhead.
+
+
+============================================================================
+5. Emitter Parameters
+============================================================================
+
+5.1. Emitter Definition
+-------------------------
+
+  An emitter defines how particles are spawned:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       2         emitter_id      Emitter identifier (uint16)
+    2       4         position_x      Emitter position X (float32)
+    6       4         position_y      Emitter position Y (float32)
+    10      4         position_z      Emitter position Z (float32)
+    14      1         emitter_type    Emitter type (see 5.2)
+    15      4         emission_rate   Particles per second (float32)
+    19      4         max_particles   Maximum particle count (uint32)
+    23      4         burst_count     Burst emission count (uint32)
+    27      4         burst_interval  Burst interval (float32, seconds)
+    31      1         shape           Emitter shape (see 5.3)
+    32      var       shape_params    Shape-specific parameters
+
+    Total fixed: 32 bytes + shape parameters
+
+5.2. Emitter Types
+--------------------
+
+    Type    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    POINT           Single point emitter
+    0x01    LINE            Line emitter
+    0x02    CIRCLE          Circle emitter
+    0x03    BOX             Box volume emitter
+    0x04    SPHERE          Sphere volume emitter
+    0x05    CONE            Cone emitter
+    0x06    MESH            Mesh surface emitter
+    0x07    BOUNDING_BOX    Bounding box emitter
+
+5.3. Emitter Shapes
+---------------------
+
+    Shape   Parameters
+    ------  -----------------------------------------------------------
+    POINT   (none)
+    LINE    start_vec3, end_vec3
+    CIRCLE  center_vec3, radius_float32, normal_vec3
+    BOX     min_vec3, max_vec3
+    SPHERE  center_vec3, radius_float32
+    CONE    apex_vec3, direction_vec3, angle_float32, radius_float32
+    MESH    mesh_id_uint32, surface_index_uint16
+
+5.4. Emitter Animation
+-------------------------
+
+  Emitter parameters can be animated using polynomials:
+
+    emission_rate(t) = SUM_{k=0}^{degree} C_rate[k] * t^k
+    position(t)      = SUM_{k=0}^{degree} C_pos[k] * t^k
+
+  This enables effects like:
+    - Pulsing emission rates
+    - Moving emitters
+    - Emitter rotation
+    - Dynamic emitter size
+
+5.5. Initial Velocity Parameters
+----------------------------------
+
+  Particles spawned by an emitter have initial velocity:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         vel_min_x       Min velocity X (float32)
+    4       4         vel_min_y       Min velocity Y (float32)
+    8       4         vel_min_z       Min velocity Z (float32)
+    12      4         vel_max_x       Max velocity X (float32)
+    16      4         vel_max_y       Max velocity Y (float32)
+    20      4         vel_max_z       Max velocity Z (float32)
+    24      4         gravity         Gravity factor (float32)
+    28      4         drag            Drag coefficient (float32)
+
+    Total: 32 bytes
+
+  Initial velocity is randomized between min and max bounds.
+
+
+============================================================================
+6. Lifetime Management
+============================================================================
+
+6.1. Particle Lifetime
+------------------------
+
+  Each particle has a defined lifetime:
+
+    Lifetime = base_lifetime + random(-variance, +variance)
+
+  Where:
+    base_lifetime:  Configured lifetime (0.1 - 30.0 seconds)
+    variance:       Random variation (0.0 - 50% of base)
+
+6.2. Lifetime Encoding
+------------------------
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         base_lifetime   Base lifetime (float32, seconds)
+    4       4         variance        Lifetime variance (float32, seconds)
+    8       1         lifetime_mode   Lifetime mode (see 6.3)
+
+    Total: 9 bytes
+
+6.3. Lifetime Modes
+---------------------
+
+    Mode    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    FIXED           Exact base lifetime
+    0x01    RANDOM          Random within variance
+    0x02    DISTANCE        Lifetime based on distance traveled
+    0x03    COLLISION       Lifetime ends on collision
+    0x04    FRAME           Lifetime based on frame count
+
+6.4. Particle Death
+---------------------
+
+  When a particle's lifetime expires:
+    a) Particle is marked as inactive
+    b) Death effect may be triggered (e.g., splash)
+    c) Particle data is recycled
+    d) Particle count decremented
+
+6.5. Effect Lifetime
+----------------------
+
+  Effects have their own lifetime management:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         effect_id       Effect identifier (uint32)
+    4       4         duration        Effect duration (float32, seconds)
+    8       1         loop_mode       Loop mode (see 6.6)
+    9       4         max_repeats     Maximum repeats (0=infinite, uint32)
+
+    Total: 13 bytes
+
+6.6. Loop Modes
+-----------------
+
+    Mode    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    ONCE            Play once then destroy
+    0x01    LOOP            Loop continuously
+    0x02    PING_PONG       Forward then reverse
+    0x03    RANDOM_DELAY    Random delay between loops
+
+
+============================================================================
+7. LOD for Particles
+============================================================================
+
+7.1. Particle LOD Levels
+--------------------------
+
+  Particles have 4 LOD levels:
+
+    LOD     Name        Particle Count    Update Rate    Polynomial Degree
+    ------  ----------  ----------------  -------------  ------------------
+    0       FULL        100%              60 Hz          3-4
+    1       REDUCED     50%               30 Hz          2-3
+    2       MINIMAL     25%               15 Hz          1-2
+    3       BILLBOARD   0% (impostor)     5 Hz           0
+
+7.2. LOD Selection
+--------------------
+
+  Particle LOD is selected based on:
+    a) Distance from camera
+    b) Screen-space size
+    c) Available bandwidth
+    d) Client performance
+
+  Distance thresholds (configurable):
+
+    LOD     Distance Range    Screen Size
+    ------  ----------------  ----------------
+    0       0 - 20m           > 50 pixels
+    1       20 - 50m          20 - 50 pixels
+    2       50 - 200m         5 - 20 pixels
+    3       200m+             < 5 pixels
+
+7.3. LOD Transition
+---------------------
+
+  Transitions between LOD levels are smoothed:
+
+    a) Old LOD particles fade out over 0.5 seconds
+    b) New LOD particles fade in over 0.5 seconds
+    c) During transition, both LOD levels are rendered
+    d) Particle count is interpolated during transition
+
+7.4. LOD Override Message
+---------------------------
+
+  Server can override LOD for specific effects:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         effect_id       Effect identifier (uint32)
+    4       1         forced_lod      Forced LOD level (uint8)
+    5       4         duration        Override duration (float32, seconds)
+
+    Total: 9 bytes
+
+
+============================================================================
+8. Batch Transmission
+============================================================================
+
+8.1. Effect Batch Message
+---------------------------
+
+  Multiple effects can be batched for efficiency:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       2         effect_count    Number of effects (uint16)
+    2       2         total_size      Total batch size (uint16)
+    4       var       effects         Effect data array
+
+    Total fixed: 4 bytes + effect data
+
+8.2. Compact Particle Encoding
+--------------------------------
+
+  For bandwidth-constrained scenarios, particles can be encoded
+  compactly:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       2         base_x          Base position X (int16, quantized)
+    2       2         base_y          Base position Y (int16, quantized)
+    4       2         base_z          Base position Z (int16, quantized)
+    6       var       deltas          Relative position deltas (int8[])
+
+  Quantization:
+    base = world_origin + raw_value * quantization_scale
+    delta = raw_delta * delta_scale
+
+  This reduces per-particle position data from 12 bytes to ~3-5 bytes.
+
+8.3. Delta Compression
+-------------------------
+
+  Subsequent updates only send changed particles:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         effect_id       Effect identifier (uint32)
+    4       2         base_version    Previous version number (uint16)
+    6       2         new_version     New version number (uint16)
+    8       var       changed_mask    Bitmask of changed particles
+    var     var       changed_data   Data for changed particles only
+
+  If particle_count = 100, changed_mask needs 100 bits = 13 bytes.
+
+
+============================================================================
+9. Effect Triggers
+============================================================================
+
+9.1. Trigger Types
+--------------------
+
+    Trigger         Description
+    --------------  ------------------------------------------------
+    ON_SPAWN        Trigger when effect spawns
+    ON_DESTROY      Trigger when effect is destroyed
+    ON_COLLISION    Trigger on particle collision
+    ON_LIFETIME     Trigger at lifetime milestones
+    ON_DISTANCE     Trigger at distance milestones
+    ON_INPUT        Trigger on user input
+    ON_EVENT        Trigger on custom event
+
+9.2. Effect Trigger Message
+------------------------------
+
+  Sent to trigger an effect:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         effect_id       Effect to trigger (uint32)
+    4       1         trigger_type    Trigger type (see 9.1)
+    5       4         trigger_time    Trigger time (float32, seconds)
+    9       var       trigger_data    Trigger-specific data
+
+    Total: 9 bytes + data
+
+9.3. Chain Triggers
+---------------------
+
+  Effects can trigger other effects:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         source_effect   Source effect ID (uint32)
+    4       4         target_effect   Target effect ID (uint32)
+    8       1         chain_type      Chain type (see 9.4)
+    9       4         delay           Delay before trigger (float32)
+
+    Total: 13 bytes
+
+9.4. Chain Types
+------------------
+
+    Type    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    ON_SPAWN        Trigger on source spawn
+    0x01    ON_DEATH        Trigger on source death
+    0x02    ON_COLLISION    Trigger on source collision
+    0x03    ON_DISTANCE     Trigger at distance threshold
+    0x04    CONTINUOUS      Trigger continuously while active
+
+
+============================================================================
+10. Error Handling
+============================================================================
+
+10.1. Effect Error Codes
+--------------------------
+
+  Code    Name                    Description
+  ------  ----------------------  ----------------------------------------
+  0x0000  SUCCESS                 Operation succeeded
+  0x0100  EFFECT_NOT_FOUND        Unknown effect ID
+  0x0101  EFFECT_LIMIT_EXCEEDED   Maximum effects reached
+  0x0102  PARTICLE_LIMIT_EXCEEDED Maximum particles reached
+  0x0200  INVALID_EMITTER         Emitter parameters invalid
+  0x0201  INVALID_POLYNOMIAL      Polynomial data invalid
+  0x0300  EMITTER_FAILED          Emitter spawn failed
+  0x0301  TRIGGER_FAILED          Effect trigger failed
+  0x0400  LOD_ERROR               LOD calculation error
+
+
+============================================================================
+11. Security Considerations
+============================================================================
+
+11.1. Effect Authorization
+----------------------------
+  Only authorized users can spawn effects (role >= CONTRIBUTOR).
+
+11.2. Rate Limiting
+---------------------
+  Effect spawn rate is limited per user:
+    - Maximum 10 effects per second
+    - Maximum 1000 particles per second
+
+11.3. Resource Limits
+-----------------------
+  Server enforces resource limits:
+    - Maximum 1024 active effects
+    - Maximum 100,000 active particles
+    - Maximum 16 emitters per effect
+
+
+============================================================================
+12. Appendix A: Example Packet Captures
+============================================================================
+
+A.1. Effect Spawn
+-------------------
+
+  << SERVER -> CLIENT: EFFECT_SPAWN (0x70)
+     0000: 50 54 52 4E 00 01 01 09 00 00 00 01 00 00 27 10
+     0010: 00 00 00 70
+     0014: 00 00 00 01 00 00 40 A0 00 00 40 C0 00 00 40 E0
+     0024: 00 00 00 00 41 A0 00 00 00 00 01 00 00 03 E8 00
+     0034: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+     0044: 00 00 00 00 00 00 00 00
+
+     Decoded:
+       message_type:   0x70 (EFFECT_SPAWN)
+       effect_id:      1
+       position:       (5.0, 6.0, 7.0)
+       effect_type:    0x00 (RAIN)
+       emission_rate:  20.0 particles/sec
+       max_particles:  1000
+       burst_count:    0
+       shape:          0x00 (POINT)
+
+A.2. Particle Batch
+---------------------
+
+  << SERVER -> CLIENT: PARTICLE_BATCH (0x71)
+     0000: 50 54 52 4E 00 01 01 09 00 00 00 0A 00 00 27 11
+     0010: 00 00 00 71
+     0014: 00 00 00 01 00 0A 00 03
+     001C: [10 particles x polynomial data]
+
+     Decoded:
+       message_type:   0x71 (PARTICLE_BATCH)
+       effect_id:      1
+       particle_count: 10
+       lod_level:      0 (FULL)
+       degree:         3
+
+A.3. Effect Trigger
+---------------------
+
+  >> CLIENT -> SERVER: EFFECT_TRIGGER (0x72)
+     0000: 50 54 52 4E 00 01 03 09 00 00 00 05 00 00 27 12
+     0010: 00 00 00 72
+     0014: 00 00 00 01 01 00 00 00 00
+
+     Decoded:
+       message_type:   0x72 (EFFECT_TRIGGER)
+       effect_id:      1
+       trigger_type:   0x01 (ON_DESTROY)
+       trigger_time:   0.0 (immediate)
+
+============================================================================
+  End of PWTP-009: Effects and Particle System Protocol
+============================================================================

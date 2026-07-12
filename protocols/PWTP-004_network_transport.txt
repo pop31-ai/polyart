@@ -1,0 +1,691 @@
+============================================================================
+  PWTP-004: Network Transport Layer
+  Version: 1.0
+  Date: 2026-07-12
+  Status: Proposed Standard
+  Author: PWTP Working Group
+============================================================================
+
+Table of Contents
+-----------------
+  1.  Overview
+  2.  Definitions and Notation
+  3.  Packet Format
+  4.  Message Types
+  5.  Sequence Numbers
+  6.  Timestamps
+  7.  Checksums
+  8.  Fragmentation
+  9.  Flow Control
+  10. Congestion Control
+  11. QoS Priority Levels
+  12. Error Handling
+  13. Security Considerations
+  14. Appendix A: Example Packet Captures
+
+
+============================================================================
+1. Overview
+============================================================================
+
+1.1. Purpose
+------------
+  PWTP-004 defines the network transport layer for all PWTP protocols.
+  It provides a reliable and unreliable packet delivery mechanism over
+  UDP and TCP, with support for fragmentation, flow control, congestion
+  control, and quality of service prioritization.
+
+1.2. Scope
+----------
+  This specification covers:
+    - Packet format with header and payload
+    - Message type registry
+    - Sequence numbering for ordering and detection
+    - Timestamp synchronization
+    - Data integrity via checksums
+    - Large message fragmentation and reassembly
+    - Flow control mechanisms
+    - Congestion control algorithms
+    - QoS priority-based queuing
+
+1.3. Transport Protocol Selection
+----------------------------------
+
+  PWTP uses UDP as the primary transport for time-sensitive data
+  (object updates, camera state) and TCP for reliable control messages
+  (handshake, world initialization).
+
+    Transport   Usage                         Port (default)
+    ----------  ----------------------------  --------------
+    UDP         Real-time state updates       7500
+    TCP         Control messages, world init  7501
+    UDP         Audio streaming               7502
+    UDP         Effect/particle updates       7503
+
+1.4. Design Goals
+-----------------
+    a) Minimize latency for real-time updates
+    b) Provide reliable delivery when needed
+    c) Support large world data transfers
+    d) Handle network congestion gracefully
+    e) Enable QoS differentiation for different data types
+
+
+============================================================================
+2. Definitions and Notation
+============================================================================
+
+2.1. Data Types
+---------------
+  All data types from PWTP-001 Section 2.2 apply.
+
+2.2. Constants
+--------------
+  MAX_PACKET_SIZE       = 1400 bytes (safe MTU for most networks)
+  MAX_PAYLOAD_SIZE      = 1376 bytes (MAX_PACKET_SIZE - header)
+  MAX_FRAGMENT_SIZE     = 1344 bytes (MAX_PAYLOAD_SIZE - fragment header)
+  MAX_REASSEMBLY_SIZE   = 65536 bytes
+  MAX_REASSEMBLY_TIME   = 5.0 seconds
+  MAX_SEQUENCE          = 0xFFFFFFFF
+  WINDOW_SIZE           = 256
+  PROTOCOL_VERSION      = 0x00010000
+  TRANSPORT_MAGIC       = 0x5054524E  ("PTRN")
+  HEADER_SIZE           = 24 bytes
+
+
+============================================================================
+3. Packet Format
+============================================================================
+
+3.1. Transport Header
+-----------------------
+
+  Every PWTP transport packet begins with a 24-byte header:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         magic           Magic number: 0x5054524E ("PTRN")
+    4       2         version         Transport version (uint16)
+    6       1         transport_flags Packet flags (see 3.2)
+    7       1         qos_level       QoS priority level (0-7)
+    8       4         sequence_num    Packet sequence number (uint32)
+    12      4         ack_num         Acknowledged sequence (uint32)
+    16      4         timestamp       Packet timestamp (uint32, ms)
+    20      2         payload_size    Payload size in bytes (uint16)
+    22      2         checksum        Header checksum (uint16)
+
+  Total header size: 24 bytes
+
+3.2. Transport Flags
+----------------------
+
+    Bit    Name              Description
+    ----   ----------------  ----------------------------------------
+    0      FLAG_ACK          This is an acknowledgment packet
+    1      FLAG_RELIABLE     Requires acknowledgment
+    2      FLAG_FRAGMENTED   This is a fragment
+    3      FLAG_COMPRESSED   Payload is compressed (zlib)
+    4      FLAG_REORDERED    Packet was reordered
+    5      FLAG_DUPLICATE    Duplicate detection active
+    6-7    (reserved)        Must be zero
+
+3.3. Complete Packet Structure
+-------------------------------
+
+  [24-byte header][payload (0-1376 bytes)]
+
+  Minimum packet size: 24 bytes (header only, ACK)
+  Maximum packet size: 1400 bytes
+
+
+============================================================================
+4. Message Types
+============================================================================
+
+4.1. Message Type Registry
+----------------------------
+
+  PWTP message types are carried in the payload. The first byte of the
+  payload identifies the message type within the PWTP protocol family.
+
+    Range       Category            Reliability
+    ----------  ------------------  --------------------------------
+    0x01-0x0F   Control (PWTP-001)  Reliable (TCP)
+    0x10-0x1F   Object (PWTP-002)   Unreliable (UDP)
+    0x20-0x2F   Camera (PWTP-003)   Unreliable (UDP)
+    0x30-0x3F   Sync (PWTP-005)     Unreliable (UDP)
+    0x40-0x4F   QoS (PWTP-006)      Reliable (TCP)
+    0x50-0x5F   Security (PWTP-007) Reliable (TCP)
+    0x60-0x6F   Multi-user (PWTP-008) Mixed
+    0x70-0x7F   Effects (PWTP-009)  Unreliable (UDP)
+    0x80-0x8F   Audio (PWTP-010)    Unreliable (UDP)
+    0xF0-0xFF   Transport-level     Varies
+    0xFF        PING/PONG           Unreliable (UDP)
+
+4.2. Payload Format
+---------------------
+
+  After the 24-byte transport header, the payload contains:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       1         message_type    PWTP message type (see 4.1)
+    1       1         message_flags   Message-specific flags
+    2       2         message_length  Message length in bytes (uint16)
+    4       var       message_data    Message-specific data
+
+  The message_length field does NOT include the 4-byte message header.
+
+
+============================================================================
+5. Sequence Numbers
+============================================================================
+
+5.1. Sequence Number Space
+----------------------------
+
+  Sequence numbers are 32-bit unsigned integers, monotonically increasing.
+  They wrap around from 0xFFFFFFFF to 0x00000000.
+
+  Sequence number comparison (with wrapping):
+
+    def seq_cmp(a, b):
+        diff = (a - b) & 0xFFFFFFFF
+        if diff == 0:
+            return 0
+        elif diff < 0x80000000:
+            return 1   # a is newer
+        else:
+            return -1  # b is newer
+
+5.2. Sequence Number Usage
+----------------------------
+
+  a) Each sender maintains an independent sequence counter
+  b) Sequence numbers are per-connection, not global
+  c) Acknowledgments reference the sequence number being acknowledged
+  d) Lost packets are detected via sequence gaps
+  e) Duplicate packets are detected via sequence comparison
+
+5.3. Selective Acknowledgment (SACK)
+--------------------------------------
+
+  For efficient loss recovery, PWTP supports selective acknowledgment:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         ack_num         Highest contiguous sequence (uint32)
+    4       1         sack_count      Number of SACK blocks (uint8)
+    5       var       sack_blocks     SACK block array
+
+  SACK Block format:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         start_seq       Start of SACK range (uint32)
+    4       4         end_seq         End of SACK range (uint32)
+
+  Example:
+    ack_num = 100 (received 1-100 contiguously)
+    sack_count = 2
+    block[0]: start=102, end=105 (received 102-105, missing 101)
+    block[1]: start=108, end=110 (received 108-110, missing 106-107)
+
+
+============================================================================
+6. Timestamps
+============================================================================
+
+6.1. Timestamp Format
+-----------------------
+
+  Timestamps are 32-bit unsigned integers representing milliseconds since
+  the session start time (established during handshake).
+
+    timestamp_ms = (current_time - session_start_time) * 1000
+
+  This provides ~49.7 days of continuous session time before wrapping.
+
+6.2. Timestamp Synchronization
+--------------------------------
+
+  The timestamp in the transport header allows:
+    a) One-way latency estimation
+    b) Round-trip time (RTT) calculation
+    c) Jitter measurement
+    d) Clock drift detection
+
+  RTT calculation:
+    RTT = (timestamp_receive - timestamp_echo) - processing_delay
+
+  Where timestamp_echo is the timestamp from the echoed packet.
+
+6.3. Timestamp Precision
+--------------------------
+
+  Timestamps have millisecond precision. For sub-millisecond precision,
+  the extended timestamp option can be used:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         timestamp_ms    Millisecond timestamp (uint32)
+    4       2         timestamp_us    Microsecond extension (uint16)
+
+  Total: 6 bytes (adds 4 microseconds of precision)
+
+
+============================================================================
+7. Checksums
+============================================================================
+
+7.1. Header Checksum
+----------------------
+
+  The header checksum covers only the 24-byte transport header. It is
+  a 16-bit ones-complement checksum computed over the header words.
+
+  Algorithm:
+    sum = 0
+    for each 16-bit word in header (excluding checksum field):
+        sum += word
+    sum = (sum >> 16) + (sum & 0xFFFF)
+    sum = ~(sum & 0xFFFF) & 0xFFFF
+
+  The checksum field is set to 0x0000 during computation.
+
+7.2. Payload Checksum (Optional)
+----------------------------------
+
+  For reliable data, an optional payload checksum can be included:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         payload_crc32   CRC-32 of payload data (uint32)
+
+  This adds 4 bytes to the packet but ensures end-to-end data integrity.
+
+7.3. CRC-32 Polynomial
+-------------------------
+
+  Standard CRC-32 (Ethernet):
+    polynomial = 0x04C11DB7
+    init       = 0xFFFFFFFF
+    xor_out    = 0xFFFFFFFF
+
+
+============================================================================
+8. Fragmentation
+============================================================================
+
+8.1. When Fragmentation is Needed
+-----------------------------------
+
+  Fragmentation occurs when a PWTP message exceeds MAX_PAYLOAD_SIZE
+  (1376 bytes). Large messages (world data, batch updates) are split
+  into fragments.
+
+8.2. Fragment Header
+----------------------
+
+  Each fragment carries additional header information:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         fragment_id     Unique fragment group ID (uint32)
+    4       2         fragment_index  Index of this fragment (uint16)
+    6       2         fragment_total  Total fragments in group (uint16)
+    8       4         total_size      Total reassembled size (uint32)
+    12      var       fragment_data   Fragment payload data
+
+8.3. Fragment Size Calculation
+-------------------------------
+
+  fragment_data_size = min(MAX_FRAGMENT_SIZE, remaining_size)
+
+  Where MAX_FRAGMENT_SIZE = 1344 bytes and remaining_size decreases
+  with each fragment.
+
+  Example: 5000-byte message
+    Fragment 0: 1344 bytes (offset 0)
+    Fragment 1: 1344 bytes (offset 1344)
+    Fragment 2: 1344 bytes (offset 2688)
+    Fragment 3:  968 bytes (offset 4032)
+    Total: 4 fragments
+
+8.4. Reassembly Process
+-------------------------
+
+  Receiver maintains a reassembly buffer per fragment_id:
+
+    Reassembly Entry:
+      fragment_id:     uint32   - Group identifier
+      fragment_total:  uint16   - Expected fragment count
+      received_count:  uint16   - Fragments received so far
+      bitmap:          uint32[] - Bitmask of received fragments
+      buffer:          bytes    - Reassembled data
+      timestamp:       uint64   - First fragment received time
+      state:           enum     - REASSEMBLING, COMPLETE, EXPIRED
+
+8.5. Reassembly Timeout
+-------------------------
+
+  If reassembly is not completed within MAX_REASSEMBLY_TIME (5.0 seconds),
+  the fragment group is marked as EXPIRED and all received fragments are
+  discarded.
+
+  Receiver sends a REASSEMBLY_NACK (0xF2) indicating missing fragments:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         fragment_id     Fragment group ID (uint32)
+    4       var       missing_bitmap  Bitmap of missing fragments
+
+8.6. Fragment Reordering
+--------------------------
+
+  Fragments may arrive out of order due to UDP transport. The reassembly
+  buffer handles reordering by index. No special reordering protocol is
+  needed; fragments are simply buffered until all are received.
+
+
+============================================================================
+9. Flow Control
+============================================================================
+
+9.1. Sliding Window Protocol
+-------------------------------
+
+  For reliable messages, PWTP uses a sliding window protocol:
+
+    Window Size: 256 packets
+    ACK Timeout: 200ms (adaptive)
+    Retransmission: up to 5 attempts
+
+  Sender state:
+    - last_ack:     Highest acknowledged sequence number
+    - send_window:  Number of unacknowledged packets in flight
+    - send_buffer:  Queue of packets awaiting acknowledgment
+
+  Receiver state:
+    - recv_window:  Expected next sequence number
+    - recv_buffer:  Out-of-order packet buffer
+
+9.2. Window Update
+--------------------
+
+  Window advertisements are carried in ACK packets:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         ack_num         Acknowledged sequence (uint32)
+    4       4         window_size     Receiver's available window (uint32)
+    8       var       sack_data       Selective ACK data (optional)
+
+  The sender must not have more than window_size unacknowledged packets
+  in flight.
+
+9.3. Backpressure Mechanism
+------------------------------
+
+  When the receiver's buffer is full (window_size = 0), the sender MUST
+  stop sending reliable messages until a non-zero window is advertised.
+
+  For unreliable messages, the sender SHOULD reduce send rate but is
+  not required to stop entirely.
+
+
+============================================================================
+10. Congestion Control
+============================================================================
+
+10.1. Algorithm
+----------------
+
+  PWTP implements a modified TCP Reno congestion control algorithm:
+
+    States:
+      SLOW_START     - Exponential growth
+      CONGESTION_AVOIDANCE - Linear growth
+      FAST_RECOVERY  - Recovery from loss
+
+    Variables:
+      cwnd:           Congestion window (packets)
+      ssthresh:       Slow start threshold (packets)
+      rtt_smooth:     Smoothed RTT (ms)
+      rtt_var:        RTT variance (ms)
+
+10.2. Slow Start
+------------------
+
+    cwnd = 1
+    while (no loss detected):
+        cwnd += 1 per ACK received
+    if (cwnd >= ssthresh):
+        transition to CONGESTION_AVOIDANCE
+
+10.3. Congestion Avoidance
+----------------------------
+
+    cwnd += 1 / cwnd per ACK received
+
+  This provides linear growth of the congestion window.
+
+10.4. Fast Recovery
+---------------------
+
+  On packet loss detection:
+    ssthresh = cwnd / 2
+    cwnd = ssthresh + 3
+    Enter FAST_RECOVERY
+
+  On receiving 3 duplicate ACKs:
+    Retransmit lost packet
+    cwnd = ssthresh
+    Enter CONGESTION_AVOIDANCE
+
+10.5. Loss Detection
+----------------------
+
+  Loss is detected by:
+    a) ACK timeout (no ACK within rtt_smooth + 4 * rtt_var)
+    b) Duplicate ACKs (3 or more ACKs for same sequence)
+    c) SACK gaps (missing sequences reported)
+
+
+============================================================================
+11. QoS Priority Levels
+============================================================================
+
+11.1. QoS Levels
+------------------
+
+  PWTP defines 8 priority levels (0-7), with 7 being highest:
+
+    Level   Name            Typical Usage
+    ------  --------------  ----------------------------------------
+    0       BACKGROUND      Ambient world updates
+    1       LOW             Distant object updates
+    2       NORMAL          Standard object updates
+    3       MEDIUM          Important object updates
+    4       HIGH            Player avatar updates
+    5       CRITICAL        Camera state updates
+    6       SYSTEM          Synchronization messages
+    7       CONTROL         Handshake, security, emergency
+
+11.2. Priority Queuing
+------------------------
+
+  Packets are queued in 8 separate queues, one per QoS level.
+  Transmission order:
+
+    a) Higher priority queues are served first
+    b) Within the same priority, FIFO order
+    c) Lower priority packets may be dropped under congestion
+
+  Queue overflow policy:
+    Level 0-2: Drop oldest packet when queue full
+    Level 3-5: Drop newest packet when queue full
+    Level 6-7: Never drop (infinite queue, or drop with error)
+
+11.3. QoS Header Encoding
+----------------------------
+
+  The QoS level is encoded in the transport header byte 7:
+
+    QoS level = transport_header.qos_level (0-7)
+
+  This allows routers and intermediate nodes to prioritize PWTP traffic.
+
+11.4. Adaptive QoS
+--------------------
+
+  The server dynamically adjusts QoS levels based on:
+    - Network conditions (bandwidth, latency)
+    - Client capability (processing power)
+    - World complexity (number of active objects)
+    - Distance from client viewpoint
+
+  See PWTP-006 for detailed QoS adaptation rules.
+
+
+============================================================================
+12. Error Handling
+============================================================================
+
+12.1. Transport Error Codes
+------------------------------
+
+  Code    Name                    Description
+  ------  ----------------------  ----------------------------------------
+  0x0000  SUCCESS                 Operation succeeded
+  0xF001  CHECKSUM_MISMATCH       Header checksum failed
+  0xF002  PAYLOAD_ERROR           Payload checksum failed
+  0xF003  FRAGMENT_ERROR          Fragment reassembly failed
+  0xF004  REASSEMBLY_TIMEOUT      Reassembly timed out
+  0xF005  SEQUENCE_ERROR          Sequence number out of window
+  0xF006  WINDOW_FULL             Send window full
+  0xF007  CONGESTION_DETECTED     Congestion detected
+  0xF008  RATE_LIMITED            Rate limit exceeded
+  0xF009  PACKET_TOO_LARGE        Packet exceeds MTU
+  0xF00A  INVALID_FRAGMENT        Fragment header invalid
+
+12.2. Error Recovery
+---------------------
+
+  Transport-level errors are handled transparently:
+    - Checksum errors: silently discard packet
+    - Fragment errors: request retransmission
+    - Sequence errors: send SACK with current state
+    - Congestion: reduce send rate (see Section 10)
+
+
+============================================================================
+13. Security Considerations
+============================================================================
+
+13.1. Header Authentication
+------------------------------
+  Transport headers are authenticated via HMAC-SHA1 when security is
+  enabled (see PWTP-007).
+
+13.2. Anti-Spoofing
+---------------------
+  Session identifiers in the transport layer prevent cross-session
+  packet injection.
+
+13.3. Denial of Service
+-------------------------
+  Servers SHOULD implement:
+    - Per-IP rate limiting (recommended: 1000 packets/second)
+    - Maximum fragment reassembly buffers per source (recommended: 16)
+    - Automatic blacklisting of malicious sources
+
+13.4. Packet Encryption
+-------------------------
+  For production deployments, transport payloads SHOULD be encrypted
+  using AES-256-CTR (see PWTP-007).
+
+
+============================================================================
+14. Appendix A: Example Packet Captures
+============================================================================
+
+A.1. Simple ACK Packet
+------------------------
+
+  >> CLIENT -> SERVER: ACK
+     0000: 50 54 52 4E 00 01 01 00 00 00 00 0A 00 00 27 10
+     0010: 00 00 00 00 00 04 00 00
+
+     Decoded:
+       magic:          "PTRN" (0x5054524E)
+       version:        0x0001
+       transport_flags:0x01 (FLAG_ACK)
+       qos_level:      0 (BACKGROUND)
+       sequence_num:   0x0000000A (10)
+       ack_num:        0x0000000A (10)
+       timestamp:      0x00002710 (10000 ms)
+       payload_size:   0 (ACK packet, no payload)
+       checksum:       0x0000
+
+A.2. Reliable Data Packet
+---------------------------
+
+  >> SERVER -> CLIENT: Reliable message
+     0000: 50 54 52 4E 00 01 03 06 00 00 00 14 00 00 27 11
+     0010: 00 00 00 3C A1 B2 C3 D4
+     0018: 01 00 00 38 [64 bytes of message data]
+
+     Decoded:
+       magic:          "PTRN"
+       version:        0x0001
+       transport_flags:0x03 (FLAG_ACK | FLAG_RELIABLE)
+       qos_level:      6 (SYSTEM)
+       sequence_num:   20
+       ack_num:        20
+       timestamp:      10001 ms
+       payload_size:   60
+       checksum:       0xA1B2
+
+       Message payload:
+         message_type:   0x01 (HANDSHAKE_INIT)
+         message_flags:  0x00
+         message_length: 0x0038 (56 bytes)
+         message_data:   [handshake data]
+
+A.3. Fragmented Packet
+------------------------
+
+  Fragment 0 of 3:
+     0000: 50 54 52 4E 00 01 07 02 00 00 00 32 00 00 27 12
+     0010: 00 00 05 40 12 34 56 78 00 00 00 03 00 00 05 40
+     0020: [1344 bytes of fragment data]
+
+     Decoded:
+       transport_flags:0x07 (FLAG_ACK | FLAG_RELIABLE | FLAG_FRAGMENTED)
+       qos_level:      2 (NORMAL)
+       sequence_num:   50
+       payload_size:   1348 (12 fragment header + 1344 data)
+
+       Fragment header:
+         fragment_id:    0x12345678
+         fragment_index: 0
+         fragment_total: 3
+         total_size:     0x00000540 (1344 * 3 = 4032)
+
+  Fragment 1 of 3:
+     0000: 50 54 52 4E 00 01 07 02 00 00 00 33 00 00 27 13
+     0010: 00 00 05 40 12 34 56 78 00 01 00 03 00 00 05 40
+     0020: [1344 bytes of fragment data]
+
+  Fragment 2 of 3:
+     0000: 50 54 52 4E 00 01 07 02 00 00 00 34 00 00 27 14
+     0010: 00 00 04 00 12 34 56 78 00 02 00 03 00 00 05 40
+     0020: [1024 bytes of fragment data]
+
+     Note: Last fragment is smaller (4032 - 1344*2 = 1344,
+     but actual data may be less due to padding)
+
+============================================================================
+  End of PWTP-004: Network Transport Layer
+============================================================================

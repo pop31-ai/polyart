@@ -1,0 +1,587 @@
+============================================================================
+  PWTP-006: Quality of Service (QoS) Levels
+  Version: 1.0
+  Date: 2026-07-12
+  Status: Proposed Standard
+  Author: PWTP Working Group
+============================================================================
+
+Table of Contents
+-----------------
+  1.  Overview
+  2.  Definitions and Notation
+  3.  LOD Tiers
+  4.  Bandwidth Adaptive Encoding
+  5.  Polynomial Degree Selection
+  6.  Distance-Based Simplification
+  7.  Priority Queuing
+  8.  Degradation Modes
+  9.  QoS Negotiation
+  10. Error Handling
+  11. Security Considerations
+  12. Appendix A: Example Packet Captures
+
+
+============================================================================
+1. Overview
+============================================================================
+
+1.1. Purpose
+------------
+  PWTP-006 defines the quality of service framework for PWTP protocols.
+  It provides mechanisms for adaptive quality control based on network
+  conditions, client capabilities, and content importance.
+
+1.2. Scope
+----------
+  This specification covers:
+    - Level of Detail (LOD) tier definitions
+    - Bandwidth-adaptive encoding parameters
+    - Polynomial degree selection policies
+    - Distance-based content simplification
+    - Priority-based message queuing
+    - Graceful degradation strategies
+
+1.3. Design Goals
+-----------------
+    a) Maximize visual quality within bandwidth constraints
+    b) Provide graceful degradation under adverse conditions
+    c) Prioritize important content over ambient content
+    d) Support heterogeneous client capabilities
+    e) Enable real-time quality adjustments without disruption
+
+
+============================================================================
+2. Definitions and Notation
+============================================================================
+
+2.1. Data Types
+---------------
+  All data types from PWTP-001 Section 2.2 apply.
+
+2.2. Constants
+--------------
+  MAX_LOD_TIERS           = 4
+  MAX_QOS_PROFILES        = 32
+  QUALITY_ADJUST_INTERVAL = 2.0 seconds
+  PROTOCOL_ID             = 0x00000006
+  QOS_MAGIC               = 0x514F535F  ("QOS_")
+  HEADER_SIZE             = 16 bytes
+
+
+============================================================================
+3. LOD Tiers
+============================================================================
+
+3.1. LOD Tier Definitions
+---------------------------
+
+  PWTP defines four primary LOD tiers:
+
+    Tier    Name        Description                Typical Bandwidth
+    ------  ----------  -------------------------  ----------------
+    0       HIGH        Full quality               100%
+    1       MEDIUM      Reduced quality            50%
+    2       LOW         Minimal quality            25%
+    3       BILLBOARD   Impostor/billboard only    5%
+
+3.2. HIGH Tier (LOD 0)
+------------------------
+
+  Full polynomial representation with maximum precision:
+
+    Parameter                 Value
+    ------------------------  --------------------------------
+    Terrain polynomial degree 4-8 (full)
+    Building polynomial degree 3-6 (full)
+    Object update rate        20 Hz
+    Polynomial quantization   16 bits
+    Material quality          Full PBR
+    Texture resolution        Full resolution
+    Effect particle count     100%
+    Audio quality             Full spatial
+
+3.3. MEDIUM Tier (LOD 1)
+--------------------------
+
+  Reduced polynomial degree and precision:
+
+    Parameter                 Value
+    ------------------------  --------------------------------
+    Terrain polynomial degree 3-4
+    Building polynomial degree 2-3
+    Object update rate        10 Hz
+    Polynomial quantization   12 bits
+    Material quality          Simplified PBR
+    Texture resolution        Half resolution
+    Effect particle count     50%
+    Audio quality             Reduced spatial
+
+3.4. LOW Tier (LOD 2)
+-----------------------
+
+  Minimal representation for distant or unimportant content:
+
+    Parameter                 Value
+    ------------------------  --------------------------------
+    Terrain polynomial degree 1-2
+    Building polynomial degree 1
+    Object update rate        5 Hz
+    Polynomial quantization   8 bits
+    Material quality          Basic (diffuse only)
+    Texture resolution        Quarter resolution
+    Effect particle count     25%
+    Audio quality             Stereo only
+
+3.5. BILLBOARD Tier (LOD 3)
+-----------------------------
+
+  Single image/impostor representation:
+
+    Parameter                 Value
+    ------------------------  --------------------------------
+    Terrain representation    Flat color + height
+    Building representation   Pre-rendered billboard sprite
+    Object update rate        0.5 Hz
+    Polynomial quantization   N/A (no polynomials)
+    Material quality          Single texture
+    Texture resolution        256x256 or less
+    Effect particle count     0% (no effects)
+    Audio quality             None (or simple ambient)
+
+
+============================================================================
+4. Bandwidth Adaptive Encoding
+============================================================================
+
+4.1. Bandwidth Monitoring
+---------------------------
+
+  The server monitors available bandwidth using:
+
+    a) acknowledged_bytes / time_period
+    b) packet_loss_rate
+    c) round_trip_time
+    d) jitter measurements
+
+4.2. Bandwidth Tiers
+----------------------
+
+    Tier    Available BW    Behavior
+    ------  --------------  ----------------------------------------
+    0       > 10 Mbps       Full quality, all objects HIGH tier
+    1       5-10 Mbps       Most objects HIGH, distant MEDIUM
+    2       2-5 Mbps        Player HIGH, important MEDIUM, rest LOW
+    3       1-2 Mbps        Player MEDIUM, important LOW, rest BILLBOARD
+    4       500K-1 Mbps     Player LOW, minimal everything else
+    5       < 500 Kbps      Emergency mode, essential data only
+
+4.3. Adaptive Encoding Parameters
+-----------------------------------
+
+  The server adjusts the following encoding parameters:
+
+    Parameter             Range           Bandwidth Impact
+    -------------------   -----------     ----------------
+    Polynomial degree     0-8             ~30% per degree
+    Quantization bits     8-16            ~10% per bit
+    Update frequency      0.5-20 Hz       Linear
+    Batch size            1-64 objects    ~20% improvement
+    Compression           none/zlib       ~40% reduction
+    Effect density        0-100%          Linear
+
+4.4. Bandwidth Estimation Message
+-----------------------------------
+
+  Sent periodically to inform clients of current conditions:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         estimated_bw    Estimated bandwidth (uint32, bytes/sec)
+    4       2         packet_loss     Packet loss rate (uint16, 0-10000)
+    6       4         avg_rtt        Average RTT (uint32, microseconds)
+    10      2         jitter         Average jitter (uint16, microseconds)
+    12      1         current_tier   Current QoS tier (uint8)
+    13      1         recommended_tier Recommended tier (uint8)
+
+    Total: 14 bytes
+
+
+============================================================================
+5. Polynomial Degree Selection
+============================================================================
+
+5.1. Selection Algorithm
+--------------------------
+
+  The server selects polynomial degrees based on multiple factors:
+
+    factors:
+      - Object importance (priority)
+      - Object distance from viewer
+      - Object motion complexity
+      - Available bandwidth
+      - Client capability
+
+    degree = base_degree * importance_factor * distance_factor
+    degree = clamp(degree, MIN_DEGREE, MAX_DEGREE)
+
+5.2. Importance Factors
+-------------------------
+
+    Object Type           Base Degree    Importance Factor
+    --------------------  -----------    -----------------
+    Player avatar         4              1.0
+    Important NPC         3              0.9
+    Vehicle               3              0.8
+    Decorative object     2              0.5
+    Ambient object        1              0.3
+    Background element    0              0.1
+
+5.3. Distance Factors
+-----------------------
+
+    Distance / Reference     Distance Factor
+    -----------------------  ----------------
+    0.0 - 0.5                1.0
+    0.5 - 1.0                0.8
+    1.0 - 2.0                0.5
+    2.0 - 5.0                0.3
+    5.0+                     0.1
+
+  Where reference distance is configurable per-world (default: 100m).
+
+5.4. Degree Assignment Message
+--------------------------------
+
+  Sent to inform client of degree assignments:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       2         object_count    Number of objects (uint16)
+    2       var       assignments     Per-object degree assignments
+
+  Each assignment:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         object_id       Object ID (uint32)
+    4       1         pos_degree      Position polynomial degree (uint8)
+    5       1         rot_degree      Rotation polynomial degree (uint8)
+    6       1         scale_degree    Scale polynomial degree (uint8)
+    7       1         lod_tier        Assigned LOD tier (uint8)
+
+
+============================================================================
+6. Distance-Based Simplification
+============================================================================
+
+6.1. Distance Zones
+---------------------
+
+  Objects are categorized into distance zones from the viewer:
+
+    Zone    Name        Distance Range    Update Behavior
+    ------  ----------  ----------------  --------------------------------
+    0       NEAR        0 - 20m           Full updates, all components
+    1       MEDIUM      20 - 50m          Reduced update rate
+    2       FAR         50 - 200m         Low update rate, simplified
+    3       VERY_FAR    200m+             Billboard or hidden
+
+6.2. Zone Transitions
+-----------------------
+
+  When an object crosses a zone boundary:
+
+    a) New LOD parameters are sent to the client
+    b) Transition blends over 0.5 seconds (configurable)
+    c) Old polynomial continues during transition
+    d) New polynomial takes over after transition
+
+  Transition blend:
+    t_blend = clamp((t_now - t_crossing) / transition_duration, 0, 1)
+    state = lerp(old_state, new_state, t_blend)
+
+6.3. Hysteresis
+-----------------
+
+  To prevent rapid LOD switching at zone boundaries, hysteresis is applied:
+
+    Enter threshold:  zone_distance * (1 - hysteresis_margin)
+    Exit threshold:   zone_distance * (1 + hysteresis_margin)
+
+  Where hysteresis_margin = 0.1 (10%, configurable).
+
+
+============================================================================
+7. Priority Queuing
+============================================================================
+
+7.1. Priority Levels
+----------------------
+
+  PWTP defines 8 priority levels for message queuing:
+
+    Level   Name            Usage
+    ------  --------------  ----------------------------------------
+    0       AMBIENT         Background world updates
+    1       DISTANT         Distant object updates
+    2       NORMAL          Standard object updates
+    3       IMPORTANT       Important object updates
+    4       PLAYER          Player avatar updates
+    5       CRITICAL        Camera, sync, critical updates
+    6       SYSTEM          System-level messages
+    7       CONTROL         Handshake, security, emergency
+
+7.2. Queue Management
+-----------------------
+
+  Each priority level has its own queue:
+
+    Queue Structure:
+      messages:       FIFO queue of messages
+      max_size:       Maximum queue entries
+      drop_policy:    How to handle overflow
+      bytes_used:     Current queue size in bytes
+
+  Queue sizes by level:
+
+    Level   Max Size    Drop Policy
+    ------  ----------  --------------------------------
+    0-2     16 entries  Drop oldest on overflow
+    3-5     32 entries  Drop newest on overflow
+    6-7     64 entries  Never drop (guaranteed delivery)
+
+7.3. Priority Inversion Prevention
+------------------------------------
+
+  Higher priority messages can "borrow" bandwidth from lower priority
+  queues when:
+
+    a) Higher priority queue has pending messages
+    b) Lower priority queue has available bandwidth
+    c) Total bandwidth is not saturated
+
+  This prevents priority inversion where low-priority traffic blocks
+  high-priority traffic.
+
+
+============================================================================
+8. Degradation Modes
+============================================================================
+
+8.1. Degradation Levels
+-------------------------
+
+    Level   Name            Trigger                 Behavior
+    ------  --------------  ----------------------  ------------------------
+    0       NORMAL          Default                 Full quality
+    1       MINOR           BW < 80% of target      Reduce distant quality
+    2       MODERATE        BW < 50% of target      Reduce all non-player
+    3       SEVERE          BW < 25% of target      Minimal everything
+    4       CRITICAL        BW < 10% of target      Essential data only
+    5       EMERGENCY       Connection failing       Last-gasp data only
+
+8.2. Degradation Actions
+--------------------------
+
+  Each degradation level triggers specific actions:
+
+    Level 0 (NORMAL):
+      - All objects at full LOD
+      - Full update rates
+      - All effects active
+
+    Level 1 (MINOR):
+      - Distant objects to MEDIUM LOD
+      - Update rates reduced by 25%
+      - Effects reduced by 25%
+
+    Level 2 (MODERATE):
+      - Player at HIGH, others at LOW
+      - Update rates reduced by 50%
+      - Effects reduced by 50%
+      - Disable distant audio
+
+    Level 3 (SEVERE):
+      - Player at MEDIUM, others at BILLBOARD
+      - Update rates reduced by 75%
+      - Disable all effects
+      - Disable spatial audio
+
+    Level 4 (CRITICAL):
+      - Player at LOW
+      - Only player and camera updates
+      - No effects, no audio
+
+    Level 5 (EMERGENCY):
+      - Only essential state data
+      - Minimum update rate (0.5 Hz)
+      - No rendering of non-essential content
+
+8.3. Degradation Message
+--------------------------
+
+  Sent to inform client of quality changes:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       1         new_level       New degradation level (uint8)
+    1       4         available_bw    Available bandwidth (uint32, bytes/sec)
+    5       4         target_bw       Target bandwidth (uint32, bytes/sec)
+    9       1         reason          Reason code (see 8.4)
+
+    Total: 10 bytes
+
+8.4. Degradation Reason Codes
+-------------------------------
+
+    Code    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    UNKNOWN         Unknown reason
+    0x01    BANDWIDTH       Insufficient bandwidth
+    0x02    LATENCY         High latency detected
+    0x03    PACKET_LOSS     High packet loss
+    0x04    CLIENT_LOAD     Client processing overload
+    0x05    SERVER_LOAD     Server processing overload
+    0x06    CONGESTION      Network congestion
+
+
+============================================================================
+9. QoS Negotiation
+============================================================================
+
+9.1. QoS Profile
+------------------
+
+  A QoS profile defines the quality parameters for a session:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         profile_id      Profile identifier (uint32)
+    4       1         max_lod         Maximum LOD tier (uint8)
+    5       1         default_degree  Default polynomial degree (uint8)
+    6       4         max_update_hz   Maximum update frequency (float32)
+    10      2         max_effects     Maximum effect count (uint16)
+    12      4         max_bandwidth   Maximum bandwidth (uint32, bytes/sec)
+    16      1         adaptive        Adaptive mode enabled (bool)
+
+    Total: 17 bytes
+
+9.2. QoS Negotiation Sequence
+-------------------------------
+
+  During handshake, client and server negotiate QoS parameters:
+
+    Client sends:
+      - Client capabilities (CPU, GPU, bandwidth estimate)
+      - Preferred QoS profile
+      - Maximum supported LOD tiers
+
+    Server responds:
+      - Agreed QoS parameters
+      - Initial LOD assignments
+      - Bandwidth budget
+
+9.3. QoS Update
+-----------------
+
+  QoS parameters can be updated during the session:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       1         update_type     What changed (see 9.4)
+    1       var       new_values      New parameter values
+
+9.4. Update Types
+-------------------
+
+    Value   Name            Description
+    ------  --------------  ----------------------------------------
+    0x01    LOD_CHANGE      LOD tier assignments changed
+    0x02    DEGREE_CHANGE   Polynomial degrees changed
+    0x03    RATE_CHANGE     Update frequencies changed
+    0x04    BANDWIDTH       Bandwidth allocation changed
+    0x05    FULL_RESET      Complete QoS reset
+
+
+============================================================================
+10. Error Handling
+============================================================================
+
+10.1. Error Codes for PWTP-006
+--------------------------------
+
+  Code    Name                    Description
+  ------  ----------------------  ----------------------------------------
+  0x0000  SUCCESS                 Operation succeeded
+  0x0100  INVALID_PROFILE         Invalid QoS profile
+  0x0101  PROFILE_MISMATCH        Profile negotiation failed
+  0x0200  LOD_ERROR               LOD assignment error
+  0x0201  DEGREE_ERROR            Polynomial degree error
+  0x0300  BANDWIDTH_EXCEEDED      Bandwidth budget exceeded
+  0x0301  DEGRADATION_FAILED      Degradation handling failed
+  0x0400  QUEUE_OVERFLOW           Priority queue overflow
+
+
+============================================================================
+11. Security Considerations
+============================================================================
+
+11.1. QoS Manipulation Prevention
+------------------------------------
+  QoS parameters are server-authoritative. Clients cannot override
+  LOD assignments or bandwidth allocations.
+
+11.2. Fair Resource Allocation
+--------------------------------
+  In multi-user scenarios, QoS resources are allocated fairly among
+  clients based on priority and subscription level.
+
+
+============================================================================
+12. Appendix A: Example Packet Captures
+============================================================================
+
+A.1. QoS Profile Message
+--------------------------
+
+  << SERVER -> CLIENT: QOS_PROFILE (0x40)
+     0000: 50 54 52 4E 00 01 03 06 00 00 00 01 00 00 27 10
+     0010: 00 00 00 40
+     0014: 00 00 00 01 03 04 41 A0 00 00 03 E8 00 01 00 00
+     0024: 27 10 01
+
+     Decoded:
+       transport header:
+         protocol_id:    0x00000006 (PWTP-006)
+         message_type:   0x40 (QOS_PROFILE)
+
+       QoS payload:
+         profile_id:     1
+         max_lod:        3 (BILLBOARD)
+         default_degree: 4
+         max_update_hz:  20.0
+         max_effects:    1000
+         max_bandwidth:  10000 (bytes/sec)
+         adaptive:       true
+
+A.2. Bandwidth Estimation Message
+-----------------------------------
+
+  << SERVER -> CLIENT: BANDWIDTH_ESTIMATE (0x41)
+     0000: 50 54 52 4E 00 01 01 06 00 00 00 0A 00 00 27 11
+     0010: 00 00 00 41
+     0014: 00 0F 42 40 00 64 00 01 86 A0 00 32 01 02
+
+     Decoded:
+       estimated_bw:   0x000F4240 (1,000,000 bytes/sec = 8 Mbps)
+       packet_loss:    0x0064 (100/10000 = 1%)
+       avg_rtt:        0x000186A0 (100,000 microseconds = 100ms)
+       jitter:         0x0032 (50 microseconds)
+       current_tier:   1 (MEDIUM)
+       recommended_tier: 2 (LOW)
+
+============================================================================
+  End of PWTP-006: Quality of Service (QoS) Levels
+============================================================================

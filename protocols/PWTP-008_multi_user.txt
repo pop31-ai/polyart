@@ -1,0 +1,679 @@
+============================================================================
+  PWTP-008: Multi-User Protocol
+  Version: 1.0
+  Date: 2026-07-12
+  Status: Proposed Standard
+  Author: PWTP Working Group
+============================================================================
+
+Table of Contents
+-----------------
+  1.  Overview
+  2.  Definitions and Notation
+  3.  User ID Management
+  4.  Authority Model
+  5.  Object Ownership
+  6.  Conflict Resolution
+  7.  State Replication
+  8.  Interest Management
+  9.  Scalability Limits
+  10. Error Handling
+  11. Security Considerations
+  12. Appendix A: Example Packet Captures
+
+
+============================================================================
+1. Overview
+============================================================================
+
+1.1. Purpose
+------------
+  PWTP-008 defines the protocol for supporting multiple simultaneous
+  users in a shared polynomial world. It covers user management,
+  authority models, conflict resolution, state replication, and
+  interest management.
+
+1.2. Scope
+----------
+  This specification covers:
+    - User identification and management
+    - Authority model for object control
+    - Object ownership tracking
+    - Conflict resolution strategies
+    - State replication across clients
+    - Interest management (area of relevance)
+    - Scalability limits and load balancing
+
+1.3. Design Goals
+-----------------
+    a) Support hundreds of simultaneous users
+    b) Minimize bandwidth per user
+    c) Ensure consistent world state across all clients
+    d) Handle user join/leave gracefully
+    e) Prevent cheating and unauthorized actions
+
+1.4. Architecture
+-------------------
+
+  PWTP-008 uses a client-server architecture:
+
+    - Server: Authoritative, maintains canonical world state
+    - Clients: Connect to server, receive state updates
+    - Peer-to-peer: Not supported in this version
+
+
+============================================================================
+2. Definitions and Notation
+============================================================================
+
+2.1. Data Types
+---------------
+  All data types from PWTP-001 Section 2.2 apply.
+
+2.2. Constants
+--------------
+  MAX_USERS               = 256
+  MAX_OBJECTS_PER_USER    = 64
+  MAX_INTEREST_RADIUS     = 1000.0 meters
+  MIN_INTEREST_RADIUS     = 10.0 meters
+  USER_TIMEOUT            = 30.0 seconds
+  PROTOCOL_ID             = 0x00000008
+  MULTIUSER_MAGIC         = 0x4D554C54  ("MULT")
+  HEADER_SIZE             = 16 bytes
+
+
+============================================================================
+3. User ID Management
+============================================================================
+
+3.1. User ID Structure
+------------------------
+
+  Each connected user is assigned a unique User ID:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         user_id         Unique user identifier (uint32)
+    4       32        username        Username (UTF-8, null-padded)
+    36      4         client_addr     Client address hash (uint32)
+    40      1         user_role       User role (see 3.2)
+    41      1         user_state      User state (see 3.3)
+    42      8         connect_time    Connection timestamp (float64)
+    50      4         last_active     Last activity timestamp (uint32)
+
+    Total: 54 bytes
+
+3.2. User Roles
+-----------------
+
+    Role    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    GUEST           Limited access, view-only
+    0x01    USER            Standard user, basic interaction
+    0x02    CONTRIBUTOR     Can modify shared objects
+    0x03    MODERATOR       Can manage users and content
+    0x04    ADMIN           Full system access
+    0xFF    SYSTEM          Server system process
+
+3.3. User States
+------------------
+
+    State   Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    CONNECTING      Establishing connection
+    0x01    AUTHENTICATING  Authentication in progress
+    0x02    LOADING         Receiving world data
+    0x03    ACTIVE          Fully connected and active
+    0x04    IDLE            No activity for timeout period
+    0x05    DISCONNECTING   Gracefully disconnecting
+    0x06    DISCONNECTED    Connection lost
+
+3.4. USER_JOIN Message
+-------------------------
+
+  Sent to all clients when a new user joins:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         user_id         New user ID (uint32)
+    4       32        username        Username (UTF-8)
+    36      1         user_role       User role (uint8)
+    37      4         avatar_model    Avatar model ID (uint32)
+    41      4         spawn_x         Spawn position X (float32)
+    45      4         spawn_y         Spawn position Y (float32)
+    49      4         spawn_z         Spawn position Z (float32)
+
+    Total: 53 bytes
+
+3.5. USER_LEAVE Message
+--------------------------
+
+  Sent to all clients when a user leaves:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         user_id         Departing user ID (uint32)
+    4       1         leave_reason    Leave reason (see 3.6)
+    5       4         timestamp       Leave timestamp (uint32)
+
+    Total: 9 bytes
+
+3.6. Leave Reason Codes
+-------------------------
+
+    Code    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    LOGOUT          User logged out normally
+    0x01    TIMEOUT         Inactivity timeout
+    0x02    KICKED          Removed by moderator
+    0x03    BANNED          Banned by moderator
+    0x04    ERROR           Connection error
+    0x05    SERVER_SHUTDOWN Server shutting down
+
+
+============================================================================
+4. Authority Model
+============================================================================
+
+4.1. Authority Types
+----------------------
+
+  Authority defines who can modify what in the shared world:
+
+    Authority       Owner           Description
+    --------------  --------------  --------------------------------
+    FULL            Server          Complete world control
+    OBJECT          Object Owner    Control over owned objects
+    TERRAIN         Terrain Owner   Control over terrain patches
+    CAMERA          Camera Owner    Control over camera state
+    EFFECT          Effect Owner    Control over visual effects
+    NONE            Anyone          No exclusive control
+
+4.2. Authority Assignment
+---------------------------
+
+  Authority is assigned by the server based on:
+
+    a) Object ownership (who created it)
+    b) User role (moderators have higher authority)
+    c) Proximity (closer users may have local authority)
+    d) Time-based (first come, first served for shared resources)
+
+4.3. Authority Levels
+-----------------------
+
+  Each user has authority levels for different object types:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         user_id         User identifier (uint32)
+    4       1         world_auth      World authority level (uint8)
+    5       1         object_auth     Object authority level (uint8)
+    6       1         terrain_auth    Terrain authority level (uint8)
+    7       1         camera_auth     Camera authority level (uint8)
+    8       1         effect_auth     Effect authority level (uint8)
+
+    Total: 9 bytes
+
+4.4. Authority Request
+------------------------
+
+  Users request authority for specific resources:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         user_id         Requesting user (uint32)
+    4       4         resource_id     Resource to claim (uint32)
+    8       1         resource_type   Resource type (see 4.5)
+    9       1         requested_auth  Requested authority level (uint8)
+
+    Total: 10 bytes
+
+4.5. Resource Type Codes
+--------------------------
+
+    Code    Type            Description
+    ------  --------------  ----------------------------------------
+    0x00    OBJECT          Dynamic object
+    0x01    TERRAIN_PATCH   Terrain patch
+    0x02    BUILDING        Building
+    0x03    CAMERA          Camera
+    0x04    EFFECT          Visual effect
+    0x05    AREA            Spatial area
+
+
+============================================================================
+5. Object Ownership
+============================================================================
+
+5.1. Ownership Tracking
+-------------------------
+
+  The server maintains an ownership table:
+
+    Object Entry:
+      object_id:      uint32   - Object identifier
+      owner_id:       uint32   - Owning user ID (0=server)
+      ownership_type: uint8    - Ownership type (see 5.2)
+      created_by:     uint32   - User who created the object
+      created_time:   float64  - Creation timestamp
+      permissions:    uint8    - Permission flags (see 5.3)
+
+5.2. Ownership Types
+----------------------
+
+    Type    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    SERVER          Server-owned, no user control
+    0x01    PERSISTENT      User-owned, persists across sessions
+    0x02    TEMPORARY       User-owned, destroyed on disconnect
+    0x03    SHARED          Multiple users can control
+    0x04    FREE            No owner, any authorized user can claim
+
+5.3. Permission Flags
+-----------------------
+
+    Bit    Name              Description
+    ----   ----------------  ----------------------------------------
+    0      CAN_MOVE          Owner can move object
+    1      CAN_ROTATE        Owner can rotate object
+    2      CAN_SCALE         Owner can scale object
+    3      CAN_DELETE        Owner can delete object
+    4      CAN_MODIFY        Owner can modify properties
+    5      CAN_TRANSFER      Owner can transfer ownership
+    6      CAN_CLONE         Owner can create copies
+    7      CAN_ADMIN         Owner can manage other owners
+
+5.4. Ownership Transfer
+--------------------------
+
+  Transfer sequence:
+
+    a) Current owner sends TRANSFER_REQUEST
+    b) Server validates transfer is allowed
+    c) Server sends TRANSFER_OFFER to target user
+    d) Target user accepts or rejects
+    e) Server updates ownership table
+    f) All clients notified of ownership change
+
+  TRANSFER_REQUEST Message:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         object_id       Object to transfer (uint32)
+    4       4         target_user     Target user ID (uint32)
+    8       4         current_owner   Current owner ID (uint32)
+
+    Total: 12 bytes
+
+5.5. Ownership Cleanup
+------------------------
+
+  When a user disconnects:
+    a) TEMPORARY objects are destroyed
+    b) PERSISTENT objects retain ownership
+    c) SHARED objects lose the disconnected owner
+    d) Ownership reverts to server if no valid owner remains
+
+
+============================================================================
+6. Conflict Resolution
+============================================================================
+
+6.1. Conflict Types
+---------------------
+
+    Type    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    WRITE_WRITE     Two users modify same object simultaneously
+    0x01    DELETE_WRITE    One user deletes while another writes
+    0x02    OWNERSHIP       Two users claim ownership
+    0x03    AUTHORITY       Authority level conflicts
+
+6.2. Resolution Strategies
+----------------------------
+
+  a) FIRST-WRITES-WINS:
+     First modification to reach server is accepted.
+     Subsequent modifications to same object are rejected.
+
+  b) LAST-WRITES-WINS:
+     All modifications are applied, most recent wins.
+     Conflicts are logged for review.
+
+  c) SERVER-AUTHORITATIVE:
+     Server resolves conflicts based on priority rules.
+     Server decision is final.
+
+  d) USER-VOTING:
+     For shared resources, users vote on resolution.
+     Majority wins (configurable threshold).
+
+6.3. Conflict Resolution Message
+-----------------------------------
+
+  Sent when a conflict is detected and resolved:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         conflict_id     Conflict identifier (uint32)
+    4       4         object_id       Conflicting object (uint32)
+    8       1         conflict_type   Conflict type (see 6.1)
+    9       1         resolution      Resolution strategy used (see 6.2)
+    10      4         winner_id       Winning user ID (uint32)
+    14      4         loser_id        Losing user ID (uint32)
+    18      4         timestamp       Conflict time (uint32)
+
+    Total: 22 bytes
+
+6.4. Conflict Prevention
+--------------------------
+
+  a) Optimistic locking: Objects have version numbers
+  b) Version check: Modifications check version before applying
+  c) Lock mechanism: Users can lock objects during modification
+  d) Timeout: Locks expire after configurable duration (default: 10s)
+
+
+============================================================================
+7. State Replication
+============================================================================
+
+7.1. Replication Model
+------------------------
+
+  PWTP uses server-authoritative replication:
+
+    a) All state changes go through the server
+    b) Server broadcasts changes to interested clients
+    c) Clients interpolate between received states
+    d) Server resolves any inconsistencies
+
+7.2. Replication Granularity
+-------------------------------
+
+  Not all data is replicated to all clients:
+
+    Data Type           Replication       Frequency
+    ------------------  ----------------  ----------------
+    Player position     Always            20 Hz
+    Player actions      On occurrence     Event-driven
+    Object positions    By interest       5-20 Hz
+    World changes       Always            On change
+    Chat messages       Always            On occurrence
+    Effects             By interest       10 Hz
+    Audio               Spatial           Continuous
+
+7.3. State Delta Encoding
+----------------------------
+
+  To minimize bandwidth, state changes are sent as deltas:
+
+    Delta Header:
+      Offset  Size    Field         Description
+      ------  ------  ----------    --------------------------------
+      0       4       object_id     Object being updated (uint32)
+      4       4       base_version  Version this delta applies to
+      8       var     delta_data    Changed fields only
+
+    Delta data is variable-length and includes only modified fields.
+
+7.4. State Synchronization
+----------------------------
+
+  Full state sync occurs on:
+    a) Initial connection
+    b) Reconnection after disconnect
+    c) Significant desynchronization
+    d) World state reload
+
+  Sync message:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         sync_id         Sync identifier (uint32)
+    4       4         object_count    Objects in sync (uint32)
+    8       var       object_states   Full state for each object
+
+
+============================================================================
+8. Interest Management
+============================================================================
+
+8.1. Interest Area
+--------------------
+
+  Each user has an interest area centered on their avatar position:
+
+    Interest Center:  User's avatar position
+    Interest Radius:  Configurable (default: 200 meters)
+    Interest Shape:   Circle (2D) or Sphere (3D)
+
+8.2. Interest Updates
+-----------------------
+
+  Interest area updates are sent when:
+    a) User moves significantly (> 10 meters)
+    b) Interest radius changes
+    c) Interest shape changes
+
+    Interest Update Message:
+
+      Offset  Size      Field           Description
+      ------  --------  --------------  ----------------------------------------
+      0       4         user_id         User identifier (uint32)
+      4       4         center_x        Interest center X (float32)
+      8       4         center_y        Interest center Y (float32)
+      12      4         center_z        Interest center Z (float32)
+      16      4         radius          Interest radius (float32)
+      20      1         priority_filter Priority filter (uint8)
+
+      Total: 21 bytes
+
+8.3. Interest Filter
+----------------------
+
+  Users can filter what they receive based on priority:
+
+    Filter Bits:
+      Bit    Name              Description
+      ----   ----------------  ----------------------------------------
+      0      SHOW_OBJECTS      Include object updates
+      1      SHOW_EFFECTS      Include effect updates
+      2      SHOW_AUDIO        Include audio updates
+      3      SHOW_CHAT         Include chat messages
+      4      SHOW_TERRAIN      Include terrain updates
+      5      SHOW_Buildings    Include building updates
+      6-7    (reserved)        Must be zero
+
+8.4. Relevance Determination
+-------------------------------
+
+  An object is relevant to a user if:
+
+    a) Object distance <= user's interest radius
+    b) Object priority >= user's priority filter
+    c) Object is not hidden/occluded from user's view
+    d) User has not muted the object
+
+8.5. Dynamic Interest Management
+-----------------------------------
+
+  Interest areas can be dynamically adjusted:
+
+    a) Zoom in: Smaller radius, higher detail
+    b) Zoom out: Larger radius, lower detail
+    c) Focus: Narrow radius around specific point
+    d) Global: Receive all updates (admin/debug mode)
+
+
+============================================================================
+9. Scalability Limits
+============================================================================
+
+9.1. Theoretical Limits
+-------------------------
+
+    Parameter               Maximum         Notes
+    ----------------------  --------------  ------------------------------
+    Simultaneous users      256             Per server instance
+    Objects per user        64              User-owned objects
+    Total objects           16,384          256 * 64
+    Interest areas          256             One per user
+    Messages per second     10,000          Server aggregate
+    Bandwidth per user      100 KB/s        Maximum allocation
+
+9.2. Practical Limits
+-----------------------
+
+  Real-world limits depend on:
+    a) Server hardware (CPU, memory, network)
+    b) Client hardware (processing power)
+    c) Network conditions (bandwidth, latency)
+    d) World complexity (object count, effects)
+
+  Recommended targets:
+    a) 64 simultaneous users per server
+    b) 4,096 total objects
+    c) 5,000 messages per second
+    d) 50 KB/s per user average
+
+9.3. Load Balancing
+---------------------
+
+  When approaching limits:
+    a) Shard world into zones, each on separate server
+    b) Use interest management to reduce per-client data
+    c) Implement LOD to reduce detail for distant objects
+    d) Rate-limit updates based on importance
+
+9.4. Scaling Architecture
+----------------------------
+
+  Multi-server scaling:
+    a) Zone-based sharding
+    b) Central authority server
+    c) Inter-server communication via shared message bus
+    d) Client connects to nearest zone server
+
+  Zone Assignment Message:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         zone_id         Zone identifier (uint32)
+    4       4         server_addr     Zone server address (uint32)
+    8       2         server_port     Zone server port (uint16)
+    10      4         center_x        Zone center X (float32)
+    14      4         center_y        Zone center Y (float32)
+    18      4         radius          Zone radius (float32)
+
+    Total: 22 bytes
+
+
+============================================================================
+10. Error Handling
+============================================================================
+
+10.1. Multi-User Error Codes
+-------------------------------
+
+  Code    Name                    Description
+  ------  ----------------------  ----------------------------------------
+  0x0000  SUCCESS                 Operation succeeded
+  0x0100  USER_NOT_FOUND          Unknown user ID
+  0x0101  USER_LIMIT_EXCEEDED     Maximum users reached
+  0x0102  USER_KICKED             User was kicked
+  0x0200  AUTHORITY_DENIED        Insufficient authority
+  0x0201  OWNERSHIP_CONFLICT      Ownership conflict detected
+  0x0202  PERMISSION_DENIED       Operation not permitted
+  0x0300  OBJECT_OWNED            Object already owned
+  0x0301  OBJECT_LOCKED           Object is locked
+  0x0400  INTEREST_ERROR          Interest management error
+  0x0401  SYNC_FAILED             State synchronization failed
+  0x0500  ZONE_ERROR              Zone assignment error
+
+
+============================================================================
+11. Security Considerations
+============================================================================
+
+11.1. Authentication
+----------------------
+  All users must authenticate before joining (see PWTP-007).
+
+11.2. Authorization
+---------------------
+  Server MUST verify authority before processing user actions.
+
+11.3. Anti-Cheat
+------------------
+  Server MUST validate all client actions against game rules.
+
+11.4. Rate Limiting
+---------------------
+  Per-user rate limiting prevents flooding:
+    - Maximum 100 messages per second per user
+    - Maximum 10 object modifications per second per user
+
+
+============================================================================
+12. Appendix A: Example Packet Captures
+============================================================================
+
+A.1. USER_JOIN Message
+------------------------
+
+  << SERVER -> CLIENT: USER_JOIN (0x60)
+     0000: 50 54 52 4E 00 01 01 08 00 00 00 01 00 00 27 10
+     0010: 00 00 00 60
+     0014: 00 00 00 05 41 6C 69 63 65 00 00 00 00 00 00 00
+     0024: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+     0034: 00 00 00 00 00 01 00 00 00 01 40 A0 00 00 40 C0
+     0044: 00 00 40 E0 00 00
+
+     Decoded:
+       message_type:   0x60 (USER_JOIN)
+       user_id:        5
+       username:       "Alice"
+       user_role:      0x01 (USER)
+       avatar_model:   1
+       spawn_position: (5.0, 6.0, 7.0)
+
+A.2. Interest Update
+----------------------
+
+  >> CLIENT -> SERVER: INTEREST_UPDATE (0x61)
+     0000: 50 54 52 4E 00 01 03 08 00 00 00 0A 00 00 27 11
+     0010: 00 00 00 61
+     0014: 00 00 00 05 40 A0 00 00 40 C0 00 00 40 E0 00 00
+     0024: 43 48 00 00 03
+
+     Decoded:
+       message_type:   0x61 (INTEREST_UPDATE)
+       user_id:        5
+       center:         (5.0, 6.0, 7.0)
+       radius:         200.0 meters
+       priority_filter: 0x03 (SHOW_OBJECTS | SHOW_EFFECTS)
+
+A.3. Conflict Resolution
+--------------------------
+
+  << SERVER -> CLIENT: CONFLICT_RESOLVED (0x62)
+     0000: 50 54 52 4E 00 01 01 08 00 00 00 0F 00 00 27 12
+     0010: 00 00 00 62
+     0014: 00 00 00 01 00 00 01 00 00 00 00 03 00 00 00 05
+     0024: 00 00 00 0A 66 9F 12 34
+
+     Decoded:
+       message_type:   0x62 (CONFLICT_RESOLVED)
+       conflict_id:    1
+       object_id:      256
+       conflict_type:  0x00 (WRITE_WRITE)
+       resolution:     0x03 (SERVER-AUTHORITATIVE)
+       winner_id:      5
+       loser_id:       10
+       timestamp:      0x669F1234
+
+============================================================================
+  End of PWTP-008: Multi-User Protocol
+============================================================================

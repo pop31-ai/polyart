@@ -1,0 +1,724 @@
+============================================================================
+  PWTP-010: Audio-Polynomial Synchronization
+  Version: 1.0
+  Date: 2026-07-12
+  Status: Proposed Standard
+  Author: PWTP Working Group
+============================================================================
+
+Table of Contents
+-----------------
+  1.  Overview
+  2.  Definitions and Notation
+  3.  Spatial Audio Positioning
+  4.  Doppler Effect Calculation
+  5.  Ambient Sound Layers
+  6.  Music Cue Triggers
+  7.  Lip-Sync for Characters
+  8.  Audio Packet Format
+  9.  Error Handling
+  10. Security Considerations
+  11. Appendix A: Example Packet Captures
+
+
+============================================================================
+1. Overview
+============================================================================
+
+1.1. Purpose
+------------
+  PWTP-010 defines the protocol for synchronizing audio with polynomial
+  world data. It covers spatial audio positioning along polynomial
+  paths, Doppler effect calculation, ambient sound layers, music cue
+  triggers, and lip-sync for characters.
+
+1.2. Scope
+----------
+  This specification covers:
+    - Spatial audio positioning with polynomial trajectories
+    - Doppler effect calculation for moving sources
+    - Ambient sound layer management
+    - Music cue triggers and transitions
+    - Lip-sync data for character speech
+    - Audio packet format and synchronization
+
+1.3. Design Goals
+-----------------
+    a) Precise audio-visual synchronization
+    b) Efficient bandwidth usage for audio metadata
+    c) Smooth spatial audio transitions
+    d) Support for complex audio environments
+    e) Low-latency audio response
+
+1.4. Relationship to Other PWTP Protocols
+-----------------------------------------
+    PWTP-001: World context for audio placement
+    PWTP-002: Object state for attached audio sources
+    PWTP-003: Camera position for listener
+    PWTP-005: Time synchronization for audio timing
+    PWTP-006: QoS levels for audio quality
+
+
+============================================================================
+2. Definitions and Notation
+============================================================================
+
+2.1. Data Types
+---------------
+  All data types from PWTP-001 Section 2.2 apply. Additional:
+
+    Type        Size       Description
+    ----------  --------   ----------------------------------------
+    vec3        12 bytes   3x float32 (x, y, z)
+    quat        16 bytes   4x float32 (x, y, z, w)
+
+2.2. Audio Constants
+----------------------
+  MAX_AUDIO_SOURCES       = 256
+  MAX_AMBIENT_LAYERS      = 32
+  MAX_MUSIC_CUES          = 256
+  MAX_LIP_SYNC_STREAMS    = 64
+  AUDIO_SAMPLE_RATE       = 44100 Hz
+  AUDIO_CHANNELS          = 2 (stereo)
+  AUDIO_BIT_DEPTH         = 16
+  MAX_AUDIO_LATENCY       = 0.1 seconds (100ms)
+  PROTOCOL_ID             = 0x0000000A
+  AUDIO_MAGIC             = 0x4155444F  ("AUDI")
+  HEADER_SIZE             = 16 bytes
+
+
+============================================================================
+3. Spatial Audio Positioning
+============================================================================
+
+3.1. Audio Source Position
+----------------------------
+
+  Audio sources can be positioned in world space using polynomial
+  trajectories, enabling smooth spatial audio as sources move.
+
+  Audio Source State:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         source_id       Audio source identifier (uint32)
+    4       1         source_type     Source type (see 3.2)
+    5       1         flags           Source flags (see 3.3)
+    6       4         object_id       Attached object ID (uint32, 0=world)
+    10      4         position_x      Position X (float32, meters)
+    14      4         position_y      Position Y (float32, meters)
+    18      4         position_z      Position Z (float32, meters)
+    22      1         pos_degree      Position polynomial degree (uint8)
+    23      var       pos_poly        Position polynomial data
+    var     4         min_distance    Minimum audible distance (float32)
+    var     4         max_distance    Maximum audible distance (float32)
+    var     4         rolloff         Attenuation rolloff factor (float32)
+    var     4         reference_dist  Reference distance (float32)
+
+    Total fixed: 22 bytes + polynomial data + parameters
+
+3.2. Source Types
+-------------------
+
+    Type    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    STATIC          Fixed position source
+    0x01    MOVING          Moving source with polynomial path
+    0x02    ATTACHED        Attached to an object
+    0x03    AMBIENT         Ambient/environmental source
+    0x04    MUSIC           Music track source
+    0x05    VOICE           Voice/speech source
+    0x06    EFFECT          Sound effect source
+    0x07    UI              User interface sound
+
+3.3. Source Flags
+-------------------
+
+    Bit    Name              Description
+    ----   ----------------  ----------------------------------------
+    0      LOOP              Audio loops continuously
+    1      DOPPLER           Doppler effect enabled
+    2      OCCLUSION         Occlusion/obstruction enabled
+    3      REVERB            Reverb/echo enabled
+    4      SPATIAL_3D        Full 3D spatial audio
+    5      POSITIONAL        Position updates from polynomial
+    6      PRIORITY          High-priority source
+    7      STREAMING         Audio streamed in real-time
+
+3.4. Spatial Audio Polynomial
+-------------------------------
+
+  Audio source position follows a polynomial path:
+
+    pos(t) = SUM_{k=0}^{degree} C[k] * (t - t_ref)^k
+
+  The client evaluates this polynomial to determine the audio source
+  position at any given time, enabling smooth spatial audio rendering.
+
+3.5. Distance Attenuation
+----------------------------
+
+  Audio volume decreases with distance according to:
+
+    attenuation = ref_distance / (ref_distance + rolloff * (distance - ref_distance))
+
+  Where:
+    ref_distance:  Reference distance where attenuation = 1.0
+    rolloff:       Rolloff factor (1.0 = linear, 2.0 = inverse)
+    distance:      Current distance from listener
+
+  Attenuation is clamped to [0.0, 1.0].
+
+3.6. Audio Listener
+---------------------
+
+  The audio listener is typically the camera/listener position:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         position_x      Listener X (float32, meters)
+    4       4         position_y      Listener Y (float32, meters)
+    8       4         position_z      Listener Z (float32, meters)
+    12      16        orientation     Listener orientation quaternion
+    28      4         velocity_x      Listener velocity X (float32)
+    32      4         velocity_y      Listener velocity Y (float32)
+    36      4         velocity_z      Listener velocity Z (float32)
+
+    Total: 40 bytes
+
+
+============================================================================
+4. Doppler Effect Calculation
+============================================================================
+
+4.1. Doppler Factor
+---------------------
+
+  The Doppler effect shifts audio pitch based on relative velocity:
+
+    doppler_factor = (speed_of_sound + listener_velocity)
+                   / (speed_of_sound + source_velocity)
+
+  Where:
+    speed_of_sound = 343.3 m/s (at 20 degrees C)
+    listener_velocity = dot(listener_vel, to_listener_normalized)
+    source_velocity = dot(source_vel, to_source_normalized)
+
+4.2. Doppler Parameters
+-------------------------
+
+    Parameter               Default     Range           Description
+    ----------------------  ----------  --------------  --------------------
+    SPEED_OF_SOUND          343.3       300-400         Speed of sound (m/s)
+    DOPPLER_SCALE           1.0         0.0-2.0         Doppler intensity
+    MAX_DOPPLER_SHIFT       2.0         1.0-4.0         Maximum pitch shift
+    MIN_DOPPLER_VELOCITY    0.1         0.01-1.0        Min velocity for effect
+
+4.3. Doppler Data Encoding
+----------------------------
+
+  Doppler parameters are included in audio source updates:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         source_id       Audio source ID (uint32)
+    4       12        source_velocity Source velocity vec3 (float32 x3)
+    16      4         doppler_scale   Doppler scale factor (float32)
+    20      1         doppler_enabled Doppler enabled flag (bool)
+
+    Total: 21 bytes
+
+4.4. Doppler Calculation
+--------------------------
+
+  At render time, the client computes:
+
+    a) Relative velocity = source_velocity - listener_velocity
+    b) Radial velocity = dot(relative_velocity, direction_to_source)
+    c) Doppler ratio = speed_of_sound / (speed_of_sound - radial_velocity)
+    d) Pitch shift = clamp(doppler_ratio * doppler_scale, 1/MAX, MAX)
+
+  The audio pitch is adjusted by the computed ratio.
+
+
+============================================================================
+5. Ambient Sound Layers
+============================================================================
+
+5.1. Ambient Layer Definition
+-------------------------------
+
+  Ambient sound layers provide environmental audio:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         layer_id        Layer identifier (uint32)
+    4       1         layer_type      Layer type (see 5.2)
+    5       1         flags           Layer flags (see 5.3)
+    6       4         audio_id        Audio track reference (uint32)
+    10      4         volume          Base volume (float32, 0.0-1.0)
+    14      4         fade_in         Fade-in duration (float32, seconds)
+    18      4         fade_out        Fade-out duration (float32, seconds)
+    22      4         blend_time      Blend transition time (float32)
+    26      var       volume_poly     Volume polynomial (optional)
+
+    Total fixed: 26 bytes + optional polynomial
+
+5.2. Layer Types
+------------------
+
+    Type    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    MUSIC           Background music
+    0x01    AMBIENT         Environmental sounds (birds, wind)
+    0x02    WEATHER         Weather sounds (rain, thunder)
+    0x03    CROWD           Crowd/background voices
+    0x04    MACHINERY       Industrial/mechanical sounds
+    0x05    NATURE          Nature sounds (water, insects)
+    0x06    URBAN           Urban sounds (traffic, sirens)
+    0x07    UNDERWATER      Underwater ambience
+    0xFF    CUSTOM          Custom ambient layer
+
+5.3. Layer Flags
+------------------
+
+    Bit    Name              Description
+    ----   ----------------  ----------------------------------------
+    0      LOOP              Layer loops continuously
+    1      RANDOM_START      Random start position on loop
+    2      SPATIAL           Layer has spatial positioning
+    3      VOLUME_CONTROL    Volume controlled by conditions
+    4      CROSSFADE         Crossfade with other layers
+    5      PRIORITY          High-priority layer
+    6      STREAMING         Layer streamed in real-time
+    7      REVERB            Layer has reverb processing
+
+5.4. Ambient Layer Transitions
+--------------------------------
+
+  Layers can be mixed and transitioned:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         from_layer      Current layer ID (uint32)
+    4       4         to_layer        Target layer ID (uint32)
+    8       4         blend_time      Transition duration (float32)
+    12      1         transition_type Transition type (see 5.5)
+
+    Total: 13 bytes
+
+5.5. Transition Types
+-----------------------
+
+    Type    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    CROSSFADE       Simultaneous fade between layers
+    0x01    FADE_OUT_IN     Fade out old, then fade in new
+    0x02    IMMEDIATE       Instant switch
+    0x03    OVERLAP         Overlap period with both layers
+
+5.6. Volume Conditions
+------------------------
+
+  Ambient layer volume can be affected by conditions:
+
+    Condition               Effect on Volume
+    ----------------------  ----------------------------------------
+    Time of day             Volume * time_factor
+    Weather                 Volume * weather_factor
+    Player proximity        Volume * proximity_factor
+    Game event              Volume * event_factor
+    Story progress          Volume * progress_factor
+
+
+============================================================================
+6. Music Cue Triggers
+============================================================================
+
+6.1. Music Cue Definition
+----------------------------
+
+  Music cues define points in music tracks and trigger conditions:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         cue_id          Cue identifier (uint32)
+    4       4         track_id        Music track ID (uint32)
+    8       4         position        Position in track (float32, seconds)
+    12      1         trigger_type    Trigger type (see 6.2)
+    13      var       trigger_params  Trigger parameters
+
+    Total fixed: 13 bytes + parameters
+
+6.2. Trigger Types
+--------------------
+
+    Type    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    ON_CUE          Trigger at specific track position
+    0x01    ON_BEAT         Trigger on musical beat
+    0x02    ON_BAR          Trigger on musical bar
+    0x03    ON_EVENT        Trigger on game event
+    0x04    ON_DISTANCE     Trigger based on distance
+    0x05    ON_AREA         Trigger when entering area
+    0x06    ON_TIME         Trigger at specific time
+    0x07    ON_ACTION       Trigger on player action
+
+6.3. Music Cue Actions
+------------------------
+
+  When a cue is triggered, actions can be performed:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         cue_id          Cue that triggered (uint32)
+    4       1         action_type     Action to perform (see 6.4)
+    5       4         target_track    Target track ID (uint32)
+    9       4         target_position Position in target (float32)
+    13      4         blend_time      Crossfade duration (float32)
+
+    Total: 17 bytes
+
+6.4. Action Types
+-------------------
+
+    Type    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    PLAY            Start playing track
+    0x01    STOP            Stop current track
+    0x02    PAUSE           Pause current track
+    0x03    RESUME          Resume paused track
+    0x04    CROSSFADE       Crossfade to new track
+    0x05    SEAMLESS        Seamless transition (beat-matched)
+    0x06    STING           Play one-shot musical sting
+    0x07    LAYER           Add/remove music layer
+
+6.5. Music State Synchronization
+----------------------------------
+
+  Music state is synchronized across clients:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         track_id        Music track ID (uint32)
+    4       4         position        Current position (float32, seconds)
+    8       1         play_state      Play state (see 6.6)
+    9       4         tempo           Current tempo (float32, BPM)
+    13      4         volume          Current volume (float32, 0.0-1.0)
+    17      4         pitch           Current pitch (float32, 1.0=normal)
+
+    Total: 21 bytes
+
+6.6. Play States
+------------------
+
+    State   Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    STOPPED         Track is stopped
+    0x01    PLAYING         Track is playing
+    0x02    PAUSED          Track is paused
+    0x03    CROSSFADING     Transitioning between tracks
+    0x04    LOADING         Track is loading
+
+
+============================================================================
+7. Lip-Sync for Characters
+============================================================================
+
+7.1. Lip-Sync Data
+---------------------
+
+  Lip-sync data enables character mouth animation synchronized with
+  speech audio:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         source_id       Audio source ID (uint32)
+    4       4         character_id    Character object ID (uint32)
+    8       1         lip_sync_type   Lip-sync type (see 7.2)
+    9       var       viseme_data     Viseme/phoneme data
+
+    Total fixed: 9 bytes + data
+
+7.2. Lip-Sync Types
+----------------------
+
+    Type    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    VISEME          Pre-computed viseme sequence
+    0x01    PHONEME         Phoneme-based animation
+    0x02    WAVEFORM        Waveform analysis data
+    0x03    AI_PREDICTED    AI-predicted lip sync
+
+7.3. Viseme Encoding
+----------------------
+
+  Visemes represent mouth shapes for speech:
+
+    Viseme  Name        Description
+    ------  ----------  --------------------------------
+    0       SILENT      Closed mouth
+    1       AA          "ah" sound (father)
+    2       EE          "ee" sound (beet)
+    3       IH          "ih" sound (bit)
+    4       OH          "oh" sound (boat)
+    5       UH          "uh" sound (but)
+    6       MM          "m" sound (mat)
+    7       FF          "f" sound (fat)
+    8       VV          "v" sound (vat)
+    9       TH          "th" sound (thin)
+    10      DD          "d" sound (dog)
+    11      TT          "t" sound (top)
+    12      KK          "k" sound (cat)
+    13      CH          "ch" sound (church)
+    14      SS          "s" sound (sit)
+    15      SH          "sh" sound (ship)
+    16      R           "r" sound (red)
+    17      L           "l" sound (let)
+    18      W           "w" sound (wet)
+    19      Y           "y" sound (yes)
+
+7.4. Viseme Sequence
+----------------------
+
+  Viseme sequences are transmitted as time-stamped events:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         source_id       Audio source ID (uint32)
+    4       2         viseme_count    Number of visemes (uint16)
+    6       var       visemes         Viseme sequence data
+
+  Each viseme entry:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         time            Viseme time (float32, seconds)
+    4       1         viseme_id       Viseme type (uint8)
+    5       1         intensity       Viseme intensity (uint8, 0-255)
+    6       4         blend_time      Blend to next viseme (float32)
+
+    Total: 10 bytes per viseme
+
+7.5. Lip-Sync Synchronization
+-------------------------------
+
+  Lip-sync is synchronized with audio via:
+
+    a) Audio timestamp correlation
+    b) Buffer compensation for audio latency
+    c) Predictive blending for smooth transitions
+    d) Fallback to waveform analysis if sync data unavailable
+
+  Sync formula:
+    viseme_time = audio_playback_time - audio_latency + lip_sync_offset
+
+  Where:
+    audio_latency:   Measured audio output latency
+    lip_sync_offset: Configurable offset (default: 0.0)
+
+
+============================================================================
+8. Audio Packet Format
+============================================================================
+
+8.1. Audio Metadata Packet
+----------------------------
+
+  For non-streaming audio (triggers, state changes):
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       1         message_type    Audio message type (0x80-0x8F)
+    1       1         flags           Message flags
+    2       2         message_length  Message length (uint16)
+    4       var       audio_data      Message-specific data
+
+8.2. Audio Stream Packet
+---------------------------
+
+  For streaming audio data (if needed):
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         stream_id       Audio stream ID (uint32)
+    4       4         timestamp       Audio timestamp (uint32, ms)
+    8       2         sequence        Stream sequence number (uint16)
+    10      1         channel_count   Number of channels (uint8)
+    11      1         bit_depth       Bits per sample (uint8)
+    12      4         sample_rate     Sample rate (uint32)
+    16      2         frame_count     Audio frames in packet (uint16)
+    18      var       audio_frames    Raw audio data
+
+    Total fixed: 18 bytes + audio data
+
+8.3. Audio Synchronization Packet
+-----------------------------------
+
+  For precise audio-visual sync:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         source_id       Audio source ID (uint32)
+    4       8         audio_timestamp Audio playback time (float64)
+    12      8         render_time     Visual render time (float64)
+    20      4         latency         Measured latency (float32)
+
+    Total: 24 bytes
+
+8.4. Audio Message Types
+---------------------------
+
+    Type    Name                Description
+    ------  ------------------  ----------------------------------------
+    0x80    AUDIO_PLAY          Play audio source
+    0x81    AUDIO_STOP          Stop audio source
+    0x82    AUDIO_PAUSE         Pause audio source
+    0x83    AUDIO_RESUME        Resume audio source
+    0x84    AUDIO_VOLUME        Set volume
+    0x85    AUDIO_PITCH         Set pitch
+    0x86    AUDIO_POSITION      Update position
+    0x87    AUDIO_DOPPLER       Update Doppler parameters
+    0x88    AUDIO_AMBIENT       Ambient layer control
+    0x89    AUDIO_MUSIC         Music state sync
+    0x8A    AUDIO_LIP_SYNC      Lip-sync data
+    0x8B    AUDIO_STREAM        Audio stream data
+    0x8C    AUDIO_SYNC          Audio sync packet
+    0x8D    AUDIO_CUE           Music cue trigger
+    0x8E    AUDIO_REVERB        Reverb parameters
+    0x8F    AUDIO_OCCLUSION     Occlusion data
+
+
+============================================================================
+9. Error Handling
+============================================================================
+
+9.1. Audio Error Codes
+------------------------
+
+  Code    Name                    Description
+  ------  ----------------------  ----------------------------------------
+  0x0000  SUCCESS                 Operation succeeded
+  0x0100  SOURCE_NOT_FOUND        Unknown audio source
+  0x0101  SOURCE_LIMIT_EXCEEDED   Maximum sources reached
+  0x0102  STREAM_ERROR            Audio stream error
+  0x0200  SYNC_FAILED             Audio sync failed
+  0x0201  LATENCY_EXCEEDED        Audio latency too high
+    0x0300  LIP_SYNC_ERROR         Lip-sync data error
+  0x0301  VISME_ERROR             Invalid viseme data
+  0x0400  AMBIENT_ERROR           Ambient layer error
+  0x0401  MUSIC_CUE_ERROR         Music cue error
+  0x0500  DECODE_ERROR            Audio decode failed
+  0x0501  BUFFER_ERROR            Audio buffer error
+
+
+============================================================================
+10. Security Considerations
+============================================================================
+
+10.1. Audio Encryption
+------------------------
+  Streaming audio data SHOULD be encrypted for private communications.
+
+10.2. Audio Authentication
+----------------------------
+  Audio metadata is authenticated via transport layer (PWTP-004).
+
+10.3. Rate Limiting
+---------------------
+  Audio source creation is rate-limited per user:
+    - Maximum 10 audio sources per second
+    - Maximum 4 streaming sources simultaneously
+
+10.4. Content Restrictions
+----------------------------
+  Server may restrict audio content based on:
+    a) Content rating
+    b) User preferences
+    c) Platform requirements
+    d) Network conditions
+
+
+============================================================================
+11. Appendix A: Example Packet Captures
+============================================================================
+
+A.1. Audio Source Position Update
+-----------------------------------
+
+  << SERVER -> CLIENT: AUDIO_POSITION (0x86)
+     0000: 50 54 52 4E 00 01 01 0A 00 00 00 05 00 00 27 10
+     0010: 00 00 00 86
+     0014: 00 00 00 01 40 A0 00 00 40 C0 00 00 40 E0 00 00
+     0024: 03 [position polynomial data]
+
+     Decoded:
+       message_type:   0x86 (AUDIO_POSITION)
+       source_id:      1
+       position:       (5.0, 6.0, 7.0)
+       pos_degree:     3
+
+A.2. Doppler Update
+---------------------
+
+  << SERVER -> CLIENT: AUDIO_DOPPLER (0x87)
+     0000: 50 54 52 4E 00 01 01 0A 00 00 00 0A 00 00 27 11
+     0010: 00 00 00 87
+     0014: 00 00 00 01 40 A0 00 00 40 C0 00 00 00 00 00 00
+     0024: 3F 80 00 00 01
+
+     Decoded:
+       message_type:   0x87 (AUDIO_DOPPLER)
+       source_id:      1
+       source_velocity: (5.0, 6.0, 0.0)
+       doppler_scale:  1.0
+       doppler_enabled: true
+
+A.3. Lip-Sync Data
+---------------------
+
+  << SERVER -> CLIENT: AUDIO_LIP_SYNC (0x8A)
+     0000: 50 54 52 4E 00 01 01 0A 00 00 00 0F 00 00 27 12
+     0010: 00 00 00 8A
+     0014: 00 00 00 01 00 00 00 02 00
+     001D: 00 00 00 00 01 FF 3F 80 00 00
+     0027: 00 00 00 05 02 FF 3F 80 00 00
+
+     Decoded:
+       message_type:   0x8A (AUDIO_LIP_SYNC)
+       source_id:      1
+       character_id:   2
+       lip_sync_type:  0x00 (VISEME)
+       viseme_count:   2
+
+       Viseme 1:
+         time:         0.0 seconds
+         viseme_id:    1 (AA)
+         intensity:    255 (full)
+         blend_time:   1.0 second
+
+       Viseme 2:
+         time:         5.0 seconds
+         viseme_id:    2 (EE)
+         intensity:    255 (full)
+         blend_time:   1.0 second
+
+A.4. Music Cue Trigger
+------------------------
+
+  << SERVER -> CLIENT: AUDIO_CUE (0x8D)
+     0000: 50 54 52 4E 00 01 01 0A 00 00 00 14 00 00 27 13
+     0010: 00 00 00 8D
+     0014: 00 00 00 01 00 00 00 02 00 00 00 05 3F 80 00 00
+
+     Decoded:
+       message_type:   0x8D (AUDIO_CUE)
+       cue_id:         1
+       action_type:    0x00 (PLAY)
+       target_track:   2
+       target_position: 0.0
+       blend_time:     1.0 second
+
+============================================================================
+  End of PWTP-010: Audio-Polynomial Synchronization
+============================================================================

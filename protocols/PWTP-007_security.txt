@@ -1,0 +1,651 @@
+============================================================================
+  PWTP-007: Security and Authentication
+  Version: 1.0
+  Date: 2026-07-12
+  Status: Proposed Standard
+  Author: PWTP Working Group
+============================================================================
+
+Table of Contents
+-----------------
+  1.  Overview
+  2.  Definitions and Notation
+  3.  Authentication Handshake
+  4.  Encryption
+  5.  Digital Signatures
+  6.  Anti-Tampering
+  7.  Key Exchange
+  8.  Session Management
+  9.  Replay Attack Prevention
+  10. Error Handling
+  11. Security Considerations
+  12. Appendix A: Example Packet Captures
+
+
+============================================================================
+1. Overview
+============================================================================
+
+1.1. Purpose
+------------
+  PWTP-007 defines the security framework for all PWTP protocols. It
+  provides authentication, encryption, digital signatures, and anti-
+  tampering mechanisms to protect polynomial world data in transit.
+
+1.2. Scope
+----------
+  This specification covers:
+    - Client-server authentication handshake
+    - AES-256 encryption for coefficient streams
+    - Digital signatures for world data integrity
+    - Anti-tampering mechanisms
+    - Key exchange protocols
+    - Session management and revocation
+    - Replay attack prevention
+
+1.3. Security Goals
+---------------------
+    a) Authenticate all parties before data exchange
+    b) Encrypt polynomial coefficient data in transit
+    c) Verify integrity of world data
+    d) Prevent replay and man-in-the-middle attacks
+    e) Support forward secrecy for long sessions
+
+1.4. Cryptographic Primitives
+-------------------------------
+
+  Algorithm              Usage                     Key Size
+  ---------------------  -----------------------   --------
+  AES-256-CTR            Symmetric encryption      256 bits
+  HMAC-SHA256            Message authentication    256 bits
+  SHA-256                Hashing                   256 bits
+  ECDH (P-256)           Key exchange              256 bits
+  ECDSA (P-256)          Digital signatures        256 bits
+  CSPRNG                 Random number generation  N/A
+
+
+============================================================================
+2. Definitions and Notation
+============================================================================
+
+2.1. Data Types
+---------------
+  All data types from PWTP-001 Section 2.2 apply. Additional:
+
+    Type        Size       Description
+    ----------  --------   ----------------------------------------
+    nonce       16 bytes   Random nonce value
+    key         32 bytes   256-bit cryptographic key
+    signature   64 bytes   ECDSA signature (r, s components)
+    hash        32 bytes   SHA-256 hash output
+
+2.2. Constants
+--------------
+  NONCE_SIZE           = 16 bytes
+  KEY_SIZE             = 32 bytes (256 bits)
+  SIGNATURE_SIZE       = 64 bytes
+  HASH_SIZE            = 32 bytes
+  MAX_SESSION_TIME     = 86400 seconds (24 hours)
+  KEY_ROTATION_INTERVAL = 3600 seconds (1 hour)
+  PROTOCOL_ID          = 0x00000007
+  SECURITY_MAGIC       = 0x53454355  ("SECU")
+  HEADER_SIZE          = 16 bytes
+
+
+============================================================================
+3. Authentication Handshake
+============================================================================
+
+3.1. Authentication States
+----------------------------
+
+  +-----------+     AUTH_INIT     +-----------+
+  |  CLIENT   | ----------------> |  SERVER   |
+  | (unauth)  |                   | (unauth)  |
+  +-----------+                   +-----------+
+       |                                |
+       |<----- AUTH_CHALLENGE ---------|
+       |                                |
+       |------ AUTH_RESPONSE --------->|
+       |                                |
+       |<----- AUTH_VERIFY -----------|
+       |                                |
+       |------ AUTH_COMPLETE --------->|
+       |                                |
+  +-----------+                   +-----------+
+  |  CLIENT   |                   |  SERVER   |
+  | (authed)  |                   | (authed)  |
+  +-----------+                   +-----------+
+
+3.2. AUTH_INIT Message
+------------------------
+
+  Client initiates authentication:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         client_id       Client identifier (uint32)
+    4       4         protocol_ver    Protocol version (uint32)
+    8       32        client_pubkey   Client ECDH public key
+    40      16        client_nonce    Client random nonce
+    56      4         timestamp       Client timestamp (uint32)
+
+    Total: 60 bytes
+
+3.3. AUTH_CHALLENGE Message
+-----------------------------
+
+  Server responds with challenge:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         session_id      Session identifier (uint32)
+    4       32        server_pubkey   Server ECDH public key
+    36      16        server_nonce    Server random nonce
+    52      32        challenge_hash  SHA-256(client_nonce || server_nonce)
+    84      64        server_sig      ECDSA signature of challenge
+
+    Total: 148 bytes
+
+3.4. AUTH_RESPONSE Message
+----------------------------
+
+  Client proves identity:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         session_id      Session identifier (uint32)
+    4       32        client_proof    SHA-256(client_nonce || server_nonce || key)
+    36      64        client_sig      ECDSA signature of proof
+
+    Total: 100 bytes
+
+3.5. AUTH_VERIFY Message
+--------------------------
+
+  Server verifies and responds:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         session_id      Session identifier (uint32)
+    4       32        session_key     Encrypted session key (AES-256)
+    36      4         key_expiry      Key expiry time (uint32, Unix epoch)
+    40      32        verify_hash     SHA-256(all previous messages)
+    72      64        server_sig      ECDSA signature of verify_hash
+
+    Total: 136 bytes
+
+3.6. AUTH_COMPLETE Message
+----------------------------
+
+  Client confirms authentication:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         session_id      Session identifier (uint32)
+    4       32        complete_hash   SHA-256(all messages including verify)
+    36      64        client_sig      ECDSA signature of complete_hash
+
+    Total: 100 bytes
+
+
+============================================================================
+4. Encryption
+============================================================================
+
+4.1. Encryption Scheme
+------------------------
+
+  All polynomial coefficient data is encrypted using AES-256 in Counter
+  Mode (CTR):
+
+    ciphertext = AES-256-CTR(key, nonce, plaintext)
+
+  Where:
+    key:    256-bit session key (from key exchange)
+    nonce:  128-bit nonce (unique per message)
+    plaintext: Unencrypted coefficient data
+
+4.2. Nonce Construction
+-------------------------
+
+  Each message uses a unique nonce constructed from:
+
+    nonce = session_nonce XOR message_counter
+
+  Where:
+    session_nonce:  128-bit random value from session setup
+    message_counter: 64-bit monotonic counter (starts at 0)
+
+  This ensures unique nonces even if the same plaintext is encrypted.
+
+4.3. Encrypted Payload Format
+-------------------------------
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       16        nonce           Encryption nonce (128 bits)
+    16      var       ciphertext      Encrypted data
+    var     32        auth_tag        HMAC-SHA256 auth tag
+
+4.4. Encryption Header
+-------------------------
+
+  Messages that contain encrypted data include:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       1         encryption_type Encryption algorithm (0x01=AES-256-CTR)
+    1       1         reserved        Must be 0x00
+    2       4         counter         Message counter (uint32)
+    6       var       encrypted_data  Encrypted payload
+
+4.5. Key Rotation
+-------------------
+
+  Session keys are rotated periodically:
+
+    rotation_interval = KEY_ROTATION_INTERVAL (3600 seconds)
+
+  On rotation:
+    a) New key derived: new_key = HKDF(old_key, "rotation", 32)
+    b) New nonce generated
+    c) Key rotation message sent to peer
+    d) Both sides switch to new key
+
+  Key Rotation Message:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         session_id      Session identifier (uint32)
+    4       32        new_key_enc     New key encrypted with old key
+    36      16        new_nonce       New session nonce
+    52      32        rotation_hash   SHA-256(new_key || new_nonce)
+    84      64        signature       ECDSA signature of rotation_hash
+
+    Total: 148 bytes
+
+
+============================================================================
+5. Digital Signatures
+============================================================================
+
+5.1. Signature Usage
+----------------------
+
+  Digital signatures are used for:
+    a) World data integrity verification
+    b) Authentication proof
+    c) Key rotation verification
+    d) Anti-tampering of critical messages
+
+5.2. World Data Signatures
+----------------------------
+
+  The server signs world data at transmission time:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         world_id        World identifier (uint32)
+    4       4         world_version   World version (uint32)
+    8       32        world_hash      SHA-256 of complete world data
+    40      64        world_sig       ECDSA signature of world_hash
+
+    Total: 104 bytes
+
+5.3. Incremental Signatures
+-----------------------------
+
+  For streaming world updates, incremental signatures are used:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         sequence        Update sequence number (uint32)
+    4       32        data_hash       SHA-256 of this update's data
+    36      32        chain_hash      SHA-256(prev_chain_hash || data_hash)
+    68      64        signature       ECDSA signature of chain_hash
+
+    Total: 132 bytes
+
+  The chain_hash creates a hash chain that prevents selective tampering.
+
+5.4. Signature Verification
+------------------------------
+
+  Receiver verifies signatures by:
+    a) Recomputing the hash of received data
+    b) Verifying the ECDSA signature against the server's public key
+    c) For chained signatures, verifying the chain_hash continuity
+
+
+============================================================================
+6. Anti-Tampering
+============================================================================
+
+6.1. Message Authentication
+------------------------------
+
+  Every PWTP message includes an HMAC-SHA256 authentication tag:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       32        auth_tag        HMAC-SHA256 of message content
+
+  Computed over:
+    HMAC-SHA256(session_key, message_header || message_body)
+
+6.2. Tamper Detection
+-----------------------
+
+  If auth_tag verification fails:
+    a) Message is silently discarded
+    b) Tamper counter incremented
+    c) If tamper_count > threshold: session terminated
+
+  Thresholds:
+    - Warning threshold: 10 failures per minute
+    - Termination threshold: 50 failures per minute
+
+6.3. Coefficient Integrity
+----------------------------
+
+  Polynomial coefficients include an additional integrity check:
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         coeff_crc32     CRC-32 of coefficient data
+    4       32        coeff_hash      SHA-256 of coefficient data
+
+  Both checks must pass for coefficient data to be accepted.
+
+6.4. Anti-Tamper Modes
+-------------------------
+
+    Mode    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    NONE            No anti-tampering (development only)
+    0x01    BASIC           CRC-32 + HMAC verification
+    0x02    STANDARD        CRC + HMAC + signature verification
+    0x03    STRICT          Full verification + chain validation
+
+
+============================================================================
+7. Key Exchange
+============================================================================
+
+7.1. ECDH Key Exchange
+-------------------------
+
+  Session keys are established using Elliptic Curve Diffie-Hellman
+  (ECDH) on the P-256 curve:
+
+    a) Client generates keypair: (client_privkey, client_pubkey)
+    b) Server generates keypair: (server_privkey, server_pubkey)
+    c) Keys exchanged in AUTH_INIT and AUTH_CHALLENGE
+    d) Shared secret: shared_secret = ECDH(client_privkey, server_pubkey)
+    e) Session key: session_key = HKDF(shared_secret, salt, info, 32)
+
+7.2. HKDF Parameters
+-----------------------
+
+    salt:     SHA-256(client_nonce || server_nonce)
+    info:     "PWTP Session Key v1.0"
+    hash:     SHA-256
+    output:   32 bytes (256 bits)
+
+7.3. Forward Secrecy
+----------------------
+
+  ECDH provides forward secrecy: compromise of long-term keys does not
+  reveal past session keys. Each session generates ephemeral keypairs.
+
+7.4. Key Persistence
+----------------------
+
+  Session keys are:
+    a) Generated fresh for each session
+    b) Not persisted to disk
+    c) Zeroed from memory on session end
+    d) Rotated periodically (see Section 4.5)
+
+
+============================================================================
+8. Session Management
+============================================================================
+
+8.1. Session State
+-------------------
+
+  Each authenticated session maintains:
+
+    Field               Size        Description
+    ------------------  ----------  --------------------------------
+    session_id          4 bytes     Unique session identifier
+    client_id           4 bytes     Client identifier
+    server_id           4 bytes     Server identifier
+    session_key         32 bytes    Current encryption key
+    session_nonce       16 bytes    Current nonce base
+    message_counter     8 bytes     Outgoing message counter
+    key_creation_time   8 bytes     When session key was created
+    key_expiry_time     8 bytes     When session key expires
+    auth_level          1 byte      Authentication level achieved
+
+8.2. Session Lifecycle
+------------------------
+
+    State       Transition         Description
+    --------    -----------------  --------------------------------
+    CREATED     -                  Session entry allocated
+    AUTH_INIT   Client connect     Authentication started
+    AUTHENTICATED Auth complete    Full authentication achieved
+    ACTIVE      Data exchange      Normal operation
+    KEY_ROTATE  Timer expiry       Key rotation in progress
+    SUSPENDED   Anomaly detected   Temporarily suspended
+    TERMINATED  Error/timeout      Session ended
+    DESTROYED   Cleanup complete   Resources freed
+
+8.3. Session Termination
+--------------------------
+
+  Sessions are terminated on:
+    a) Explicit logout/close
+    b) Authentication failure
+    c) Tamper threshold exceeded
+    d) Key expiry without rotation
+    e) Inactivity timeout (default: 300 seconds)
+    f) Maximum session time (24 hours)
+
+8.4. Session Termination Message
+----------------------------------
+
+    Offset  Size      Field           Description
+    ------  --------  --------------  ----------------------------------------
+    0       4         session_id      Session to terminate (uint32)
+    4       1         reason          Termination reason (see 8.5)
+    5       32        final_hash      SHA-256 of session summary
+
+    Total: 37 bytes
+
+8.5. Termination Reasons
+--------------------------
+
+    Code    Name            Description
+    ------  --------------  ----------------------------------------
+    0x00    NORMAL          Clean shutdown
+    0x01    LOGOUT          User logout
+    0x02    AUTH_FAILURE    Authentication failed
+    0x03    TAMPER          Anti-tamper violation
+    0x04    KEY_EXPIRED     Key expired without rotation
+    0x05    TIMEOUT         Inactivity timeout
+    0x06    MAX_TIME        Maximum session time reached
+    0x07    ERROR           Protocol error
+
+
+============================================================================
+9. Replay Attack Prevention
+============================================================================
+
+9.1. Nonce-Based Prevention
+-----------------------------
+
+  Each session uses unique nonces and counters:
+    a) Session nonce: Unique per session
+    b) Message counter: Monotonic per direction
+    c) Encryption nonce: Derived from session nonce + counter
+
+  Replay is prevented because:
+    - Old nonces are not valid for current session
+    - Old counters produce invalid encryption nonces
+    - Auth tags are unique per message
+
+9.2. Timestamp-Based Prevention
+---------------------------------
+
+  Messages include timestamps that must be within an acceptable window:
+
+    max_time_drift = 30 seconds (configurable)
+
+  Messages with timestamps outside the window are rejected.
+
+9.3. Sequence-Based Prevention
+--------------------------------
+
+  Message sequence numbers must be monotonically increasing:
+
+    if (new_seq <= last_seq):
+        reject("Sequence number replay detected")
+
+  This prevents simple message replay within a session.
+
+9.4. Cross-Session Replay Prevention
+---------------------------------------
+
+  Session IDs are included in all authenticated messages:
+
+    HMAC-SHA256(session_key, session_id || message_data)
+
+  Messages from different sessions are rejected.
+
+
+============================================================================
+10. Error Handling
+============================================================================
+
+10.1. Security Error Codes
+-----------------------------
+
+  Code    Name                    Description
+  ------  ----------------------  ----------------------------------------
+  0x0000  SUCCESS                 Operation succeeded
+  0xA001  AUTH_FAILED             Authentication failure
+  0xA002  INVALID_KEY             Invalid encryption key
+  0xA003  KEY_EXPIRED             Encryption key expired
+  0xA004  SIGNATURE_INVALID       Digital signature verification failed
+  0xA005  TAMPER_DETECTED         Anti-tamper violation detected
+  0xA006  REPLAY_DETECTED         Replay attack detected
+  0xA007  NONCE_REUSE             Nonce reuse detected
+  0xA008  SESSION_LIMIT_EXCEEDED  Maximum sessions reached
+  0xA009  RATE_LIMITED            Authentication rate limited
+  0xA00A  CERTIFICATE_INVALID     Certificate validation failed
+  0xA00B  KEY_EXCHANGE_FAILED     Key exchange protocol failed
+
+10.2. Security Event Logging
+-------------------------------
+
+  Security events should be logged with:
+    a) Timestamp
+    b) Session ID
+    c) Client ID
+    d) Event type
+    e) Source IP
+    f) Event details
+
+  Critical events require immediate notification:
+    - TAMPER_DETECTED
+    - AUTH_FAILED (after N attempts)
+    - SIGNATURE_INVALID
+
+
+============================================================================
+11. Security Considerations
+============================================================================
+
+11.1. Implementation Requirements
+------------------------------------
+  - All cryptographic operations MUST use constant-time implementations
+  - Keys MUST be zeroed from memory after use
+  - Random numbers MUST use cryptographically secure PRNG
+  - Side-channel attacks MUST be considered in implementation
+
+11.2. Key Management
+----------------------
+  - Private keys MUST NOT be stored in plaintext
+  - Session keys MUST be ephemeral
+  - Key rotation MUST be enforced
+  - Key derivation MUST use proper salt and info parameters
+
+11.3. Network Security
+------------------------
+  - TLS 1.3 SHOULD be used for TCP connections
+  - UDP connections MUST use the encryption defined in this spec
+  - Network monitoring SHOULD detect anomalous traffic patterns
+
+
+============================================================================
+12. Appendix A: Example Packet Captures
+============================================================================
+
+A.1. AUTH_INIT Message
+------------------------
+
+  >> CLIENT -> SERVER: AUTH_INIT (0x50)
+     0000: 50 54 52 4E 00 01 03 07 00 00 00 01 00 00 27 10
+     0010: 00 00 00 50
+     0014: 00 00 04 D2 00 00 00 1F
+     001C: [32 bytes: client ECDH public key]
+     003C: [16 bytes: client nonce]
+     004C: 66 9F 12 34
+
+     Decoded:
+       message_type:   0x50 (AUTH_INIT)
+       client_id:      1234
+       protocol_ver:   0x0000001F
+       client_pubkey:  [ECDH public key]
+       client_nonce:   [Random 128-bit nonce]
+       timestamp:      0x669F1234
+
+A.2. AES-256-CTR Encrypted Coefficient Data
+----------------------------------------------
+
+  Encrypted terrain patch:
+     0000: [16 bytes: encryption nonce]
+     0010: [encrypted coefficient data...]
+     XXXX: [32 bytes: HMAC-SHA256 auth tag]
+
+     Encryption nonce = session_nonce XOR message_counter
+
+     Decrypting:
+       1. Extract nonce from packet
+       2. Compute AES-256-CTR key stream using session_key + nonce
+       3. XOR key stream with ciphertext to get plaintext
+       4. Verify HMAC-SHA256 auth tag over (nonce || ciphertext)
+       5. Parse decrypted coefficient data
+
+A.3. Digital Signature Verification
+--------------------------------------
+
+  World data signature:
+     0000: 00 00 00 01     [world_id = 1]
+     0004: 00 00 00 0A     [world_version = 10]
+     0008: [32 bytes: SHA-256 of world data]
+     0028: [64 bytes: ECDSA signature]
+
+     Verification:
+       1. Recompute SHA-256 of received world data
+       2. Compare with world_hash in signature block
+       3. Verify ECDSA signature against server's public key
+       4. If all pass: world data is authentic and untampered
+
+============================================================================
+  End of PWTP-007: Security and Authentication
+============================================================================
