@@ -1,0 +1,47 @@
+# PolyArt Meta-Language Demo: Emotions Spectrum
+# All human emotions in a single composition
+
+canvas(18, 10, "#0d0a1a");
+output("demo_emotions_lang.png");
+dpi(150);
+
+# Background
+grid(0.5, "#c8a040", 0.03);
+rays(9, 5, 20, 8, "#c8a040", 0.04, 0.15);
+
+# Top row: primary emotions
+emotion("joy", 2, 7, 0.4);
+emotion("sorrow", 6, 7, 0.4);
+emotion("anger", 10, 7, 0.4);
+emotion("fear", 14, 7, 0.4);
+
+# Bottom row: complex emotions
+emotion("love", 2, 2.5, 0.4);
+emotion("surprise", 6, 2.5, 0.4);
+emotion("calm", 10, 2.5, 0.4);
+emotion("pride", 14, 2.5, 0.4);
+
+# Labels
+text(2, 9.2, "Joy", 10, "#ffd700", 0.7);
+text(6, 9.2, "Sorrow", 10, "#ffd700", 0.7);
+text(10, 9.2, "Anger", 10, "#ffd700", 0.7);
+text(14, 9.2, "Fear", 10, "#ffd700", 0.7);
+text(2, 1, "Love", 10, "#ffd700", 0.7);
+text(6, 1, "Surprise", 10, "#ffd700", 0.7);
+text(10, 1, "Calm", 10, "#ffd700", 0.7);
+text(14, 1, "Pride", 10, "#ffd700", 0.7);
+
+# Divider lines
+line(0, 5, 18, 5, "#c8a040", 0.3, 0.3);
+line(4, 0.5, 4, 9.5, "#c8a040", 0.15, 0.2);
+line(8, 0.5, 8, 9.5, "#c8a040", 0.15, 0.2);
+line(12, 0.5, 12, 9.5, "#c8a040", 0.15, 0.2);
+
+# Golden spirals connecting emotions
+golden_spiral(2, 7, 0.01, 2, "#ff4060", 0.2);
+golden_spiral(14, 7, 0.01, 2, "#4a90d9", 0.2);
+
+# Title
+text(9, 9.8, "SPECTRUM EMOTIONUM HUMANUM", 12, "#ffd700", 0.85, "bold");
+
+render("demo_emotions_lang.png", 150);

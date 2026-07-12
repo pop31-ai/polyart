@@ -1,0 +1,42 @@
+# PolyArt Meta-Language Demo: Mythological Scene
+# Lions, eagles, dragons in a golden frame
+
+canvas(16, 12, "#0a0a1a");
+output("demo_mythology_lang.png");
+dpi(150);
+
+# Background
+grid(1, "#c8a040", 0.04);
+rays(0, 2, 24, 6, "#c8a040", 0.06, 0.2);
+
+# Golden frame
+golden_rect(0, 2, 12, "#c8a040");
+golden_rect(0, 2, 8, "#c8a040");
+
+# Left lion
+animal("lion", -4, 0, 0.6);
+
+# Right eagle
+animal("eagle", 4, 2, 0.6);
+
+# Center dragon
+animal("dragon", 0, 3, 0.5);
+
+# Top owl (wisdom)
+animal("owl", 0, 6, 0.3);
+
+# Bottom horse
+animal("horse", 0, -1, 0.4);
+
+# Spirals
+spiral(-6, 5, 0.03, 3, "#c8a040", 0.3, 150);
+spiral(6, 5, 0.03, 3, "#c8a040", 0.3, 150);
+
+# Phyllotaxis pattern
+phyllotaxis(80, 0.3, -5, -3, "#c8a040");
+
+# Latin text
+text(0, 8.5, "MYTHOLOGIA MATHEMATICA", 14, "#ffd700", 0.9, "bold");
+text(0, -3.5, "Leon  |  Aquila  |  Draco  |  Bubo  |  Equus", 8, "#c8a040", 0.5);
+
+render("demo_mythology_lang.png", 150);

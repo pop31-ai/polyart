@@ -1,0 +1,52 @@
+# PolyArt Meta-Language Demo: Emperor's Mandala
+# A golden-ratio mandala with classical elements
+
+canvas(14, 14, "#080612");
+output("demo_mandala_lang.png");
+dpi(200);
+
+# Background rays
+rays(0, 0, 36, 8, "#c8a040", 0.08, 0.3);
+
+# Golden ratio grid
+grid(0.618, "#c8a040", 0.05);
+
+# Concentric golden rectangles
+repeat 6 {
+  golden_rect(0, 0, 1 * pow(1.618, $i), "#c8a040");
+}
+
+# Central golden spiral
+golden_spiral(0, 0, 0.03, 4, "#c8a040", 0.8);
+
+# Outer ring of circles
+repeat 12 {
+  $angle = $i * 3.14159 * 2 / 12;
+  $x = cos($angle) * 3;
+  $y = sin($angle) * 3;
+  circle($x, $y, 0.4, true, "#c8a040", 0.15, "#c8a040", 0.3);
+}
+
+# Inner ring
+repeat 8 {
+  $angle = $i * 3.14159 * 2 / 8;
+  $x = cos($angle) * 1.8;
+  $y = sin($angle) * 1.8;
+  circle($x, $y, 0.25, true, "#ffd700", 0.2, "#ffd700", 0.2);
+}
+
+# Greek meander border
+greek_meander(-5, -5, 10, 0.5, "#c8a040", 0.4);
+greek_meander(-5, 5, 10, 0.5, "#c8a040", 0.4);
+
+# Central figure
+emotion("calm", 0, 0, 0.4);
+
+# Roman arch frame
+roman_arch(0, -4, 4, 3, "#c8a040", 0.3);
+
+# Title
+text(0, -5.5, "AUREA MANDALA", 14, "#ffd700", 0.9, "bold");
+text(0, -6.2, "PolyArt Meta-Language v1.0", 9, "#c8a040", 0.5);
+
+render("demo_mandala_lang.png", 200);
