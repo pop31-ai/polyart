@@ -1,152 +1,130 @@
-# PolyArt - Polynomial Art Format & API
+# PolyArt: Polynomial Mathematical Art System
 
-A mathematical art library that creates images using polynomials, superformulas, and classical Greek/Roman artistic patterns.
+> Mathematics is the queen of the sciences, and art is its most beautiful expression.
 
-## Features
+A complete ecosystem for creating mathematical art using polynomials, golden ratio, biological laws, and classical art traditions. From Ancient Greek geometry to impossible Piranesi architecture, from Turing biological patterns to 3D wireframe rendering.
 
-- **PolyArt Format** (`.polyart`) - JSON-based format storing art as polynomial coefficients
-- **Programmatic API** - Fluent/chainable API for creating art in Python
-- **Visual Editor** - Tkinter-based editor with layer management, presets, undo/redo
-- **Lightweight Viewer** - Fast viewer for `.polyart` files
-- **Classical Patterns** - Greek meander, volute, lotus, palmette; Roman arch, column, dome
-- **Golden Ratio** - Fibonacci spirals, golden rectangles, face/body proportion guides
-- **Superformula** - Generalized superformula for organic shapes
-- **Templates** - Pre-built artworks (Apollo, Greek vase, Parthenon, golden composition)
+## Project Structure
 
-## Installation
-
-```bash
-pip install numpy matplotlib scipy
+```
+polyart/
+  polyart_api.py          # Core API: Canvas, PolyObj, GreekLines, RomanLines, GoldenRatio
+  polyart_format.py       # .polyart file format: save/load/render
+  polyart_editor.py       # Visual editor (tkinter): layers, presets, undo/redo
+  polyart_viewer.py       # Lightweight .polyart viewer
+  polyart_sculpture.py    # Sculpture: LatheBody, MuscleRelief, PiranesiArch, RomanSymbols, GameAssets
+  polyart_biology.py      # Biology: GrowthCurves, Phyllotaxis, Biomechanics, TuringPatterns, Variants
+  polyart_3d.py           # 3D: Wireframe3D, Surface3D, Scene3D, Rotations
+  polyart_cv_test.py      # Computer Vision: art vs nature classification, rarity scoring
+  examples/               # 10 showcase demos (799 obj mandala, RPG mockup, etc.)
+  articles/               # 12 technical articles
+  CONTRIBUTORS.md         # 30+ team members
+  CHANGELOG.md            # Version history
 ```
 
-Or install all at once:
+## Modules
 
-```bash
-pip install -r requirements.txt
-```
+| Module | Purpose | Key Classes |
+|--------|---------|-------------|
+| `polyart_api` | Core polynomial art engine | Canvas, PolyObj, GreekLines, RomanLines, GoldenRatio, SuperFormula, Templates |
+| `polyart_format` | .polyart file format | save, load, render |
+| `polyart_sculpture` | Classical sculpture & architecture | LatheBody, MuscleRelief, PiranesiArch, RomanSymbols, GameAssets |
+| `polyart_biology` | Mathematical biology | GrowthCurves, Phyllotaxis, Biomechanics, TuringPatterns, VariantGenerator |
+| `polyart_3d` | 3D wireframe & surfaces | Wireframe3D, Surface3D, Scene3D, Rotations |
+| `polyart_cv_test` | Computer vision classification | ImageFeatureExtractor, RarityScorer, PolyArtCVTest |
 
 ## Quick Start
-
-### Programmatic API
 
 ```python
 from polyart_api import Canvas, Templates
 
-# Create from template
-canvas = Templates.greek_vase()
-canvas.render("greek_vase.png")
+# Render a template
+c = Templates.greek_vase()
+c.render("greek_vase.png")
 
 # Build your own
-c = Canvas(name="My Art", width=10, height=10)
-c.circle(0, 0, 2, fill=True, fill_color="#c8a040")
-c.flower(1, 1, scale=0.5, n=6, fill=True, fill_color="#d4a030")
-c.golden_spiral(-1, -1, a=0.1, turns=3, color="#8b6914")
+c = Canvas(name="My Art", width=10, height=10, background="#0d0a1a")
+c.golden_spiral(0, 0, a=0.1, turns=4, color="#c8a040", linewidth=2)
+c.flower(1, 1, scale=0.5, n=6, fill=True, fill_color="#d94a6e")
+c.circle(-1, -1, 0.8, fill=True, fill_color="#4a90d9", fill_alpha=0.3)
 c.save("my_art.polyart")
 c.render("my_art.png")
 ```
 
-### Visual Editor
-
-```bash
-python polyart_editor.py
-```
-
-Features: layer tree, property editing, Greek/Roman presets, undo/redo, color picker.
-
-### Viewer
-
-```bash
-python polyart_viewer.py artwork.polyart
-```
-
-### File Format
-
-```json
-{
-  "format": "polyart",
-  "version": "1.0",
-  "canvas": { "width": 10, "height": 10, "background": "#f5efe0" },
-  "layers": [
-    {
-      "name": "Layer 1",
-      "objects": [
-        {
-          "poly_x": [0.0, 1.0],
-          "poly_y": [0.0, 0.5],
-          "color": "#8b6914",
-          "linewidth": 2.0,
-          "fill": false
-        }
-      ]
-    }
-  ]
-}
-```
-
-## API Reference
-
-### Core Classes
-
-| Class | Description |
-|-------|-------------|
-| `Canvas` | Main drawing surface. Chainable methods for adding shapes. |
-| `PolyObj` | Single polynomial object (poly_x, poly_y coefficients). |
-| `Layer` | Group of PolyObj with name. |
-| `SuperFormula` | Generalized superformula shape generator. |
-
-### Shape Helpers
-
-| Class | Key Methods |
-|-------|-------------|
-| `GreekLines` | `meander()`, `volute()`, `lotus()`, `palmette()`, `acanthus_leaf()`, `greek_key_border()` |
-| `RomanLines` | `arch()`, `column()`, `dome()`, `vault()`, `triumphal_arch()`, `column_flute()` |
-| `GoldenRatio` | `golden_spiral()`, `golden_rectangle()`, `golden_triad()`, `fibonacci()`, `face_proportions()`, `body_proportions()` |
-| `PolyCoeffs` | `line()`, `parabola()`, `cubic()`, `ellipse_poly()`, `circle_poly()`, `spiral_poly()`, `wave()`, `heart()`, `lissajous()`, `from_points()`, `closed_polygon()` |
-| `SuperFormula` | `flower()`, `star()`, `circle()`, `square()`, `cross()`, `blob()`, `custom()` |
-
-### Templates
+### 3D Rendering
 
 ```python
-Templates.apollo_face()        # Classical Apollo face
-Templates.rose(n=5, layers=3)  # Mathematical rose
-Templates.greek_vase()         # Greek amphora
-Templates.parthenon()          # Parthenon temple
-Templates.roman_arch()         # Roman triumphal arch
-Templates.golden_composition() # Golden ratio composition
-Templates.geometric_tile()     # Geometric tile pattern
+from polyart_3d import Wireframe3D, Scene3D
+from polyart_api import Canvas
+
+scene = Scene3D(background="#0a0a15")
+scene.add_wireframe(Wireframe3D.sphere(0, 0, 2), color="#c8a040")
+scene.add_wireframe(Wireframe3D.torus(3, 0, 1.5, 0.5), color="#4a90d9")
+canvas = Canvas(xlim=(-5, 5), ylim=(-5, 5))
+scene.render_to_canvas(canvas)
+scene.render("scene_3d.png")
 ```
 
-### Canvas Methods (chainable)
+### Biology & Growth
 
 ```python
-c.circle(cx, cy, r, **kw)
-c.ellipse(cx, cy, a, b, **kw)
-c.line(x0, y0, x1, y1, **kw)
-c.polyline(points, **kw)
-c.polygon(vertices, **kw)
-c.spiral(cx, cy, a, b, turns=3, **kw)
-c.wave(x0, x1, amp, freq, y_off=0, **kw)
-c.heart(cx, cy, scale, **kw)
-c.lissajous(a, b, fx, fy, delta, **kw)
-c.star(cx, cy, scale, n, **kw)
-c.flower(cx, cy, scale, n, **kw)
-c.blob(cx, cy, scale, m, **kw)
-c.superformula(cx, cy, scale, **sf_kw)
-c.meander(x0, y0, n, **kw)
-c.arch(cx, cy, w, h, **kw)
-c.golden_spiral(cx, cy, a, turns, **kw)
-c.golden_rectangle(x0, y0, width, **kw)
-c.volute(cx, cy, a, **kw)
+from polyart_biology import Phyllotaxis, GrowthCurves, TuringPatterns
+from polyart_api import Canvas
+
+c = Canvas(name="Bio")
+xs, ys = Phyllotaxis.golden_points(n=200, scale=2.0)
+for x, y in zip(xs, ys):
+    c.circle(x, y, 0.05, fill=True, fill_color="#c8a040")
+c.render("phyllotaxis.png")
 ```
 
-Common kwargs: `color`, `linewidth`, `fill`, `fill_color`, `alpha`, `linestyle`.
+### CV Classification
+
+```python
+from polyart_cv_test import PolyArtCVTest
+
+# Analyze an image: is it rare art or nature?
+result = PolyArtCVTest.analyze_image("my_artwork.png")
+print(f"Rarity: {result['rarity']}/100")
+print(f"Classification: {result['classification']}")
+```
+
+## Showcase Examples
+
+| # | Name | Objects | Description |
+|---|------|---------|-------------|
+| 01 | Golden Mandala | 799 | Fibonacci spirals + golden ratio concentric circles |
+| 02 | Piranesi Carcere | 303 | Impossible prison architecture |
+| 03 | Roman Legion | 165 | SPQR formation: eagle, shields, gladii |
+| 04 | Anatomy da Vinci | 93 | Vitruvian biomechanical study |
+| 05 | Procedural Forest | 790 | Fractal branching trees + terrain |
+| 06 | Turing Savanna | 219 | Leopard spots + zebra stripes |
+| 07 | RPG Game Mockup | 628 | Tilemap + characters + UI |
+| 08 | Greek Amphora Gallery | 121 | 5 lathe-rendered vessels |
+| 09 | Flower Variants | 78 | 8 parametric flower forms |
+| 10 | Biomechanical Atlas | 57 | Bones, joints, tendons, Wolff's law |
+
+## Articles
+
+1. PolyArt Format Specification
+2. Golden Ratio as Generative Principle
+3. From Turing to Polynomials: Biological Patterns
+4. Impossible Architecture Through Polynomial Curves
+5. Procedural Game Asset Generation
+6. Polynomial Approximation Theory
+7. Mathematical Color Theory
+8. Parametric vs Polynomial Curves
+9. Neural-Symbolic Hybrid Classification
+10. Ancient Greek Geometry in Modern Art
+11. Procedural Texture Synthesis
+12. Computer Vision for Art Classification
 
 ## Dependencies
 
 - Python 3.8+
 - numpy
 - matplotlib
-- scipy (for spline-based portraits)
+- scipy (for spline portraits)
 
 ## License
 
