@@ -1,0 +1,74 @@
+@startuml
+title PolyArt 3D Class Diagram
+
+package "3D Graphics" {
+  class Wireframe3D {
+    + vertices: list[tuple[float,float,float]]
+    + edges: list[tuple[int,int]]
+    + faces: list[list[int]]
+    + Wireframe3D()
+    + add_vertex(x: float, y: float, z: float) -> int
+    + add_edge(v1: int, v2: int)
+    + add_face(vertices: list[int])
+    + project_orthographic() -> list[tuple[float,float]]
+    + project_perspective(fov: float) -> list[tuple[float,float]]
+    + translate(dx: float, dy: float, dz: float)
+    + scale(sx: float, sy: float, sz: float)
+    + to_polycurves() -> list[PolyCurve]
+    + from_obj(data: str) -> Wireframe3D
+  }
+
+  class Surface3D {
+    + Surface3D()
+    + generate_plane(width: float, height: float, div: int) -> Wireframe3D
+    + generate_sphere(radius: float, div: int) -> Wireframe3D
+    + generate_cylinder(radius: float, height: float, div: int) -> Wireframe3D
+    + generate_cone(radius: float, height: float, div: int) -> Wireframe3D
+    + generate_torus(major: float, minor: float, div: int) -> Wireframe3D
+    + generate_terrain(heightmap: list[list[float]]) -> Wireframe3D
+    + generate_parametric(fn, u_range: tuple, v_range: tuple, div: int) -> Wireframe3D
+    + _grid_indices(cols: int, rows: int) -> list
+  }
+
+  class Scene3D {
+    + objects: list[Wireframe3D]
+    + camera_pos: tuple[float,float,float]
+    + camera_target: tuple[float,float,float]
+    + light_pos: tuple[float,float,float]
+    + ambient_light: float
+    + Scene3D()
+    + add_object(obj: Wireframe3D)
+    + remove_object(id: int)
+    + set_camera(x: float, y: float, z: float)
+    + set_target(x: float, y: float, z: float)
+    + render_polyart(width: int, height: int) -> PolyScene
+    + render_2d_projection() -> PolyScene
+    + to_polyart_scene() -> PolyScene
+    + _transform_to_screen(vertices: list) -> list
+  }
+
+  class Rotation3D {
+    + Rotation3D()
+    + rotate_x(angle: float) -> Matrix4
+    + rotate_y(angle: float) -> Matrix4
+    + rotate_z(angle: float) -> Matrix4
+    + rotate_axis(axis: tuple, angle: float) -> Matrix4
+    + rotate_euler(yaw: float, pitch: float, roll: float) -> Matrix4
+    + rotate_quaternion(q: tuple) -> Matrix4
+    + look_at(eye: tuple, target: tuple) -> Matrix4
+    + perspective(fov: float, aspect: float, near: float, far: float) -> Matrix4
+    + orthographic(left, right, bottom, top, near, far) -> Matrix4
+  }
+}
+
+Scene3D *- Wireframe3D: contains
+Surface3D ..> Wireframe3D: generates
+Rotation3D --> Scene3D: transforms
+Wireframe3D ..> PolyCurve: converts to
+
+note top of Scene3D
+  3D scene rendered as
+  2D polynomial art projection
+end note
+
+@enduml

@@ -1,0 +1,27 @@
+@startuml
+title PWTP WorldDecoder Class Diagram
+
+class WorldDecoder {
+  + poly_cache: dict
+  + WorldDecoder()
+  + evaluate_poly(coefficients: list[float], t_range: tuple, steps: int) -> ndarray
+  + evaluate_terrain(coeffs_grid: list[list[list[float]]], resolution: int) -> ndarray
+  + evaluate_building(building_coeffs: dict) -> list[tuple]
+  + evaluate_column(column_coeffs: list[float], segments: int) -> list[tuple]
+  + evaluate_arch(arch_coeffs: list[float], segments: int) -> list[tuple]
+  + evaluate_hero(hero_coeffs: dict, frame: int) -> dict
+  + evaluate_camera(camera_coeffs: list[float]) -> tuple
+  + evaluate_full_world(world_coeffs: dict) -> dict
+  + deserialize_coefficients(data: bytes) -> list
+  + interpolate_hero_pose(pose1: dict, pose2: dict, t: float) -> dict
+  - _horner_eval(coeffs: list[float], t: float) -> float
+  - _eval_grid_2d(coeffs: list[list[float]], x: float, y: float) -> float
+}
+
+note top of WorldDecoder
+  Reconstructs 3D world state
+  from polynomial coefficients
+  using Horner evaluation
+end note
+
+@enduml

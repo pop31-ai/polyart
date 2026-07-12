@@ -1,0 +1,76 @@
+@startuml
+title Java Codec Class Diagram
+
+package "codec_java / PolyArtCodec.java" {
+
+class PolyObject {
+  + int id
+  + String name
+  + int degree
+  + double[] coefficients
+  + double[] deltaCoefficients
+  + PolyObject(String name, int degree, double[] coeffs)
+  + boolean hasDelta()
+  + PolyObject applyDelta()
+  + PolyObject computeDelta(PolyObject base)
+  + JSONObject toJSON()
+  + static PolyObject fromJSON(JSONObject data)
+}
+
+class PolyFrame {
+  + int frameNumber
+  + String frameType
+  + List<PolyObject> objects
+  + int width
+  + int height
+  + double timestamp
+  + int keyframeId
+  + PolyFrame(String type, int w, int h)
+  + void addObject(PolyObject obj)
+  + PolyObject getObject(int id)
+  + int getObjectCount()
+  + JSONObject toJSON()
+  + static PolyFrame fromJSON(JSONObject data)
+  + PolyFrame clone()
+}
+
+class PolyVideoEncoder {
+  + String codecVersion
+  + double quality
+  + int keyframeInterval
+  + int currentFrame
+  + PolyVideoEncoder(String version, double quality)
+  + PolyFrame encodeFrame(PolyScene scene)
+  + PolyFrame encodeKeyframe(PolyScene scene)
+  + PolyFrame encodeDeltaFrame(PolyScene scene, PolyFrame base)
+  + List<PolyFrame> encodeVideo(List<PolyScene> scenes)
+  + void setKeyframeInterval(int interval)
+  + void setQuality(double quality)
+  + private double[] quantizeCoefficients(double[] coeffs)
+  + private double[] deltaEncode(double[] curr, double[] base)
+}
+
+class PolyVideoDecoder {
+  + String codecVersion
+  + PolyVideoDecoder(String version)
+  + PolyScene decodeFrame(PolyFrame frame)
+  + PolyScene decodeKeyframe(PolyFrame frame)
+  + PolyScene decodeDeltaFrame(PolyFrame frame, PolyFrame base)
+  + List<PolyScene> decodeVideo(List<PolyFrame> frames)
+  + PolyScene reconstructScene(List<PolyFrame> frames)
+  + PolyScene interpolateFrame(PolyFrame f1, PolyFrame f2, double t)
+  + private double[] dequantizeCoefficients(double[] coeffs)
+  + private double[] deltaDecode(double[] delta, double[] base)
+}
+
+PolyVideoEncoder ..> PolyFrame : produces
+PolyVideoDecoder ..> PolyFrame : consumes
+PolyFrame *- PolyObject : contains
+}
+
+note top of PolyObject
+  Java implementation
+  Uses JSONSimple for serialization
+end note
+
+@enduml

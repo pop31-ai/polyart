@@ -1,0 +1,47 @@
+@startuml
+title PolyArt Video Decoding Sequence
+
+actor User
+participant "PolyVideoDecoder" as Decoder
+participant "Parser" as Parser
+participant "Delta Decoder" as Delta
+participant "Poly Evaluator" as Eval
+participant "Renderer" as Renderer
+database "File System" as FS
+
+User -> Decoder: decode_video(filepath)
+activate Decoder
+
+Decoder -> FS: read(.polyvid)
+FS --> Decoder: raw_bytes
+
+Decoder -> Parser: parse_frames(raw_bytes)
+activate Parser
+Parser --> Decoder: list[PolyFrame]
+deactivate Parser
+
+loop For Each Frame
+  alt Is Keyframe?
+    Decoder -> Decoder: decode_keyframe(frame)
+  else Is Delta Frame?
+    Decoder -> Delta: apply_delta(frame, base_frame)
+    activate Delta
+    Delta --> Decoder: full_coefficients
+    deactivate Delta
+  end
+
+  Decoder -> Eval: evaluate_polynomials(objects)
+  activate Eval
+  Eval --> Decoder: evaluated_points
+  deactivate Eval
+
+  Decoder -> Renderer: render_frame(evaluated_points)
+  activate Renderer
+  Renderer --> Decoder: rendered_image
+  deactivate Renderer
+end
+
+Decoder --> User: list[PolyScene]
+deactivate Decoder
+
+@enduml

@@ -1,0 +1,80 @@
+@startuml
+title PolyArt Format Class Diagram
+
+package "JSON Structure" {
+  class PolyFile {
+    + magic: str = "POLYART"
+    + version: str
+    + objects: list[PolyObject]
+    + style: PolyStyle
+    + metadata: PolyMetadata
+    + PolyFile()
+    + to_json() -> str
+    + from_json(data: str) -> PolyFile
+    + validate() -> bool
+    + save(path: str)
+    + load(path: str) -> PolyFile
+  }
+
+  class PolyObject {
+    + type: str
+    + id: int
+    + name: str
+    + degree: int
+    + coefficients: list[float]
+    + points: list[tuple[float,float]]
+    + control_points: list[tuple[float,float]]
+    + closed: bool
+    + parent_id: int
+    + children: list[PolyObject]
+    + PolyObject()
+    + to_dict() -> dict
+    + from_dict(data: dict) -> PolyObject
+    + evaluate(t: float) -> tuple[float,float]
+    + add_child(child: PolyObject)
+    + set_parent(id: int)
+  }
+
+  class PolyStyle {
+    + stroke_color: str = "#000000"
+    + fill_color: str = "none"
+    + stroke_width: float = 1.0
+    + opacity: float = 1.0
+    + dash_array: str
+    + stroke_linecap: str = "round"
+    + stroke_linejoin: str = "round"
+    + PolyStyle()
+    + to_dict() -> dict
+    + from_dict(data: dict) -> PolyStyle
+    + apply_to_svg(element) -> str
+  }
+
+  class PolyMetadata {
+    + title: str
+    + author: str
+    + description: str
+    + created: str
+    + modified: str
+    + app_version: str
+    + dimensions: dict
+    + custom: dict
+    + PolyMetadata()
+    + to_dict() -> dict
+    + from_dict(data: dict) -> PolyMetadata
+    + update_timestamp()
+    + add_custom(key: str, value: any)
+  }
+}
+
+PolyFile *- PolyObject: contains
+PolyFile *- PolyStyle: contains
+PolyFile *- PolyMetadata: contains
+PolyObject o- PolyObject: parent/child
+PolyObject --> PolyStyle: applies
+
+note top of PolyFile
+  Serialization format:
+  {"polyart": {...}}
+end note
+
+@enduml

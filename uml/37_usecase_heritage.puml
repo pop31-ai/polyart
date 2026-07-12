@@ -1,0 +1,72 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+
+actor "Archaeologist" as arch
+actor "Tourist" as tourist
+actor "Conservationist" as conserv
+actor "AI Reconstruction" as ai
+
+rectangle "Cultural Heritage PolyArt System" {
+  usecase "Scan Archaeological Site" as UC1
+  usecase "Photograph Artifacts" as UC2
+  usecase "Import Point Cloud" as UC3
+  usecase "Reconstruct 3D Scene" as UC4
+  usecase "Reconstruct Artifacts" as UC5
+  usecase "Apply Texture Mapping" as UC6
+  usecase "Damage Assessment" as UC7
+  usecase "Virtual Tour" as UC8
+  usecase "Walk Through Site" as UC9
+  usecase "View Restored State" as UC10
+  usecase "Interactive Timeline" as UC11
+  usecase "Overlay Historical Data" as UC12
+  usecase "Document Condition" as UC13
+  usecase "Plan Restoration" as UC14
+  usecase "Compare States" as UC15
+  usecase "Export for Publication" as UC16
+  usecase "AI Fill Missing Parts" as UC17
+  usecase "Generate Missing Geometry" as UC18
+}
+
+arch --> UC1
+arch --> UC2
+arch --> UC3
+arch --> UC13
+arch --> UC14
+arch --> UC16
+
+tourist --> UC8
+tourist --> UC9
+tourist --> UC10
+tourist --> UC11
+tourist --> UC12
+
+conserv --> UC7
+conserv --> UC13
+conserv --> UC14
+conserv --> UC15
+
+ai --> UC4
+ai --> UC5
+ai --> UC17
+ai --> UC18
+
+UC4 ..> UC3 : <<include>>
+UC4 ..> UC6 : <<include>>
+UC8 ..> UC9 : <<include>>
+UC10 ..> UC15 : <<extend>>
+UC17 ..> UC18 : <<include>>
+UC12 ..> UC11 : <<include>>
+
+note top of UC4
+  Reconstructs full 3D scene
+  from scanned point clouds
+  using polynomial surfaces
+end note
+
+note left of UC17
+  AI fills in missing or
+  damaged geometry using
+  learned polynomial patterns
+end note
+@enduml

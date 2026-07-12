@@ -1,0 +1,76 @@
+@startuml
+title JavaScript Codec Class Diagram
+
+package "codec_javascript / polyart_codec.js" {
+
+class PolyObject {
+  + constructor(name, degree, coefficients)
+  + id: number
+  + name: string
+  + degree: number
+  + coefficients: number[]
+  + deltaCoefficients: number[]
+  + hasDelta(): boolean
+  + applyDelta(): PolyObject
+  + computeDelta(base: PolyObject): PolyObject
+  + toJSON(): Object
+  + static fromJSON(data: Object): PolyObject
+}
+
+class PolyFrame {
+  + constructor(type, width, height)
+  + frameNumber: number
+  + frameType: string
+  + objects: PolyObject[]
+  + width: number
+  + height: number
+  + timestamp: number
+  + keyframeId: number
+  + addObject(obj: PolyObject): void
+  + getObject(id: number): PolyObject
+  + getObjectCount(): number
+  + toJSON(): Object
+  + static fromJSON(data: Object): PolyFrame
+  + clone(): PolyFrame
+}
+
+class PolyVideoEncoder {
+  + constructor(version, quality)
+  + codecVersion: string
+  + quality: number
+  + keyframeInterval: number
+  + currentFrame: number
+  + encodeFrame(scene: PolyScene): PolyFrame
+  + encodeKeyframe(scene: PolyScene): PolyFrame
+  + encodeDeltaFrame(scene: PolyScene, base: PolyFrame): PolyFrame
+  + encodeVideo(scenes: PolyScene[]): PolyFrame[]
+  + setKeyframeInterval(interval: number): void
+  + setQuality(quality: number): void
+  + #quantizeCoefficients(coeffs: number[]): number[]
+  + #deltaEncode(curr: number[], base: number[]): number[]
+}
+
+class PolyVideoDecoder {
+  + constructor(version)
+  + codecVersion: string
+  + decodeFrame(frame: PolyFrame): PolyScene
+  + decodeKeyframe(frame: PolyFrame): PolyScene
+  + decodeDeltaFrame(frame: PolyFrame, base: PolyFrame): PolyScene
+  + decodeVideo(frames: PolyFrame[]): PolyScene[]
+  + reconstructScene(frames: PolyFrame[]): PolyScene
+  + interpolateFrame(f1: PolyFrame, f2: PolyFrame, t: number): PolyScene
+  + #dequantizeCoefficients(coeffs: number[]): number[]
+  + #deltaDecode(delta: number[], base: number[]): number[]
+}
+
+PolyVideoEncoder ..> PolyFrame : produces
+PolyVideoDecoder ..> PolyFrame : consumes
+PolyFrame *- PolyObject : contains
+}
+
+note top of PolyObject
+  JavaScript ES6 class implementation
+  Uses typed arrays for performance
+end note
+
+@enduml

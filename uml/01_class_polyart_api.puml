@@ -1,0 +1,80 @@
+@startuml
+title PolyArt API Class Diagram
+
+class PolyArtAPI {
+  + PolyArtAPI()
+  + PolyArtAPI.create(version: str) -> PolyScene
+  + PolyArtAPI.load(filepath: str) -> PolyScene
+  + save(filepath: str, scene: PolyScene) -> bool
+  + add_curve(scene: PolyScene, curve: PolyCurve) -> int
+  + remove_curve(scene: PolyScene, id: int) -> bool
+  + add_group(scene: PolyScene) -> PolyGroup
+  + add_to_group(group: PolyGroup, curve: PolyCurve) -> bool
+  + render(scene: PolyScene, width: int, height: int) -> Image
+  + export(scene: PolyScene, path: str, format: str) -> bool
+  + export_svg(scene: PolyScene, path: str) -> bool
+  + export_png(scene: PolyScene, path: str, dpi: int) -> bool
+  - _validate_scene(scene: PolyScene) -> bool
+  - _polynomial_to_path(curve: PolyCurve) -> Path
+  - _render_curves(draw, scene: PolyScene)
+  - _render_groups(draw, scene: PolyScene)
+}
+
+class PolyCurve {
+  + id: int
+  + degree: int
+  + coefficients: list[float]
+  + color: tuple[int,int,int]
+  + stroke_width: float
+  + opacity: float
+  + PolyCurve(degree: int, coeffs: list[float])
+  + evaluate(t: float) -> float
+  + evaluate_derivative(t: float) -> float
+  + to_svg_path() -> str
+  + to_json() -> dict
+  + clone() -> PolyCurve
+}
+
+class PolyGroup {
+  + id: int
+  + name: str
+  + curves: list[PolyCurve]
+  + transform: Matrix
+  + PolyGroup(name: str)
+  + add_curve(curve: PolyCurve) -> bool
+  + remove_curve(id: int) -> bool
+  + get_curve(id: int) -> PolyCurve
+  + apply_transform(matrix: Matrix)
+  + to_json() -> dict
+}
+
+class PolyScene {
+  + version: str
+  + curves: dict[int, PolyCurve]
+  + groups: dict[int, PolyGroup]
+  + metadata: dict
+  + width: int
+  + height: int
+  + PolyScene(version: str)
+  + add_curve(curve: PolyCurve) -> int
+  + add_group(group: PolyGroup) -> int
+  + get_curve(id: int) -> PolyCurve
+  + get_group(id: int) -> PolyGroup
+  + remove_curve(id: int) -> bool
+  + to_json() -> dict
+  + from_json(data: dict) -> PolyScene
+}
+
+PolyArtAPI -right-> PolyScene : manages >
+PolyArtAPI -right-> PolyCurve : renders >
+PolyArtAPI -right-> PolyGroup : organizes >
+PolyScene *- PolyCurve : contains
+PolyScene *- PolyGroup : contains
+PolyGroup o- PolyCurve : references
+
+note top of PolyArtAPI
+  Main API facade for
+  polynomial art operations
+end note
+
+@enduml

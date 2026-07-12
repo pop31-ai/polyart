@@ -1,0 +1,98 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class PompeiiFrescoStyle {
+  -color_palette : list
+  -border_width : float
+  -panel_count : int
+  +pompeii_border(width: float, style: str, colors: list) : list
+  +pompeii_panel(width: float, height: float, content: str) : list
+  +garden_scene(width: float, height: float, plants: list) : list
+  +still_life(width: float, height: float, objects: list) : list
+  +mythological_panel(width: float, height: float, myth: str) : list
+  +architectural_illusion(width: float, height: float, depth: float) : list
+}
+
+class BorderGenerator {
+  -greek_key_width : float
+  -meander_depth : int
+  +generate_greek_key(width: float, height: float) : list
+  +generate_meander(width: float, height: float) : list
+  +generate_wave_border(width: float) : list
+  +generate_laurel_border(width: float) : list
+  +generate_rosette_border(width: float) : list
+}
+
+class PanelContent {
+  -content_type : str
+  -detail_level : float
+  +generate_figures(count: int, pose: str) : list
+  +generate_landscape要素() : list
+  +generate_architectural_elements() : list
+  +generate_decorative_motifs() : list
+}
+
+class GardenElements {
+  -plant_types : list
+  -flower_colors : list
+  +generate_tree(type: str, x: float, y: float) : list
+  +generate_bush(x: float, y: float) : list
+  +generate_flowers(count: int) : list
+  +generate_birds(count: int) : list
+  +generate_fountain(x: float, y: float) : list
+  +generate_water_features() : list
+}
+
+class StillLifeElements {
+  -food_items : list
+  -vessel_types : list
+  +generate_fruit_bowl() : list
+  +generate_vase(type: str) : list
+  +generate_fish() : list
+  +generate_bread() : list
+  +generate_wine_jug() : list
+}
+
+class MythologicalFigures {
+  -figure_scale : float
+  -pose_library : list
+  +generate_venus() : list
+  +generate_apollo() : list
+  +generate_dionysus() : list
+  +generate_medusa() : list
+  +generate_pegasus() : list
+  +generate_hydra() : list
+}
+
+class ArchitecturalIllusion {
+  -perspective_point : tuple
+  -depth_layers : int
+  +generate_columns(depth: float) : list
+  +generate_arches(count: int) : list
+  +generate_perspective走廊() : list
+  +generate_fake_window() : list
+  +generate_pediment() : list
+}
+
+PompeiiFrescoStyle --> BorderGenerator : uses
+PompeiiFrescoStyle --> PanelContent : composes
+PompeiiFrescoStyle --> GardenElements : uses
+PompeiiFrescoStyle --> StillLifeElements : uses
+PompeiiFrescoStyle --> MythologicalFigures : uses
+PompeiiFrescoStyle --> ArchitecturalIllusion : uses
+
+PanelContent ..> MythologicalFigures : includes
+PanelContent ..> ArchitecturalIllusion : includes
+
+note bottom of PompeiiFrescoStyle
+  Fresco styles follow the
+  four Pompeian wall painting
+  styles (First through Fourth)
+end note
+
+note right of GardenElements
+  Garden scenes include
+  birds, flowers, trees,
+  and water features
+end note
+@enduml

@@ -1,0 +1,47 @@
+@startuml
+title Image to Polyart Conversion Sequence
+
+actor User
+participant "ImageToPolyart" as Converter
+participant "Image Loader" as Loader
+participant "Edge Detector" as Edges
+participant "Contour Extractor" as Contours
+participant "PolyFit Engine" as Fitter
+database "File System" as FS
+
+User -> Converter: convert("input.png")
+
+Converter -> Loader: _load_image("input.png")
+activate Loader
+Loader -> FS: read("input.png")
+FS --> Loader: PNG data
+Loader --> Converter: ndarray (H,W,C)
+deactivate Loader
+
+Converter -> Edges: _detect_edges(image)
+activate Edges
+note right: Canny edge detection\nwith adaptive thresholds
+Edges --> Converter: binary edge map
+deactivate Edges
+
+Converter -> Contours: _extract_contours(edges)
+activate Contours
+note right: Suzuki85 contour following
+Contours --> Converter: list of contour paths
+deactivate Contours
+
+loop For Each Contour
+  Converter -> Fitter: _fit_contours(contour, degree=3)
+  activate Fitter
+  note right: Least squares polynomial fit\nwith RANSAC outlier rejection
+  Fitter --> Converter: PolyCurve(degree, coeffs)
+  deactivate Fitter
+end
+
+Converter -> Converter: _assign_colors(curves, original_image)
+note right: Sample colors at\ncurve centroid positions
+
+Converter -> FS: save("output.polyart")
+Converter --> User: PolyScene
+
+@enduml

@@ -1,0 +1,97 @@
+@startuml
+title PolyArt Editor Class Diagram
+
+class PolyArtEditor {
+  + Editor(title: str, width: int, height: int)
+  + run()
+  + new_scene(width: int, height: int)
+  + open_file(path: str)
+  + save_file(path: str)
+  + export_file(path: str, fmt: str)
+  + undo()
+  + redo()
+  - _init_ui()
+  - _init_menu()
+  - _init_toolbar()
+  - _init_statusbar()
+  - _on_canvas_click(event)
+  - _on_canvas_drag(event)
+  - _on_canvas_release(event)
+  - _update_status(text: str)
+}
+
+class Canvas {
+  + Canvas(parent, width: int, height: int)
+  + width: int
+  + height: int
+  + scale: float
+  + offset_x: float
+  + offset_y: float
+  + grid_visible: bool
+  + render(scene: PolyScene)
+  + zoom(factor: float)
+  + pan(dx: float, dy: float)
+  + show_grid(show: bool)
+  + snap_to_grid(x: float, y: float) -> tuple
+  + clear()
+  - _draw_grid()
+  - _draw_curves()
+  - _draw_control_points()
+  - _draw_selection()
+}
+
+class ToolPanel {
+  + ToolPanel(parent)
+  + selected_tool: Tool
+  + stroke_color: Color
+  + fill_color: Color
+  + stroke_width: float
+  + current_tool: str
+  + on_tool_change(callback)
+  + get_properties() -> dict
+  + set_properties(props: dict)
+  + set_color(color: str)
+}
+
+class PropertyPanel {
+  + PropertyPanel(parent)
+  + selected_object: PolyObject
+  + properties: dict
+  + on_property_change(callback)
+  + update_for_object(obj: PolyObject)
+  + clear()
+  + add_property(name: str, type: str, value: any)
+  - _build_curve_properties()
+  - _build_group_properties()
+  - _build_scene_properties()
+}
+
+class MenuBar {
+  + MenuBar(parent)
+  + on_new(callback)
+  + on_open(callback)
+  + on_save(callback)
+  + on_export(callback)
+  + on_undo(callback)
+  + on_redo(callback)
+  + on_quit(callback)
+  - _build_file_menu()
+  - _build_edit_menu()
+  - _build_view_menu()
+  - _build_tools_menu()
+  - _build_help_menu()
+}
+
+PolyArtEditor *- Canvas: contains
+PolyArtEditor *- ToolPanel: contains
+PolyArtEditor *- PropertyPanel: contains
+PolyArtEditor *- MenuBar: contains
+ToolPanel --> Canvas: applies tools
+PropertyPanel --> Canvas: updates selection
+
+note top of PolyArtEditor
+  Tkinter-based editor with
+  canvas, tools, property panel
+end note
+
+@enduml

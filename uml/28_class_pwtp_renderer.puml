@@ -1,0 +1,36 @@
+@startuml
+title PWTP SceneRenderer Class Diagram
+
+class SceneRenderer {
+  + canvas_width: int
+  + canvas_height: int
+  + view_matrix: ndarray
+  + projection_matrix: ndarray
+  + SceneRenderer(width: int, height: int)
+  + project_3d(vertices: list[tuple]) -> list[tuple[float,float]]
+  + render_terrain(terrain_mesh: ndarray, color_map: ndarray) -> Image
+  + render_building(building_mesh: list[tuple], style: dict) -> Image
+  + render_column(column_mesh: list[tuple], order: str) -> Image
+  + render_arch(arch_mesh: list[tuple], decorations: bool) -> Image
+  + render_hero(hero_data: dict, frame: int) -> Image
+  + render_hero_billboard(hero_data: dict, facing: float) -> Image
+  + render_effects(particles: list, weather: str) -> Image
+  + render_minimap(world_bounds: tuple, objects: list) -> Image
+  + render_frame(scene_3d: dict, effects: dict) -> Image
+  + compose_frame(layers: list[Image]) -> Image
+  + set_lighting(ambient: float, directional: tuple)
+  + set_fog(color: tuple, density: float)
+  + set_shadows(enabled: bool, resolution: int)
+  - _view_transform(vertices: list) -> list
+  - _clip_polygon(vertices: list) -> list
+  - _rasterize(mesh: list, color: tuple) -> Image
+  - _draw_billboard(sprite: Image, pos: tuple, scale: float)
+}
+
+note top of SceneRenderer
+  Renders decoded 3D world
+  to 2D image using affine
+  projection pipeline
+end note
+
+@enduml

@@ -1,0 +1,83 @@
+@startuml
+title PWTP Protocol Class Diagram
+
+package "Message Types" {
+  class PWTPMessage {
+    + message_type: str
+    + sequence_number: int
+    + timestamp: float
+    + payload: bytes
+    + checksum: str
+    + PWTPMessage(type: str, payload: bytes)
+    + serialize() -> bytes
+    + deserialize(data: bytes) -> PWTPMessage
+    + verify_checksum() -> bool
+  }
+
+  class WorldInitMessage {
+    + world_id: str
+    + seed: int
+    + terrain_resolution: int
+    + static_objects: list[dict]
+    + WorldInitMessage(world_id: str, seed: int)
+  }
+
+  class HeroUpdateMessage {
+    + hero_id: str
+    + position_coeffs: list[float]
+    + rotation_coeffs: list[float]
+    + pose_coeffs: list[float]
+    + animation_frame: int
+    + HeroUpdateMessage(hero_id: str)
+  }
+
+  class CameraUpdateMessage {
+    + view_coeffs: list[float]
+    + fov: float
+    + near_plane: float
+    + far_plane: float
+    + CameraUpdateMessage()
+  }
+
+  class StaticObjectMessage {
+    + object_id: str
+    + object_type: str
+    + coefficients: list[float]
+    + position: tuple
+    + StaticObjectMessage(type: str, coeffs: list)
+  }
+}
+
+package "Protocol" {
+  class PWTPProtocol {
+    + version: str
+    + max_packet_size: int
+    + compression_enabled: bool
+    + encryption_enabled: bool
+    + PWTPProtocol(version: str)
+    + create_init_message(world_data: dict) -> PWTPMessage
+    + create_hero_update(hero_data: dict) -> PWTPMessage
+    + create_camera_update(camera_data: dict) -> PWTPMessage
+    + create_static_object(object_data: dict) -> PWTPMessage
+    + parse_message(data: bytes) -> PWTPMessage
+    + calculate_bandwidth(messages: list, time_window: float) -> float
+    + estimate_latency() -> float
+    + get_protocol_overhead() -> dict
+    - _compress_payload(data: bytes) -> bytes
+    - _decompress_payload(data: bytes) -> bytes
+  }
+}
+
+PWTPMessage <|-- WorldInitMessage
+PWTPMessage <|-- HeroUpdateMessage
+PWTPMessage <|-- CameraUpdateMessage
+PWTPMessage <|-- StaticObjectMessage
+
+PWTPProtocol ..> PWTPMessage: creates/parses
+
+note top of PWTPProtocol
+  Polynomial World Transmission Protocol
+  Coefficient-based world state streaming
+end note
+
+@enduml

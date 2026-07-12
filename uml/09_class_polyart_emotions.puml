@@ -1,0 +1,50 @@
+@startuml
+title PolyArt Emotions Class Diagram
+
+class EmotionTemplates {
+  + emotion_map: dict
+  + EmotionTemplates()
+  + generate_joy(intensity: float) -> PolyScene
+  + generate_sadness(intensity: float) -> PolyScene
+  + generate_anger(intensity: float) -> PolyScene
+  + generate_fear(intensity: float) -> PolyScene
+  + generate_surprise(intensity: float) -> PolyScene
+  + generate_disgust(intensity: float) -> PolyScene
+  + generate_contempt(intensity: float) -> PolyScene
+  + generate_neutral() -> PolyScene
+  + generate_emotion(emotion: str, intensity: float) -> PolyScene
+  + blend_emotions(e1: str, e2: str, ratio: float) -> PolyScene
+  + generate_emotion_series(emotions: list) -> list[PolyScene]
+  + _curve_for_emotion(emotion: str) -> list[float]
+  + _color_for_emotion(emotion: str) -> tuple
+  - _intensity_coefficients(base: list, intensity: float) -> list[float]
+}
+
+class StateTemplates {
+  + StateTemplates()
+  + generate_calm(intensity: float) -> PolyScene
+  + generate_anxious(intensity: float) -> PolyScene
+  + generate_excited(intensity: float) -> PolyScene
+  + generate_tired(intensity: float) -> PolyScene
+  + generate_focused(intensity: float) -> PolyScene
+  + generate_confused(intensity: float) -> PolyScene
+  + generate_hopeful(intensity: float) -> PolyScene
+  + generate_nostalgic(intensity: float) -> PolyScene
+  + generate_state(state: str, intensity: float) -> PolyScene
+  + generate_state_transition(from: str, to: str, steps: int) -> list[PolyScene]
+  + generate_daily_cycle(hour: int) -> PolyScene
+  + generate_seasonal_mood(season: str) -> PolyScene
+  + _state_curve_properties(state: str) -> dict
+  + _transition_blend(s1: PolyScene, s2: PolyScene, t: float) -> PolyScene
+}
+
+EmotionTemplates --> StateTemplates: states derive from
+StateTemplates --> EmotionTemplates: uses emotion curves
+
+note top of EmotionTemplates
+  Polynomial curves mapped to
+  emotional expression through
+  shape, color, and dynamics
+end note
+
+@enduml

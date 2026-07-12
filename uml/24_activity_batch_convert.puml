@@ -1,0 +1,40 @@
+@startuml
+title Batch Conversion Activity
+
+start
+
+:Scan Input Directory;
+:Get File List;
+
+while (Files remain?) is (Yes)
+  :Get Next File;
+  :Detect Format;
+
+  if (Format is .png/.jpg) then (Image)
+    :ImageToPolyart Convert;
+  elseif (Format is .mp4/.avi) then (Video)
+    :VideoToPolyvid Convert;
+  elseif (Format is .polyart) then (PolyArt)
+    :PolyartToImage Convert;
+  elseif (Format is .polyvid) then (PolyVid)
+    :PolyvidToVideo Convert;
+  else (Unknown)
+    :Log Warning;
+    :Skip File;
+  endif
+
+  :Write Output File;
+  :Update Progress;
+endwhile (No)
+
+:Generate Batch Report;
+:Log Results;
+
+stop
+
+note right of :Detect Format;
+  Uses magic bytes and
+  file extension matching
+end note
+
+@enduml

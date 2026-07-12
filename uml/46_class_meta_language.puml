@@ -1,0 +1,118 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class PolyArtLang {
+  +run(script: str) : Result
+  +run_file(path: str) : Result
+  +validate(script: str) : bool
+  -tokenizer : Tokenizer
+  -parser : Parser
+  -interpreter : Interpreter
+}
+
+class Tokenizer {
+  +tokenize(input: str) : list
+  -current_pos : int
+  -tokens : list
+  -tokenize_command() : Token
+  -tokenize_number() : Token
+  -tokenize_string() : Token
+  -tokenize_identifier() : Token
+}
+
+class Parser {
+  +parse(tokens: list) : AST
+  -current_token : Token
+  -parse_command() : Node
+  -parse_expression() : Node
+  -parse_block() : Node
+  -parse_if() : Node
+  -parse_loop() : Node
+  -parse_function() : Node
+}
+
+class Interpreter {
+  +execute(ast: AST) : Result
+  -environment : Env
+  -execute_command(node: Node) : Value
+  -execute_expression(node: Node) : Value
+  -execute_block(node: Node) : Value
+  -execute_if(node: Node) : Value
+  -execute_loop(node: Node) : Value
+}
+
+class CommandRegistry {
+  -commands : dict
+  +register(name: str, handler: func) : void
+  +get(name: str) : func
+  +has(name: str) : bool
+}
+
+class AST {
+  +nodes : list
+  +add_node(node: Node) : void
+  +traverse(visitor: func) : void
+}
+
+class Token {
+  +type : str
+  +value : str
+  +line : int
+  +column : int
+}
+
+class Node {
+  +type : str
+  +children : list
+  +metadata : dict
+}
+
+PolyArtLang --> Tokenizer
+PolyArtLang --> Parser
+PolyArtLang --> Interpreter
+Tokenizer --> Token
+Parser --> AST
+Parser --> Node
+Interpreter --> AST
+Interpreter --> CommandRegistry
+
+note bottom of CommandRegistry
+  50+ Command Types:
+
+  Drawing:
+  CIRCLE, RECT, LINE, ARC, ELLIPSE
+  POLYGON, CURVE, BEZIER, SPLINE
+  PATH, STROKE, FILL, GRADIENT
+
+  Transform:
+  TRANSLATE, ROTATE, SCALE, SKEW
+  MATRIX, PUSH, POP, RESET
+
+  Style:
+  COLOR, STROKEWIDTH, OPACITY
+  FILLOPACITY, STROKEOPACITY
+  DASH, LINECAP, LINEJOIN
+
+  Math:
+  SIN, COS, TAN, ASIN, ACOS
+  ATAN, SQRT, POW, ABS, FLOOR
+  CEIL, RANDOM, PI, E
+
+  Control:
+  IF, ELSE, WHILE, FOR, REPEAT
+  FOREACH, BREAK, CONTINUE
+
+  Function:
+  FUNC, RETURN, CALL, VAR
+  SET, GET, LET, CONST
+
+  IO:
+  PRINT, SAVE, LOAD, EXPORT
+  IMPORT, DEBUG, CLEAR
+
+  Advanced:
+  BEZIER, SPLINE, NURBS
+  ANIMATE, INTERPOLATE
+  MERGE, SPLIT, CLIP
+end note
+@enduml

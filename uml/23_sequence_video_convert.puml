@@ -1,0 +1,49 @@
+@startuml
+title Video to Polyvid Conversion Sequence
+
+actor User
+participant "VideoToPolyvid" as V2P
+participant "FFmpeg" as FF
+participant "PolyVideoEncoder" as Encoder
+participant "DeltaEncoder" as Delta
+database "File System" as FS
+
+User -> V2P: convert("input.mp4")
+
+V2P -> FF: extract_frames("input.mp4", fps=30)
+activate FF
+note right: Uses FFmpeg bindings\nto extract frames
+FF --> V2P: list[Image] | stream
+deactivate FF
+
+V2P -> Encoder: set_keyframe_interval(30)
+V2P -> Encoder: set_quality(0.85)
+
+loop For Each Frame (i = 0 to N)
+  activate Encoder
+
+  alt i % 30 == 0
+    Encoder -> Encoder: encode_keyframe(frame)
+    note right: Full polynomial encoding
+  else
+    Encoder -> Delta: compute_delta(frame, base_frame)
+    activate Delta
+    Delta --> Encoder: delta_coefficients
+    deactivate Delta
+    Encoder -> Encoder: encode_delta_frame(delta)
+  end
+
+  Encoder -> FS: append_to_file(frame_data)
+  deactivate Encoder
+end
+
+V2P -> FS: finalize("output.polyvid")
+V2P --> User: conversion complete
+
+note top of V2P
+  Compresses video by
+  10-100x using polynomial
+  curve representations
+end note
+
+@enduml

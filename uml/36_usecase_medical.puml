@@ -1,0 +1,72 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+
+actor "Doctor" as doctor
+actor "Surgeon" as surgeon
+actor "Patient" as patient
+actor "AI System" as ai
+
+rectangle "Medical PolyArt System" {
+  usecase "Upload CT/MRI Scan" as UC1
+  usecase "Upload X-Ray" as UC2
+  usecase "Create 3D Organ Model" as UC3
+  usecase "Segment Anatomy" as UC4
+  usecase "Pathology Detection" as UC5
+  usecase "Plan Surgical Approach" as UC6
+  usecase "Simulate Procedure" as UC7
+  usecase "Measure Dimensions" as UC8
+  usecase "View 3D Model" as UC9
+  usecase "Compare Before/After" as UC10
+  usecase "Download Model" as UC11
+  usecase "Share with Doctor" as UC12
+  usecase "Annotate Model" as UC13
+  usecase "Generate Report" as UC14
+  usecase "Train AI Classifier" as UC15
+  usecase "Identify Tumors" as UC16
+  usecase "Track Progress" as UC17
+}
+
+doctor --> UC1
+doctor --> UC2
+doctor --> UC13
+doctor --> UC14
+doctor --> UC17
+
+surgeon --> UC6
+surgeon --> UC7
+surgeon --> UC8
+surgeon --> UC10
+surgeon --> UC13
+
+patient --> UC9
+patient --> UC10
+patient --> UC11
+patient --> UC12
+
+ai --> UC3
+ai --> UC4
+ai --> UC5
+ai --> UC15
+ai --> UC16
+
+UC3 ..> UC4 : <<include>>
+UC3 ..> UC1 : <<include>>
+UC6 ..> UC3 : <<include>>
+UC6 ..> UC7 : <<include>>
+UC5 ..> UC16 : <<include>>
+UC10 ..> UC9 : <<include>>
+UC14 ..> UC3 : <<include>>
+
+note bottom of UC3
+  AI segments CT/MRI data
+  into polynomial surface
+  representations
+end note
+
+note right of UC6
+  Surgeon uses 3D model
+  to plan optimal approach
+  with polynomial precision
+end note
+@enduml

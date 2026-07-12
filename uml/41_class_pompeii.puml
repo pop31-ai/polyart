@@ -1,0 +1,141 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class PompeiiFrescoStyle {
+  +pompeii_border()
+  +pompeii_panel()
+  +garden_scene()
+  +still_life()
+  +mythological_panel()
+  +architectural_illusion()
+  -color_palette : list
+  -border_width : float
+}
+
+class PompeiiArchitecture {
+  +roman_temple()
+  +domus()
+  +street_scene()
+  +forum()
+  +amphitheater()
+  +house_of_faun()
+  -column_style : str
+  -perspective_depth : float
+}
+
+class PompeiiDailyLife {
+  +market_scene()
+  +bathhouse()
+  +bakery()
+  +workshop()
+  +garden_party()
+  -activity_level : float
+}
+
+class PompeiiMythology {
+  +venus_painting()
+  +apollo_scene()
+  +dionysus_revelry()
+  +hercules_labors()
+  +underworld_scene()
+  -mythological_set : list
+}
+
+class PompeiiDecorations {
+  +geometric_mosaic()
+  +wave_pattern()
+  +greek_key()
+  +rosette()
+  +meander()
+  -pattern_scale : float
+  -repetition_count : int
+}
+
+class PompeiiComposition {
+  +symmetrical_layout()
+  +perspective_corridor()
+  +garden_view()
+  +theater_scene()
+  -composition_rules : dict
+}
+
+class PompeiiWallPainting {
+  +first_style_wall()
+  +second_style_wall()
+  +third_style_wall()
+  +fourth_style_wall()
+  -wall_style : str
+  -color_scheme : list
+}
+
+class PompeiiMosaicGenerator {
+  +fish_mosaic()
+  +dog_mosaic()
+  +hunting_scene()
+  +geometric_mosaic()
+  -tile_size : float
+  -color_map : dict
+}
+
+class PompeiiAnimals {
+  +horse()
+  +dog()
+  +lion()
+  +bird()
+  +dolphin()
+  -animal_proportions : dict
+}
+
+class PompeiiFragments {
+  +broken_fresco()
+  +eroded_column()
+  +cracked_mosaic()
+  +weathered_relief()
+  -damage_seed : int
+  -erosion_level : float
+}
+
+class PompeiiAnimated {
+  +eruption_gif()
+  +market_day_gif()
+  +gladiator_gif()
+  +daily_life_gif()
+  -frame_count : int
+  -fps : float
+}
+
+class PompeiiSymbols {
+  +fasces()
+  +laurel_wreath()
+  +trident()
+  +eagle()
+  -symbol_scale : float
+}
+
+class PompeiiFullWall {
+  +complete_fourth_style()
+  +garden_wall()
+  +mythological_wall()
+  +architectural_wall()
+  -wall_dimensions : tuple
+}
+
+PompeiiWallPainting --* PompeiiFullWall
+PompeiiFrescoStyle --* PompeiiWallPainting
+PompeiiDecorations --* PompeiiFrescoStyle
+PompeiiArchitecture --* PompeiiComposition
+PompeiiDailyLife --* PompeiiComposition
+PompeiiMythology --* PompeiiComposition
+PompeiiMosaicGenerator --* PompeiiDecorations
+PompeiiAnimals --* PompeiiComposition
+PompeiiFragments --* PompeiiWallPainting
+PompeiiSymbols --* PompeiiDecorations
+PompeiiAnimated --* PompeiiFullWall
+PompeiiComposition --* PompeiiAnimated
+
+note bottom of PompeiiFullWall
+  Top-level class composing
+  all Pompeii artistic elements
+  into complete wall paintings
+end note
+@enduml

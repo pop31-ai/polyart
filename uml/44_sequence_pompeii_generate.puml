@@ -1,0 +1,82 @@
+@startuml
+actor "User" as user
+participant "Generator" as gen
+participant "Gallery Module" as gallery
+participant "Wall Module" as wall
+participant "Mosaic Module" as mosaic
+participant "Animal Module" as animal
+participant "Fragment Module" as frag
+participant "Symbol Module" as sym
+participant "File System" as fs
+
+user -> gen : generate_all()
+activate gen
+
+gen -> gallery : generate_basic_gallery(count=30)
+activate gallery
+gallery -> gallery : generate_fresco_styles()
+gallery -> gallery : generate_daily_life()
+gallery -> gallery : generate_mythology()
+gallery -> gallery : generate_architecture()
+gallery --> gen : 30 images
+deactivate gallery
+
+gen -> wall : generate_wall_styles(count=4)
+activate wall
+wall -> wall : first_style_wall()
+wall -> wall : second_style_wall()
+wall -> wall : third_style_wall()
+wall -> wall : fourth_style_wall()
+wall --> gen : 4 wall styles
+deactivate wall
+
+gen -> mosaic : generate_mosaics(count=4)
+activate mosaic
+mosaic -> mosaic : fish_mosaic()
+mosaic -> mosaic : dog_mosaic()
+mosaic -> mosaic : hunting_scene()
+mosaic -> mosaic : geometric_mosaic()
+mosaic --> gen : 4 mosaics
+deactivate mosaic
+
+gen -> animal : generate_animals(count=2)
+activate animal
+animal -> animal : horse()
+animal -> animal : lion()
+animal --> gen : 2 animal images
+deactivate animal
+
+gen -> frag : generate_fragments(count=3)
+activate frag
+frag -> frag : broken_fresco()
+frag -> frag : eroded_column()
+frag -> frag : cracked_mosaic()
+frag --> gen : 3 fragments
+deactivate frag
+
+gen -> sym : generate_symbols(count=2)
+activate sym
+sym -> sym : fasces()
+sym -> sym : laurel_wreath()
+sym --> gen : 2 symbols
+deactivate sym
+
+gen -> fs : save_all(output_dir)
+activate fs
+fs -> fs : save_images(gallery_results)
+fs -> fs : save_images(wall_results)
+fs -> fs : save_images(mosaic_results)
+fs -> fs : save_images(animal_results)
+fs -> fs : save_images(frag_results)
+fs -> fs : save_images(sym_results)
+fs --> gen : files saved
+deactivate fs
+
+gen --> user : generation_complete(total=45)
+deactivate gen
+
+note over gen
+  Total output: 45 images
+  across 6 categories
+end note
+@enduml

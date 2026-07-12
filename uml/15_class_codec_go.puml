@@ -1,0 +1,74 @@
+@startuml
+title Go Codec Class Diagram
+
+package "codec_go / main.go" {
+
+class PolyObject {
+  + ID int
+  + Name string
+  + Degree int
+  + Coefficients []float64
+  + DeltaCoefficients []float64
+  + HasDelta() bool
+  + ApplyDelta() PolyObject
+  + ComputeDelta(base PolyObject) PolyObject
+  + ToJSON() map[string]interface{}
+  + FromJSON(data map[string]interface{}) PolyObject
+}
+
+class PolyFrame {
+  + FrameNumber int
+  + FrameType string
+  + Objects []PolyObject
+  + Width int
+  + Height int
+  + Timestamp float64
+  + KeyframeID int
+  + AddObject(obj PolyObject)
+  + GetObject(id int) PolyObject
+  + GetObjectCount() int
+  + ToJSON() map[string]interface{}
+  + FromJSON(data map[string]interface{}) PolyFrame
+  + Clone() PolyFrame
+}
+
+class PolyVideoEncoder {
+  + CodecVersion string
+  + Quality float64
+  + KeyframeInterval int
+  + CurrentFrame int
+  + NewEncoder(version string, quality float64) *PolyVideoEncoder
+  + EncodeFrame(scene PolyScene) PolyFrame
+  + EncodeKeyframe(scene PolyScene) PolyFrame
+  + EncodeDeltaFrame(scene PolyScene, base PolyFrame) PolyFrame
+  + EncodeVideo(scenes []PolyScene) []PolyFrame
+  + SetKeyframeInterval(interval int)
+  + SetQuality(quality float64)
+  - quantizeCoefficients(coeffs []float64) []float64
+  - deltaEncode(curr, base []float64) []float64
+}
+
+class PolyVideoDecoder {
+  + CodecVersion string
+  + NewDecoder(version string) *PolyVideoDecoder
+  + DecodeFrame(frame PolyFrame) PolyScene
+  + DecodeKeyframe(frame PolyFrame) PolyScene
+  + DecodeDeltaFrame(frame PolyFrame, base PolyFrame) PolyScene
+  + DecodeVideo(frames []PolyFrame) []PolyScene
+  + ReconstructScene(frames []PolyFrame) PolyScene
+  + InterpolateFrame(f1, f2 PolyFrame, t float64) PolyScene
+  - dequantizeCoefficients(coeffs []float64) []float64
+  - deltaDecode(delta, base []float64) []float64
+}
+
+PolyVideoEncoder ..> PolyFrame : produces
+PolyVideoDecoder ..> PolyFrame : consumes
+PolyFrame *- PolyObject : contains
+}
+
+note top of PolyObject
+  Go struct implementation
+  Exported fields for JSON marshaling
+end note
+
+@enduml

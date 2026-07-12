@@ -1,0 +1,78 @@
+@startuml
+title PolyArt Viewer Class Diagram
+
+class PolyArtViewer {
+  + Viewer(title: str, width: int, height: int)
+  + load_file(path: str)
+  + load_scene(scene: PolyScene)
+  + play_animation(anim: Animation)
+  + pause_animation()
+  + stop_animation()
+  + set_speed(factor: float)
+  + fullscreen()
+  + run()
+  - _init_ui()
+  - _init_controls()
+  - _animation_loop()
+  - _on_keypress(event)
+  - _on_resize(event)
+}
+
+class DisplayPanel {
+  + DisplayPanel(parent)
+  + width: int
+  + height: int
+  + zoom: float
+  + rotation: float
+  + render(scene: PolyScene)
+  + render_frame(frame: list[PolyCurve])
+  + set_background(color: Color)
+  + set_zoom(level: float)
+  + set_rotation(angle: float)
+  + anti_aliasing: bool
+  + show_fps(fps: float)
+  - _update_display()
+  - _render_background()
+  - _render_curves(curves: list)
+  - _render_overlay()
+}
+
+class ControlBar {
+  + ControlBar(parent)
+  + on_play(callback)
+  + on_pause(callback)
+  + on_stop(callback)
+  + on_speed_change(callback)
+  + on_seek(callback)
+  + set_playback_state(state: str)
+  + set_current_frame(frame: int)
+  + set_total_frames(total: int)
+  + set_speed(speed: float)
+  + show_controls(show: bool)
+}
+
+class InfoOverlay {
+  + InfoOverlay(display)
+  + show_file_info(info: dict)
+  + show_curve_count(n: int)
+  + show_resolution(w: int, h: int)
+  + show_fps(fps: float)
+  + show_duration(secs: float)
+  + hide()
+  + toggle()
+  + set_theme(theme: str)
+}
+
+PolyArtViewer *- DisplayPanel: contains
+PolyArtViewer *- ControlBar: contains
+PolyArtViewer *- InfoOverlay: contains
+DisplayPanel --> PolyScene: renders
+ControlBar --> DisplayPanel: controls
+InfoOverlay --> DisplayPanel: overlays
+
+note top of PolyArtViewer
+  Standalone viewer for
+  .polyart and .polyvid files
+end note
+
+@enduml

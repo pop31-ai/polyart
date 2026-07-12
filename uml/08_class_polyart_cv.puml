@@ -1,0 +1,58 @@
+@startuml
+title PolyArt Computer Vision Class Diagram
+
+class ImageFeatureExtractor {
+  + ImageFeatureExtractor()
+  + extract_edges(image: Image) -> list[PolyCurve]
+  + extract_contours(image: Image) -> list[list[tuple]]
+  + extract_corners(image: Image) -> list[tuple]
+  + extract_sift_features(image: Image) -> list[descriptor]
+  + extract_orb_features(image: Image) -> list[descriptor]
+  + extract_hog_features(image: Image) -> ndarray
+  + compute_polygon_similarity(poly1: list, poly2: list) -> float
+  + polygon_to_polycurve(polygon: list, degree: int) -> PolyCurve
+  + curvature_scale_space(contour: list) -> list[float]
+  - _canny_detector(image, low: float, high: float) -> Image
+  - _fit_polynomial(points: list, degree: int) -> list[float]
+}
+
+class RarityScorer {
+  + RarityScorer()
+  + score_artwork(scene: PolyScene) -> float
+  + score_curve_complexity(curve: PolyCurve) -> float
+  + score_symmetry(scene: PolyScene) -> float
+  + score_novelty(scene: PolyScene, database: list) -> float
+  + score_aesthetic(scene: PolyScene) -> float
+  + score_fractal_dimension(scene: PolyScene) -> float
+  + score_color_harmony(scene: PolyScene) -> float
+  + classify_rarity(score: float) -> str
+  + generate_rarity_report(scene: PolyScene) -> dict
+  - _compute_fractal_dim(curves: list) -> float
+  - _compute_entropy(curves: list) -> float
+}
+
+class PolyArtCVTest {
+  + PolyArtCVTest()
+  + test_extraction(image_path: str) -> dict
+  + test_classification(scene_path: str) -> str
+  + test_similarity(scene1_path: str, scene2_path: str) -> float
+  + test_batch(directory: str) -> list[dict]
+  + test_noise_robustness(scene: PolyScene, noise_levels: list) -> list
+  + test_scale_invariance(scene: PolyScene, scales: list) -> list
+  + test_rotation_invariance(scene: PolyScene, angles: list) -> list
+  + benchmark_performance(images: list) -> dict
+  + generate_test_report(results: list) -> str
+  - _run_test_pipeline(poly: PolyScene)
+  - _calculate_metrics(original: PolyScene, test: PolyScene) -> dict
+}
+
+ImageFeatureExtractor --> RarityScorer: features used
+PolyArtCVTest --> ImageFeatureExtractor: uses
+PolyArtCVTest --> RarityScorer: uses
+
+note top of PolyArtCVTest
+  Tests polynomial art against
+  computer vision algorithms
+end note
+
+@enduml

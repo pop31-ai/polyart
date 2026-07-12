@@ -1,0 +1,52 @@
+@startuml
+title PolyArt Video Encoding Sequence
+
+actor User
+participant "PolyVideoEncoder" as Encoder
+participant "Edge Detector" as Edges
+participant "Contour Extractor" as Contours
+participant "PolyFit Engine" as Fitter
+participant "Delta Encoder" as Delta
+database "File System" as FS
+
+User -> Encoder: encode_video(image_sequence)
+activate Encoder
+
+loop For Each Frame
+  Encoder -> Edges: extract_edges(frame)
+  activate Edges
+  Edges --> Encoder: edge_image
+  deactivate Edges
+
+  Encoder -> Contours: extract_contours(edge_image)
+  activate Contours
+  Contours --> Encoder: contour_list
+  deactivate Contours
+
+  Encoder -> Fitter: fit_polynomials(contours, degree)
+  activate Fitter
+  Fitter --> Encoder: poly_objects
+  deactivate Fitter
+
+  alt Is Keyframe?
+    Encoder -> Encoder: encode_keyframe(poly_objects)
+  else Is Delta Frame?
+    Encoder -> Delta: compute_delta(poly_objects, base_frame)
+    activate Delta
+    Delta --> Encoder: delta_coefficients
+    deactivate Delta
+  end
+
+  Encoder -> FS: write_frame(frame_data)
+end
+
+Encoder --> User: .polyvid file
+deactivate Encoder
+
+note right of Delta
+  Delta encoding reduces
+  bandwidth by 60-80%
+  for sequential frames
+end note
+
+@enduml

@@ -1,0 +1,59 @@
+@startuml
+title PWTP Transmission Sequence
+
+actor "Sender" as S
+actor "Receiver" as R
+participant "WorldEncoder" as WE
+participant "Transmitter" as TX
+participant "ReceiverModule" as RX
+participant "WorldDecoder" as WD
+participant "Renderer3D" as Rend3D
+
+S -> WE: encode_world(terrain, buildings, heroes, camera)
+activate WE
+
+WE -> WE: encode_terrain(heightmap)
+note right: Fit polynomials to terrain mesh
+
+WE -> WE: encode_building(forum)
+note right: Encode as column + arch + wall curves
+
+WE -> WE: encode_hero(legionary_pose)
+note right: Encode figure as polynomial skeleton
+
+WE -> WE: encode_camera(position, target)
+note right: Encode view transform as coefficients
+
+WE -> TX: coefficients_packet
+deactivate WE
+
+TX -> RX: transmit over network
+activate TX
+note right: PWTP uses coefficient\nstreaming via WebSocket/UDP
+TX --> RX: stream coefficients
+deactivate TX
+
+activate RX
+RX -> WD: decode_coefficients(packet)
+deactivate RX
+activate WD
+
+WD -> WD: evaluate_poly(terrain_coeffs)
+note right: Evaluate polynomials at sample points
+
+WD -> WD: evaluate_hero(hero_coeffs, frame)
+note right: Interpolate hero position & pose
+
+WD -> WD: evaluate_camera(camera_coeffs)
+note right: Reconstruct camera transform
+
+WD -> Rend3D: scene_data
+deactivate WD
+
+activate Rend3D
+Rend3D -> Rend3D: project_3d(scene)
+Rend3D -> Rend3D: render_frame()
+Rend3D --> R: display frame
+deactivate Rend3D
+
+@enduml

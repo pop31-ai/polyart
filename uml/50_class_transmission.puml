@@ -1,0 +1,102 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class PolynomialEncoder {
+  +encode_circle(center: tuple, radius: float) : EncodedData
+  +encode_star(center: tuple, points: int, outer_r: float, inner_r: float) : EncodedData
+  +encode_heart(center: tuple, size: float) : EncodedData
+  +encode_spiral(center: tuple, turns: int, radius: float) : EncodedData
+  +encode_silhouette(points: list) : EncodedData
+  +encode_3d_cube(center: tuple, size: float) : EncodedData
+  +encode_3d_sphere(center: tuple, radius: float, resolution: int) : EncodedData
+  +encode_3d_cone(center: tuple, radius: float, height: float) : EncodedData
+  +encode_3d_torus(center: tuple, major_r: float, minor_r: float) : EncodedData
+  -coefficient_precision : int
+  -compression_level : int
+}
+
+class PolynomialDecoder {
+  +decode(data: EncodedData) : PolynomialSet
+  +decode_to_segment(data: EncodedData, segment: int) : Segment
+  -coefficient精度 : int
+  -error_correction : bool
+}
+
+class TransmissionAnimator {
+  +transmit_flat_circle(data: EncodedData, frames: int) : list
+  +transmit_flat_star(data: EncodedData, frames: int) : list
+  +transmit_flat_heart(data: EncodedData, frames: int) : list
+  +transmit_flat_spiral(data: EncodedData, frames: int) : list
+  +transmit_3d_cube(data: EncodedData, frames: int, rotation: tuple) : list
+  +transmit_3d_sphere(data: EncodedData, frames: int, rotation: tuple) : list
+  +transmit_3d_cone(data: EncodedData, frames: int, rotation: tuple) : list
+  +transmit_3d_torus(data: EncodedData, frames: int, rotation: tuple) : list
+  -transition_style : str
+  -easing_function : str
+}
+
+class TransmissionComparison {
+  +flat_comparison(shapes: list, frames: int) : list
+  +volumetric_comparison(shapes: list, frames: int) : list
+  -comparison_layout : str
+  -label_style : dict
+}
+
+class EncodedData {
+  +coefficients : list
+  +shape_type : str
+  +metadata : dict
+  +size_bytes : int
+  +to_bytes() : bytes
+  +from_bytes(data: bytes) : EncodedData
+}
+
+class PolynomialSet {
+  +polynomials : list
+  +segments : int
+  +total_coefficients : int
+  +to_renderable() : list
+  +optimize() : PolynomialSet
+}
+
+class Segment {
+  +start : float
+  +end : float
+  +coefficients : list
+  +color : tuple
+  +to_curves() : list
+}
+
+class TransmissionAnimator3D extends TransmissionAnimator {
+  +apply_rotation(points: list, rotation: tuple) : list
+  +apply_perspective(points: list, fov: float) : list
+  +depth_sort(segments: list) : list
+}
+
+PolynomialEncoder --> EncodedData : produces
+PolynomialDecoder --> EncodedData : consumes
+PolynomialDecoder --> PolynomialSet : produces
+PolynomialDecoder --> Segment : produces
+TransmissionAnimator --> PolynomialDecoder : uses
+TransmissionAnimator --> EncodedData : consumes
+TransmissionComparison --> TransmissionAnimator : uses
+TransmissionComparison --> PolynomialEncoder : uses
+
+note bottom of PolynomialEncoder
+  Encodes geometric shapes as
+  polynomial coefficient sets
+  for compact PWTP transmission
+end note
+
+note right of TransmissionAnimator
+  Animates the transmission
+  process showing data flowing
+  from encoder to decoder
+end note
+
+note left of TransmissionComparison
+  Side-by-side comparison
+  of flat 2D vs volumetric 3D
+  transmission visualizations
+end note
+@enduml

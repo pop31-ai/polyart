@@ -1,0 +1,44 @@
+@startuml
+title PWTP WorldEncoder Class Diagram
+
+class WorldEncoder {
+  + terrain_cache: dict
+  + building_cache: dict
+  + hero_cache: dict
+  + WorldEncoder()
+  + encode_terrain(heightmap: ndarray, resolution: float) -> list[PolyCurve]
+  + encode_building(building_type: str, params: dict) -> list[PolyCurve]
+  + encode_column(order: str, height: float, base_radius: float) -> list[PolyCurve]
+  + encode_arch(span: float, rise: float, thickness: float) -> list[PolyCurve]
+  + encode_hero(hero_type: str, pose: str, position: tuple) -> list[PolyCurve]
+  + encode_camera(position: tuple, target: tuple, fov: float) -> list[float]
+  + encode_full_world(world_data: dict) -> dict
+  + encode_static_geometry(world_data: dict) -> dict
+  + encode_dynamic_objects(objects: list) -> dict
+  + serialize_coefficients(coefficients: list) -> bytes
+  + get_bandwidth_estimate(packet_size: int) -> float
+  - _heightmap_to_polynomials(map: ndarray, segments: int) -> list[PolyCurve]
+  - _building_coefficients(type: str, params: dict) -> list[float]
+  - _column_profile(order: str) -> list[float]
+  - _arch_curve(span: float, rise: float) -> list[float]
+  - _hero_skeleton(type: str) -> dict
+  - _camera_matrix(pos: tuple, target: tuple) -> list[float]
+}
+
+class PolyCurve {
+  + id: int
+  + degree: int
+  + coefficients: list[float]
+  + color: tuple
+  + evaluate(t: float) -> float
+}
+
+WorldEncoder ..> PolyCurve: produces
+
+note top of WorldEncoder
+  Encodes 3D world state into
+  polynomial coefficients for
+  efficient transmission
+end note
+
+@enduml

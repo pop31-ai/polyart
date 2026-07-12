@@ -1,0 +1,77 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class FlowerCurves {
+  +rose(petals: int, size: float) : list
+  +lily(size: float, orientation: str) : list
+  +sunflower(size: float, seeds: int) : list
+  +tulip(size: float, petals: int) : list
+  +daisy(size: float, petals: int) : list
+  +orchid(size: float, variety: str) : list
+  +lotus(size: float, layers: int) : list
+  +hibiscus(size: float) : list
+  +cherry_blossom(size: float) : list
+  +lavender stalks: int, height: float) : list
+  +carnation(size: float, petals: int) : list
+  +poppy(size: float) : list
+  +daffodil(size: float) : list
+  +iris(size: float) : list
+  +peony(size: float, layers: int) : list
+  +chrysanthemum(size: float, petals: int) : list
+  +wisteria(length: float, density: int) : list
+  -petal_curves : dict
+  -color_palettes : dict
+}
+
+class PlantCurves {
+  +stem(height: float, curvature: float) : list
+  +leaf(width: float, height: float, type: str) : list
+  +vine(length: float, tendrils: int) : list
+  +branch(length: float, forks: int) : list
+  +root_system(depth: float, spread: float) : list
+  +thorns(count: int, size: float) : list
+  +bark_pattern(width: float, height: float) : list
+  +moss_patch(size: float) : list
+  +fern(frond_count: int, size: float) : list
+  +grass blades: int, height: float) : list
+  -leaf_shapes : list
+  -branch_patterns : list
+}
+
+class CompositionCurves {
+  +bouquet(flowers: list, arrangement: str) : list
+  +wreath(radius: float, decorations: list) : list
+  +garden_bed(width: float, height: float, density: int) : list
+  +flower_arrangement(vase: str, flowers: list) : list
+  +tree_with_flowers(tree_type: str, flowers: list) : list
+  +hanging_basket(width: float, flowers: list) : list
+  +border_garden(length: float, pattern: str) : list
+  +centerpiece(size: float, style: str) : list
+  +trellis_climbing(width: float, height: float, vine_type: str) : list
+  -composition_rules : dict
+  -spacing_algorithms : list
+}
+
+FlowerCurves --> PlantCurves : combines_with
+CompositionCurves --> FlowerCurves : uses
+CompositionCurves --> PlantCurves : uses
+
+note bottom of FlowerCurves
+  17 flower types with
+  configurable parameters
+  for petal count, size,
+  and color variation
+end note
+
+note right of PlantCurves
+  10 plant element types
+  for stems, leaves, vines,
+  and structural components
+end note
+
+note top of CompositionCurves
+  9 composition types for
+  arranging flowers and plants
+  into complete scenes
+end note
+@enduml

@@ -1,0 +1,72 @@
+@startuml
+title PolyArt Sculpture Class Diagram
+
+package "Sculpture Generation" {
+  class LatheBody {
+    + LatheBody()
+    + generate_vase(profile: list, segments: int) -> PolyScene
+    + generate_amphora(segments: int) -> PolyScene
+    + generate_column(doric: bool, segments: int) -> PolyScene
+    + generate_bust(profile: list) -> PolyScene
+    + _lathe_profile(profile: list, segments: int) -> list[PolyCurve]
+    + _build_polygon(segments: list) -> PolyObject
+  }
+
+  class MuscleRelief {
+    + MuscleRelief()
+    + generate_pectoralis(scale: float) -> PolyCurve
+    + generate_biceps(scale: float) -> PolyCurve
+    + generate_abdominals(scale: float) -> list[PolyCurve]
+    + generate_quadriceps(scale: float) -> list[PolyCurve]
+    + generate_torso(scale: float) -> list[PolyCurve]
+    + generate_figure(style: str) -> PolyScene
+    + _muscle_curve(points: list, tension: float) -> PolyCurve
+  }
+
+  class PiranesiArch {
+    + PiranesiArch()
+    + generate_triumphal_arch(width: float, height: float) -> PolyScene
+    + generate_colosseum_section(segments: int) -> PolyScene
+    + generate_basilica(rows: int, cols: int) -> PolyScene
+    + generate_carceri(scene: str) -> PolyScene
+    + generate_piranesi_composition() -> PolyScene
+    + _arch_coefficients(span: float, rise: float) -> list[float]
+    + _column_coefficients(height: float) -> list[float]
+  }
+
+  class RomanSymbols {
+    + RomanSymbols()
+    + generate_spqr_eagle() -> PolyScene
+    + generate_laurel_wreath() -> PolyScene
+    + generate_roman_standard() -> PolyScene
+    + generate_gladius() -> PolyScene
+    + generate_scutum() -> PolyScene
+    + generate_aquila() -> PolyScene
+    + generate_chi_rho() -> PolyScene
+    + _symbol_coefficients(symbol: str) -> list[float]
+  }
+
+  class GameAssets {
+    + GameAssets()
+    + generate_sword(hilt: str, blade: str) -> PolyScene
+    + generate_shield(round: bool) -> PolyScene
+    + generate_armor(style: str) -> PolyScene
+    + generate_helmet(type: str) -> PolyScene
+    + generate_weapon(type: str) -> PolyScene
+    + generate_building(type: str) -> PolyScene
+    + generate_character(type: str, props: dict) -> PolyScene
+    + generate_tile_set() -> list[PolyScene]
+  }
+}
+
+LatheBody --> PiranesiArch: supplies columns
+RomanSymbols --> GameAssets: symbols used
+PiranesiArch --> GameAssets: arches used
+MuscleRelief --> GameAssets: figure generation
+
+note top of PiranesiArch
+  Inspired by Giovanni Battista
+  Piranesi's architectural fantasies
+end note
+
+@enduml

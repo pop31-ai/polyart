@@ -1,0 +1,79 @@
+@startuml
+package "PWTP System" {
+
+  component [Encoder] as encoder {
+    portin "Polynomial Data" as enc_in
+    portout "Encoded Stream" as enc_out
+  }
+
+  component [Decoder] as decoder {
+    portin "Encoded Stream" as dec_in
+    portout "Vertex Data" as dec_out
+  }
+
+  component [Renderer] as renderer {
+    portin "Vertex Data" as ren_in
+    portout "Framebuffer" as ren_out
+  }
+
+  component [Network] as network {
+    portin "Connection" as net_in
+    portout "Packet Stream" as net_out
+  }
+
+  component [Cache] as cache {
+    portin "Query" as cache_in
+    portout "Cached Data" as cache_out
+  }
+
+  component [World Manager] as world
+  component [Input Handler] as input
+  component [Asset Loader] as asset
+  component [Audio Engine] as audio
+  component [Physics Engine] as physics
+}
+
+database "Polynomial\nDatabase" as db
+cloud "Cloud Storage" as cloud
+rectangle "Client Devices" as clients
+
+encoder --> decoder : encoded_segments
+decoder --> renderer : mesh_data
+renderer --> clients : rendered_frames
+
+network --> encoder : received_data
+network --> decoder : stream_data
+network --> clients : network_packets
+
+cache --> encoder : cached_polynomials
+encoder --> cache : encode_requests
+cache --> decoder : cached_vertices
+decoder --> cache : decode_requests
+
+world --> renderer : scene_graph
+world --> physics : rigid_bodies
+input --> world : player_commands
+asset --> encoder : polynomial_assets
+audio --> world : sound_events
+
+network --> cloud : sync_data
+db --> cache : polynomial_data
+
+note top of encoder
+  Encodes polynomial curves
+  into compact binary format
+  using PWTP protocol
+end note
+
+note bottom of decoder
+  Decodes PWTP stream into
+  renderable mesh segments
+  with LOD support
+end note
+
+note right of renderer
+  WebGL/OpenGL renderer
+  with polynomial-specific
+  shader pipeline
+end note
+@enduml

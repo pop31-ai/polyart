@@ -1,0 +1,53 @@
+@startuml
+title Converter System Deployment
+
+actor "User" as U
+actor "Developer" as D
+
+node "Desktop Client" as Desktop {
+  [PolyArt Editor]
+  [PolyArt Viewer]
+  [ImageToPolyart]
+  [PolyartToImage]
+}
+
+node "Server" as Server {
+  [VideoToPolyvid]
+  [PolyvidToVideo]
+  [FormatConverter API]
+  database "Storage" as Store
+}
+
+node "Mobile Device" as Mobile {
+  [PolyArt Viewer Lite]
+  [ImageToPolyart Mobile]
+}
+
+node "Browser" as Browser {
+  [PolyArt Viewer Web]
+  [JavaScript Codec]
+}
+
+cloud "Cloud CDN" as CDN {
+  [Polyvid Streaming]
+  [Coefficient Cache]
+}
+
+U --> Desktop : uses
+U --> Browser : uses
+U --> Mobile : uses
+D --> Server : deploys
+D --> CDN : deploys
+
+Desktop --> Server : uploads images/videos
+Browser --> CDN : streams polyvid
+Mobile --> CDN : streams polyvid
+Server --> Store : persists
+CDN --> Server : fetches content
+
+note top of Server
+  RESTful converter API
+  Handles heavy computation
+end note
+
+@enduml

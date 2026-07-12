@@ -1,0 +1,73 @@
+@startuml
+title PolyArt Converter Class Diagram
+
+class ImageToPolyart {
+  + ImageToPolyart()
+  + convert(path: str, options: dict) -> PolyScene
+  + convert_batch(paths: list[str], options: dict) -> list[PolyScene]
+  + set_edge_detection(method: str, params: dict)
+  + set_polygon_fit(degree: int, tolerance: float)
+  + set_color_quantization(colors: int)
+  + preview(path: str) -> Image
+  - _load_image(path: str) -> ndarray
+  - _detect_edges(image: ndarray) -> ndarray
+  - _extract_contours(edges: ndarray) -> list
+  - _fit_contours(contours: list, degree: int) -> list[PolyCurve]
+  - _assign_colors(curves: list, image: ndarray)
+}
+
+class PolyartToImage {
+  + PolyartToImage()
+  + convert(scene: PolyScene, width: int, height: int) -> Image
+  + convert_batch(scenes: list[PolyScene], sizes: list) -> list[Image]
+  + set_antialiasing(enabled: bool)
+  + set_background(color: tuple)
+  + set_dpi(dpi: int)
+  - _render_polygons(draw, scene: PolyScene)
+  - _apply_styles(draw, curve: PolyCurve)
+  - _post_process(image: Image) -> Image
+}
+
+class VideoToPolyvid {
+  + VideoToPolyvid()
+  + convert(video_path: str, options: dict) -> list[PolyFrame]
+  + convert_batch(paths: list[str]) -> list[list[PolyFrame]]
+  + set_codec(codec: str)
+  + set_quality(quality: float)
+  + set_keyframe_interval(interval: int)
+  - _extract_frames(video_path: str) -> list[Image]
+  - _encode_frame(frame: Image) -> PolyFrame
+}
+
+class PolyvidToVideo {
+  + PolyvidToVideo()
+  + convert(frames: list[PolyFrame], output_path: str, fps: int)
+  + convert_batch(input_paths: list[str], output_dir: str, fps: int)
+  + set_output_format(fmt: str)
+  - _decode_frames(frames: list[PolyFrame]) -> list[Image]
+  - _write_video(images: list[Image], path: str, fps: int)
+}
+
+class FormatConverter {
+  + FormatConverter()
+  + convert_format(input_path: str, output_path: str, fmt: str) -> bool
+  + detect_format(path: str) -> str
+  + get_supported_formats() -> list[str]
+  + batch_convert(input_dir: str, output_dir: str, target_fmt: str) -> list[str]
+  + convert_auto(input_path: str, output_path: str) -> bool
+  - _route_converter(input_fmt: str, output_fmt: str)
+}
+
+ImageToPolyart --> PolyartToImage: inverse
+VideoToPolyvid --> PolyvidToVideo: inverse
+FormatConverter --> ImageToPolyart: routes to
+FormatConverter --> PolyartToImage: routes to
+FormatConverter --> VideoToPolyvid: routes to
+FormatConverter --> PolyvidToVideo: routes to
+
+note top of FormatConverter
+  Auto-detects format and
+  routes to correct converter
+end note
+
+@enduml

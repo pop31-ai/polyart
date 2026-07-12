@@ -1,0 +1,35 @@
+@startuml
+title PolyArt Animals Class Diagram
+
+class AnimalTemplates {
+  + category_map: dict
+  + AnimalTemplates()
+  + generate_mammal(species: str, pose: str) -> PolyScene
+  + generate_bird(species: str, pose: str) -> PolyScene
+  + generate_reptile(species: str, pose: str) -> PolyScene
+  + generate_fish(species: str, pose: str) -> PolyScene
+  + generate_insect(species: str, pose: str) -> PolyScene
+  + generate_mythological(creature: str) -> PolyScene
+  + generate_horse(pose: str) -> PolyScene
+  + generate_eagle(pose: str) -> PolyScene
+  + generate_lion(pose: str) -> PolyScene
+  + generate_wolf(pose: str) -> PolyScene
+  + generate_dolphin(pose: str) -> PolyScene
+  + generate_animal(type: str, species: str, pose: str) -> PolyScene
+  + _body_curves(species: str, pose: str) -> list[PolyCurve]
+  + _limb_curves(species: str, pose: str) -> list[PolyCurve]
+  + _head_curves(species: str, pose: str) -> list[PolyCurve]
+  + _detail_curves(species: str) -> list[PolyCurve]
+  + _pose_coefficients(species: str, pose: str, part: str) -> list[float]
+  + _morph_between(s1: PolyScene, s2: PolyScene, t: float) -> PolyScene
+  + get_available_species() -> list[str]
+  + get_available_poses(species: str) -> list[str]
+}
+
+note top of AnimalTemplates
+  Template-based animal generation
+  using polynomial curve collections
+  for body parts and poses
+end note
+
+@enduml

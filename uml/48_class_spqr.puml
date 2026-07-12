@@ -1,0 +1,76 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class RomanOrders {
+  +doric_column(height: float, base_width: float) : list
+  +ionic_column(height: float, base_width: float) : list
+  +corinthian_column(height: float, base_width: float) : list
+  +tuscan_column(height: float, base_width: float) : list
+  +composite_column(height: float, base_width: float) : list
+  -capital_details : dict
+  -flute_patterns : dict
+}
+
+class RomanArch {
+  +semicircular_arch(span: float, height: float) : list
+  +pointed_arch(span: float, height: float) : list
+  +triumphal_arch(width: float, height: float) : list
+  +gateway_arch(span: float, height: float, columns: int) : list
+  +aqueduct_segment(length: float, arches: int) : list
+  -keystone_style : str
+  -voussoir_count : int
+}
+
+class PiranesiArchitecture {
+  +carcere_prison(depth: float, complexity: int) : list
+  +monumental_staircase(width: float, height: float, flights: int) : list
+  +colonnade(length: float, columns: int, order: str) : list
+  +temple_front(width: float, columns: int, order: str) : list
+  +ruined_arch(span: float, decay: float) : list
+  +perspective_corridor(length: float, width: float) : list
+  -shadow_depth : float
+  -detail_level : float
+}
+
+class SPQRForum {
+  +forum_layout(size: float) : list
+  +basilica(length: float, width: float) : list
+  +senate_house(width: float, depth: float) : list
+  +temple_of_jupiter(scale: float) : list
+  +rostra() : list
+  +curia(width: float, depth: float) : list
+  +comitium() : list
+  -forum_dimensions : tuple
+}
+
+class SPQRComposition {
+  +complete_forum_scene() : list
+  +triumph_procession() : list
+  +military_camp() : list
+  +senate_session() : list
+  +public_games() : list
+  +market_day() : list
+  -scene_elements : dict
+  -depth_ordering : list
+}
+
+RomanOrders --> RomanArch : supports
+RomanArch --> PiranesiArchitecture : inspires
+PiranesiArchitecture --> SPQRComposition : composes
+SPQRForum --> SPQRComposition : composes
+SPQRForum --> RomanOrders : uses
+SPQRForum --> RomanArch : uses
+SPQRComposition --> RomanOrders : uses
+
+note bottom of SPQRComposition
+  Compositions combine all
+  Roman architectural elements
+  into complete scenes
+end note
+
+note right of PiranesiArchitecture
+  Inspired by Piranesi's
+  "Carceri d'Invenzione"
+  (Imaginary Prisons)
+end note
+@enduml

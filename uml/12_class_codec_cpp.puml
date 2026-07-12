@@ -1,0 +1,79 @@
+@startuml
+title C++ Codec Class Diagram
+
+package "codec_cpp / polyart_codec.h" {
+
+class PolyObject {
+  + int id
+  + std::string name
+  + int degree
+  + std::vector<double> coefficients
+  + std::vector<double> deltaCoefficients
+  + PolyObject()
+  + PolyObject(std::string name, int degree, std::vector<double> coeffs)
+  + bool hasDelta()
+  + PolyObject applyDelta()
+  + PolyObject computeDelta(PolyObject base)
+  + nlohmann::json toJson()
+  + static PolyObject fromJson(nlohmann::json data)
+}
+
+class PolyFrame {
+  + int frameNumber
+  + std::string frameType
+  + std::vector<PolyObject> objects
+  + int width
+  + int height
+  + double timestamp
+  + int keyframeId
+  + PolyFrame()
+  + PolyFrame(std::string type, int w, int h)
+  + void addObject(PolyObject obj)
+  + PolyObject getObject(int id)
+  + size_t getObjectCount()
+  + nlohmann::json toJson()
+  + static PolyFrame fromJson(nlohmann::json data)
+  + PolyFrame clone()
+}
+
+class PolyVideoEncoder {
+  + std::string codecVersion
+  + double quality
+  + int keyframeInterval
+  + int currentFrame
+  + PolyVideoEncoder(std::string version, double quality)
+  + PolyFrame encodeFrame(PolyScene scene)
+  + PolyFrame encodeKeyframe(PolyScene scene)
+  + PolyFrame encodeDeltaFrame(PolyScene scene, PolyFrame base)
+  + std::vector<PolyFrame> encodeVideo(std::vector<PolyScene> scenes)
+  + void setKeyframeInterval(int interval)
+  + void setQuality(double quality)
+  + std::vector<double> quantizeCoefficients(std::vector<double> coeffs)
+  + std::vector<double> deltaEncode(std::vector<double> curr, std::vector<double> base)
+}
+
+class PolyVideoDecoder {
+  + std::string codecVersion
+  + PolyVideoDecoder(std::string version)
+  + PolyScene decodeFrame(PolyFrame frame)
+  + PolyScene decodeKeyframe(PolyFrame frame)
+  + PolyScene decodeDeltaFrame(PolyFrame frame, PolyFrame base)
+  + std::vector<PolyScene> decodeVideo(std::vector<PolyFrame> frames)
+  + PolyScene reconstructScene(std::vector<PolyFrame> frames)
+  + PolyScene interpolateFrame(PolyFrame f1, PolyFrame f2, double t)
+  + std::vector<double> dequantizeCoefficients(std::vector<double> coeffs)
+  + std::vector<double> deltaDecode(std::vector<double> delta, std::vector<double> base)
+}
+
+PolyVideoEncoder ..> PolyFrame : produces
+PolyVideoDecoder ..> PolyFrame : consumes
+PolyFrame *- PolyObject : contains
+}
+
+note top of PolyObject
+  C++ implementation using
+  std::vector<double> for coefficients
+  nlohmann::json for serialization
+end note
+
+@enduml

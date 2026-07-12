@@ -1,0 +1,112 @@
+@startuml
+title PolyArt Video Codec Class Diagram
+
+package "Video Codec System" {
+
+class PolyFrame {
+  + frame_number: int
+  + frame_type: str
+  + objects: list[PolyObject]
+  + width: int
+  + height: int
+  + timestamp: float
+  + keyframe_id: int
+  + PolyFrame(type: str, w: int, h: int)
+  + add_object(obj: PolyObject)
+  + remove_object(id: int)
+  + get_object(id: int) -> PolyObject
+  + get_object_count() -> int
+  + to_json() -> dict
+  + from_json(data: dict) -> PolyFrame
+  + clone() -> PolyFrame
+}
+
+class PolyObject {
+  + id: int
+  + name: str
+  + degree: int
+  + coefficients: list[float]
+  + delta_coefficients: list[float]
+  + bbox: tuple
+  + PolyObject(name: str, degree: int, coeffs: list)
+  + has_delta() -> bool
+  + apply_delta() -> PolyObject
+  + compute_delta(base: PolyObject) -> PolyObject
+  + to_json() -> dict
+  + from_json(data: dict) -> PolyObject
+}
+
+class PolyVideoEncoder {
+  + codec_version: str
+  + quality: float
+  + keyframe_interval: int
+  + current_frame: int
+  + PolyVideoEncoder(codec: str, quality: float)
+  + encode_frame(scene: PolyScene) -> PolyFrame
+  + encode_keyframe(scene: PolyScene) -> PolyFrame
+  + encode_delta_frame(scene: PolyScene, base: PolyFrame) -> PolyFrame
+  + encode_video(scenes: list[PolyScene]) -> list[PolyFrame]
+  + set_keyframe_interval(interval: int)
+  + set_quality(quality: float)
+  + compute_delta(current: PolyScene, base: PolyScene) -> list[PolyObject]
+  - _quantize_coefficients(coeffs: list) -> list[float]
+  - _delta_encode(curr: list, base: list) -> list[float]
+}
+
+class PolyVideoDecoder {
+  + codec_version: str
+  + PolyVideoDecoder(codec: str)
+  + decode_frame(frame: PolyFrame) -> PolyScene
+  + decode_keyframe(frame: PolyFrame) -> PolyScene
+  + decode_delta_frame(frame: PolyFrame, base: PolyFrame) -> PolyScene
+  + decode_video(frames: list[PolyFrame]) -> list[PolyScene]
+  + reconstruct_scene(frames: list[PolyFrame]) -> PolyScene
+  + interpolate_frame(f1: PolyFrame, f2: PolyFrame, t: float) -> PolyScene
+  - _dequantize_coefficients(coeffs: list) -> list[float]
+  - _delta_decode(delta: list, base: list) -> list[float]
+}
+
+class PolyVideoCodec {
+  + name: str
+  + version: str
+  + encoder: PolyVideoEncoder
+  + decoder: PolyVideoDecoder
+  + PolyVideoCodec(name: str)
+  + compress(scenes: list[PolyScene]) -> bytes
+  + decompress(data: bytes) -> list[PolyScene]
+  + compress_file(input_path: str, output_path: str)
+  + decompress_file(input_path: str, output_path: str)
+  + get_compression_ratio(original: int, compressed: int) -> float
+  + get_info() -> dict
+}
+
+class PolyVideoPlayer {
+  + codec: PolyVideoCodec
+  + frames: list[PolyFrame]
+  + current_frame: int
+  + is_playing: bool
+  + speed: float
+  + PolyVideoPlayer(codec: PolyVideoCodec)
+  + load(path: str)
+  + play()
+  + pause()
+  + stop()
+  + seek(frame: int)
+  + next_frame() -> PolyScene
+  + prev_frame() -> PolyScene
+  + get_fps() -> float
+  + get_duration() -> float
+  + get_current_scene() -> PolyScene
+  + get_frame_count() -> int
+  + set_speed(speed: float)
+}
+
+PolyVideoCodec *- PolyVideoEncoder
+PolyVideoCodec *- PolyVideoDecoder
+PolyVideoEncoder ..> PolyFrame: produces
+PolyVideoDecoder ..> PolyFrame: consumes
+PolyVideoPlayer o- PolyVideoCodec: uses
+PolyFrame *- PolyObject: contains
+}
+
+@enduml

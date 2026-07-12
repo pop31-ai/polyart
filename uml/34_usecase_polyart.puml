@@ -1,0 +1,63 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+
+actor "Artist" as artist
+actor "Viewer" as viewer
+actor "CV System" as cv
+rectangle "PolyArt System" {
+  usecase "Create Polynomial Art" as UC1
+  usecase "Select Color Palette" as UC2
+  usecase "Adjust Parameters" as UC3
+  usecase "Export Image" as UC4
+  usecase "Explore Gallery" as UC5
+  usecase "Zoom Into Detail" as UC6
+  usecase "View 3D Model" as UC7
+  usecase "Auto-Generate Art" as UC8
+  usecase "Apply Style Transfer" as UC9
+  usecase "Classify Artwork" as UC10
+  usecase "Detect Patterns" as UC11
+  usecase "Rate Artwork" as UC12
+  usecase "Share Creation" as UC13
+  usecase "Generate from Template" as UC14
+  usecase "Custom Polynomial" as UC15
+  usecase "Batch Process" as UC16
+}
+
+artist --> UC1
+artist --> UC2
+artist --> UC3
+artist --> UC4
+artist --> UC14
+artist --> UC15
+artist --> UC16
+
+viewer --> UC5
+viewer --> UC6
+viewer --> UC7
+viewer --> UC12
+viewer --> UC13
+
+cv --> UC8
+cv --> UC9
+cv --> UC10
+cv --> UC11
+
+UC1 ..> UC2 : <<include>>
+UC1 ..> UC3 : <<include>>
+UC3 ..> UC4 : <<include>>
+UC8 ..> UC9 : <<extend>>
+UC10 ..> UC11 : <<include>>
+
+note bottom of UC8
+  System automatically generates
+  polynomial art from parameters
+  or reference images
+end note
+
+note right of UC15
+  Artist defines custom
+  polynomial equations
+  for curve generation
+end note
+@enduml

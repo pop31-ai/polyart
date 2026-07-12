@@ -1,0 +1,102 @@
+@startuml
+skinparam packageStyle rectangle
+
+package "polyart_core" {
+  [polyart_curves] as curves
+  [polyart_colors] as colors
+  [polyart_math] as math_mod
+  [polyart_utils] as utils
+}
+
+package "polyart_render" {
+  [polyart_render] as render
+  [polyart_shader] as shader
+  [polyart_pipeline] as pipeline
+}
+
+package "polyart_world" {
+  [polyart_world] as world
+  [polyart_physics] as physics
+  [polyart_entities] as entities
+}
+
+package "polyart_network" {
+  [polyart_network] as network
+  [polyart_protocol] as protocol
+  [polyart_sync] as sync
+}
+
+package "polyart_ai" {
+  [polyart_ai] as ai
+  [polyart_cv] as cv
+  [polyart_ml] as ml
+}
+
+package "polyart_assets" {
+  [polyart_flowers] as flowers
+  [polyart_pompeii] as pompeii
+  [polyart_spqr] as spqr
+  [polyart_transmit] as transmit
+}
+
+package "polyart_lang" {
+  [polyart_lang] as lang
+  [polyart_compiler] as compiler
+  [polyart_runtime] as runtime
+}
+
+package "polyart_ui" {
+  [polyart_ui] as ui
+  [polyart_editor] as editor
+  [polyart_viewer] as viewer_ui
+}
+
+package "polyart_export" {
+  [polyart_export] as export_mod
+  [polyart_gif] as gif
+  [polyart_video] as video
+}
+
+curves --> math_mod
+colors --> math_mod
+render --> curves
+render --> colors
+shader --> render
+pipeline --> shader
+world --> entities
+world --> physics
+entities --> curves
+physics --> math_mod
+network --> protocol
+protocol --> sync
+sync --> world
+ai --> curves
+cv --> ai
+ml --> cv
+flowers --> curves
+pompeii --> curves
+spqr --> curves
+transmit --> curves
+lang --> compiler
+compiler --> runtime
+runtime --> world
+runtime --> render
+ui --> editor
+ui --> viewer_ui
+editor --> render
+viewer_ui --> world
+export_mod --> render
+gif --> export_mod
+video --> export_mod
+utils --> math_mod
+
+note right of polyart_core
+  Core mathematical and curve
+  generation infrastructure
+end note
+
+note bottom of polyart_lang
+  Domain-specific language
+  for polynomial art creation
+end note
+@enduml

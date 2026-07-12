@@ -1,0 +1,103 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class SkeletalCurves {
+  +skull(outline_only: bool) : list
+  +ribcage(segments: int) : list
+  +spine(curvature: float) : list
+  +pelvis(width: float) : list
+  +limb_bones(length: float, thickness: float) : list
+  +joints(positions: list) : list
+  -bone_proportions : dict
+}
+
+class MuscleCurves {
+  +pectorals(width: float, mass: float) : list
+  +deltoids(size: float) : list
+  +biceps(length: float, mass: float) : list
+  +triceps(length: float, mass: float) : list
+  +abdominals(segments: int) : list
+  +quadriceps(length: float, mass: float) : list
+  +hamstrings(length: float, mass: float) : list
+  +calves(length: float, mass: float) : list
+  +trapezius(width: float) : list
+  -muscle_layers : list
+}
+
+class SkinCurves {
+  +body_contour(muscle_data: list) : list
+  +facial_features(detail: str) : list
+  +hand_shape(fingers: int) : list
+  +foot_shape(size: float) : list
+  +skin_texture(region: str) : list
+  +wrinkle_lines(age: int) : list
+  -surface_detail : float
+}
+
+class VeinCurves {
+  +arterial_system(origin: list) : list
+  +venous_system(origin: list) : list
+  +capillary_network(region: str) : list
+  +surface_veins(region: str) : list
+  -vessel_diameters : dict
+}
+
+class NerveCurves {
+  +spinal_nerves(count: int) : list
+  +cranial_nerves(count: int) : list
+  +peripheral_nerves(limb: str) : list
+  +nerve_branches(origin: list, count: int) : list
+  -nerve_thickness : float
+}
+
+class LimbCurves {
+  +arm(length: float, pose: str) : list
+  +leg(length: float, pose: str) : list
+  +hand(pose: str) : list
+  +foot(pose: str) : list
+  +finger(joint_positions: list) : list
+  -limb_proportions : dict
+}
+
+class HeadCurves {
+  +cranium(detail: str) : list
+  +face(detail: str) : list
+  +ear(side: str) : list
+  +neck(width: float) : list
+  +hair(style: str) : list
+  +eye(detail: str) : list
+  +nose(detail: str) : list
+  +mouth(detail: str) : list
+  -head_proportions : dict
+}
+
+class FigureCurves {
+  +standing_figure(height: float, pose: str) : list
+  +seated_figure(height: float, pose: str) : list
+  +dynamic_figure(height: float, action: str) : list
+  +group_figures(count: int, arrangement: str) : list
+  -figure_proportions : dict
+}
+
+FigureCurves --> SkeletalCurves : builds_on
+FigureCurves --> MuscleCurves : builds_on
+FigureCurves --> SkinCurves : builds_on
+FigureCurves --> HeadCurves : builds_on
+SkeletalCurves --> LimbCurves : defines
+MuscleCurves --> LimbCurves : wraps
+SkinCurves --> VeinCurves : includes
+SkinCurves --> NerveCurves : includes
+HeadCurves --> SkeletalCurves : extends
+
+note bottom of FigureCurves
+  High-level figure composition
+  combining all body systems
+  into complete human figures
+end note
+
+note right of VeinCurves
+  Vein and nerve systems
+  can be optionally shown
+  for medical visualization
+end note
+@enduml

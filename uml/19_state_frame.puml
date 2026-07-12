@@ -1,0 +1,41 @@
+@startuml
+title PolyFrame State Diagram
+
+state "KEYFRAME" as KF {
+  state "Full Coefficients" as FullCoeff
+  state "Complete Scene" as CompleteScene
+}
+state "DELTA_FRAME" as DF {
+  state "Delta Coefficients" as DeltaCoeff
+  state "Reference to Keyframe" as KeyRef
+}
+state "EVALUATED" as Eval
+state "RENDERED" as Rendered
+
+[*] --> KF : Initial frame
+KF --> DF : Keyframe interval reached
+DF --> DF : Consecutive delta frames
+DF --> KF : Next keyframe interval
+
+KF --> Eval : Evaluate polynomials
+DF --> Eval : Apply delta + evaluate
+
+Eval --> Rendered : Render to image
+Rendered --> Eval : Re-render (zoom/pan)
+
+KF --> [*] : End of video
+DF --> [*] : End of video
+
+note top of KF
+  Keyframe contains full
+  coefficient data for all
+  polynomial objects
+end note
+
+note bottom of DF
+  Delta frame stores only
+  coefficient differences
+  from last keyframe
+end note
+
+@enduml

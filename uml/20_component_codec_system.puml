@@ -1,0 +1,47 @@
+@startuml
+title Codec System Component Diagram
+
+package "Codec Implementations" {
+  [Python Codec] as PyCodec
+  [C++ Codec] as CppCodec
+  [JavaScript Codec] as JsCodec
+  [Java Codec] as JavaCodec
+  [Go Codec] as GoCodec
+}
+
+package "Shared Format" {
+  [PolyArt Format] as Format
+  [JSON Serialization] as JSON
+  [Binary Serialization] as Binary
+}
+
+package "Tools" {
+  [PolyArt Converter] as Converter
+  [PolyArt Viewer] as Viewer
+  [PolyArt Editor] as Editor
+}
+
+PyCodec --> Format : reads/writes
+CppCodec --> Format : reads/writes
+JsCodec --> Format : reads/writes
+JavaCodec --> Format : reads/writes
+GoCodec --> Format : reads/writes
+
+Format --> JSON : uses
+Format --> Binary : uses
+
+Converter --> PyCodec : uses
+Viewer --> PyCodec : uses
+Editor --> PyCodec : uses
+
+note top of PyCodec
+  Reference implementation
+  Python 3.11+ with numpy
+end note
+
+note bottom of Format
+  .polyart for images
+  .polyvid for video
+end note
+
+@enduml

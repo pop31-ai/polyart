@@ -1,0 +1,95 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class PompeiiArchitecture {
+  -column_style : str
+  -perspective_depth : float
+  -roof_type : str
+  +roman_temple(width: float, height: float, columns: int, style: str) : list
+  +domus(rooms: int, atrium_size: float, garden: bool) : list
+  +street_scene(buildings: int, road_width: float, pedestrians: bool) : list
+  +forum(size: float, colonnades: int, buildings: list) : list
+  +amphitheater(radius: float, tiers: int, arena_style: str) : list
+  +house_of_faun(detail_level: str, mosaic_floors: bool) : list
+}
+
+class RomanTemple {
+  -steps : int
+  -podium_height : float
+  -cella_width : float
+  +generate_steps() : list
+  +generate_columns() : list
+  +generate_pediment() : list
+  +generate_cellao() : list
+}
+
+class Domus {
+  -atrium_width : float
+  -tablinum_depth : float
+  -garden_length : float
+  +generate_atrium() : list
+  +generate_peristyle() : list
+  +generate_tablinum() : list
+  +generate_cubicula() : list
+}
+
+class StreetScene {
+  -road_length : float
+  -sidewalk_width : float
+  -building_height : float
+  +generate_road() : list
+  +generate_buildings(count: int) : list
+  +generate_sidewalks() : list
+  +generate_fountains() : list
+}
+
+class ForumLayout {
+  -forum_size : float
+  -colonnade_count : int
+  +generate_open_space() : list
+  +generate_basilica() : list
+  +generate_temples() : list
+  +generate_arches() : list
+}
+
+class AmphitheaterLayout {
+  -arena_radius : float
+  -tier_count : int
+  +generate_arena() : list
+  +generate_tiers(count: int) : list
+  +generate_entrances() : list
+  +generate_vomitoria() : list
+}
+
+PompeiiArchitecture --> RomanTemple : creates
+PompeiiArchitecture --> Domus : creates
+PompeiiArchitecture --> StreetScene : creates
+PompeiiArchitecture --> ForumLayout : creates
+PompeiiArchitecture --> AmphitheaterLayout : creates
+
+RomanTemple --|> ArchitecturalElement
+Domus --|> ArchitecturalElement
+StreetScene --|> ArchitecturalElement
+ForumLayout --|> ArchitecturalElement
+AmphitheaterLayout --|> ArchitecturalElement
+
+class ArchitecturalElement {
+  +curves : list
+  +colors : list
+  +depth_layers : int
+  +generate() : list
+  +apply_style(style: str) : void
+}
+
+note bottom of PompeiiArchitecture
+  All methods return lists of
+  polynomial curve tuples
+  (coefficients, color, depth)
+end note
+
+note right of AmphitheaterLayout
+  Amphitheater includes
+  elliptical arena with
+  tiered seating curves
+end note
+@enduml

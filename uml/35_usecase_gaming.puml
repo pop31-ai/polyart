@@ -1,0 +1,75 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+
+actor "Player" as player
+actor "Game Server" as server
+actor "Physics Server" as phys
+actor "Chat System" as chat
+
+rectangle "Polynomial Gaming Platform" {
+  usecase "Connect to Server" as UC1
+  usecase "Select Avatar" as UC2
+  usecase "Join Game World" as UC3
+  usecase "Explore World" as UC4
+  usecase "Interact with Objects" as UC5
+  usecase "Combat Enemies" as UC6
+  usecase "Collect Items" as UC7
+  usecase "Stream Game World" as UC8
+  usecase "Render Polynomial Terrain" as UC9
+  usecase "Update Player State" as UC10
+  usecase "Broadcast Events" as UC11
+  usecase "Process Physics" as UC12
+  usecase "Resolve Collisions" as UC13
+  usecase "Send Chat Message" as UC14
+  usecase "Voice Communication" as UC15
+  usecase "Save Progress" as UC16
+  usecase "Load Checkpoint" as UC17
+}
+
+player --> UC1
+player --> UC2
+player --> UC3
+player --> UC4
+player --> UC5
+player --> UC6
+player --> UC7
+player --> UC14
+player --> UC15
+player --> UC16
+player --> UC17
+
+server --> UC8
+server --> UC9
+server --> UC10
+server --> UC11
+server --> UC16
+server --> UC17
+
+phys --> UC12
+phys --> UC13
+
+chat --> UC14
+chat --> UC15
+
+UC3 ..> UC1 : <<include>>
+UC3 ..> UC2 : <<include>>
+UC4 ..> UC8 : <<include>>
+UC5 ..> UC12 : <<include>>
+UC6 ..> UC13 : <<include>>
+UC8 ..> UC9 : <<include>>
+UC10 ..> UC11 : <<include>>
+UC6 ..> UC10 : <<extend>>
+
+note top of UC9
+  Terrain is generated
+  from polynomial heightmaps
+  and rendered in real-time
+end note
+
+note right of UC8
+  World state is streamed
+  to clients using PWTP
+  polynomial compression
+end note
+@enduml

@@ -1,0 +1,77 @@
+@startuml
+title Full PWTP Sequence
+
+actor "Server" as Svr
+actor "Client" as Cli
+participant "WorldEncoder" as WE
+participant "Cache" as Cache
+participant "Network" as Net
+participant "WorldDecoder" as WD
+participant "SceneRenderer" as SR
+
+Svr -> WE: init_world(world_id, seed)
+activate WE
+WE -> Cache: cache_static_geometry()
+Cache --> WE: cached
+WE --> Svr: ready
+deactivate WE
+
+Svr -> WE: encode_terrain(heightmap)
+activate WE
+WE --> Net: terrain_coefficients
+deactivate WE
+
+Net -> Cli: transmit(terrain_coeffs)
+activate Net
+Net --> WD: terrain_data
+deactivate Net
+
+activate WD
+WD -> WD: evaluate_terrain(coeffs)
+WD --> SR: terrain_mesh
+deactivate WD
+
+loop Every Frame
+  Svr -> WE: encode_hero_updates(heroes)
+  activate WE
+  WE -> Cache: get_hero_base(hero_id)
+  Cache --> WE: base_pose
+  WE --> Net: hero_updates
+  deactivate WE
+
+  Net -> Cli: transmit(hero_updates)
+  activate Net
+  Net --> WD: hero_updates
+  deactivate Net
+
+  activate WD
+  WD -> WD: evaluate_hero(hero_coeffs, frame)
+  WD --> SR: hero_mesh
+  deactivate WD
+
+  Svr -> WE: encode_camera_update(pos, target)
+  activate WE
+  WE --> Net: camera_coeffs
+  deactivate WE
+
+  Net -> Cli: transmit(camera_coeffs)
+  activate Net
+  Net --> WD: camera_coeffs
+  deactivate Net
+
+  activate WD
+  WD -> WD: evaluate_camera(camera_coeffs)
+  WD --> SR: view_matrix
+  deactivate WD
+
+  SR -> SR: render_frame(terrain, heroes, camera)
+  SR --> Cli: display_frame
+end
+
+note right of SR
+  Real-time rendering at
+  30+ fps with polynomial
+  curve interpolation
+end note
+
+@enduml

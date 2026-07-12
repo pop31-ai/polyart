@@ -1,0 +1,65 @@
+@startuml
+[*] --> SPAWN
+
+state SPAWN {
+  SPAWN : Entry / create_instance()
+  SPAWN : Entry / initialize_polynomial_coefficients()
+  SPAWN : Entry / register_in_world()
+}
+
+SPAWN --> ACTIVE : initialization_complete
+
+state ACTIVE {
+  ACTIVE : do / process_input()
+  ACTIVE : do / update_transform()
+  ACTIVE : do / check_bounds()
+  ACTIVE : Entry / enable_physics()
+  ACTIVE : Entry / start_animation()
+}
+
+ACTIVE --> MOVING : input_detected / apply_force()
+ACTIVE --> IDLE : no_input_timeout
+
+state MOVING {
+  MOVING : do / interpolate_position()
+  MOVING : do / update_velocity()
+  MOVING : do / check_collisions()
+  MOVING : Entry / play_movement_sound()
+  MOVING : do / apply_friction()
+}
+
+MOVING --> IDLE : velocity_below_threshold
+MOVING --> DESTROYED : out_of_bounds / remove_from_world()
+
+state IDLE {
+  IDLE : do / idle_animation()
+  IDLE : do / await_input()
+  IDLE : Entry / start_idle_timer()
+  IDLE : Entry / reduce_physics_update_rate()
+}
+
+IDLE --> MOVING : input_detected / apply_force()
+IDLE --> ACTIVE : reactivation_signal
+IDLE --> DESTROYED : idle_timeout_reached
+
+state DESTROYED {
+  DESTROYED : Entry / play_destruction_effect()
+  DESTROYED : Entry / release_resources()
+  DESTROYED : Entry / unregister_from_world()
+  DESTROYED : Entry / spawn_particles()
+}
+
+DESTROYED --> [*]
+
+note right of SPAWN
+  Object is created and
+  polynomial coefficients
+  are initialized
+end note
+
+note right of DESTROYED
+  Final state - all resources
+  released, object removed
+  from world hierarchy
+end note
+@enduml

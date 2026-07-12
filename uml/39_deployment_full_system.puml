@@ -1,0 +1,84 @@
+@startuml
+node "Client Devices" {
+  device "Desktop Browser" as desktop {
+    artifact "WebGL Renderer" as webgl
+    artifact "PWTP Client" as pwtp_client
+    artifact "Audio Engine" as audio_cl
+  }
+  device "Mobile Device" as mobile {
+    artifact "Mobile Renderer" as mob_render
+    artifact "Touch Input" as touch
+  }
+  device "VR Headset" as vr {
+    artifact "Stereo Renderer" as stereo
+    artifact "Motion Tracking" as motion
+  }
+}
+
+node "Edge Network" {
+  component "Load Balancer" as lb
+  component "CDN" as cdn
+  component "WebSocket Server" as ws
+}
+
+cloud "Cloud Infrastructure" {
+  node "Application Cluster" {
+    component "API Gateway" as api
+    component "World Service" as world_svc
+    component "Physics Service" as phys_svc
+    component "Render Service" as render_svc
+    component "Auth Service" as auth_svc
+  }
+  node "Compute Cluster" {
+    component "GPU Worker Pool" as gpu_pool
+    component "Polynomial Engine" as poly_engine
+    component "AI Inference" as ai_inf
+  }
+  node "Data Tier" {
+    database "PostgreSQL" as pg
+    database "Redis Cache" as redis
+    database "MongoDB" as mongo
+    storage "Object Storage (S3)" as s3
+  }
+  node "Monitoring" {
+    component "Prometheus" as prom
+    component "Grafana" as grafana
+    component "ELK Stack" as elk
+  }
+}
+
+desktop --> lb : HTTPS/WSS
+mobile --> lb : HTTPS/WSS
+vr --> lb : HTTPS/WSS
+
+lb --> ws : route
+lb --> api : route
+cdn --> s3 : origin pull
+
+ws --> world_svc : real-time events
+api --> auth_svc : authenticate
+api --> world_svc : CRUD
+api --> render_svc : render requests
+world_svc --> pg : persist
+world_svc --> redis : cache
+phys_svc --> gpu_pool : offload compute
+render_svc --> poly_engine : encode/decode
+ai_inf --> mongo : model store
+poly_engine --> s3 : store artifacts
+
+gpu_pool --> prom : metrics
+world_svc --> prom : metrics
+api --> elk : logs
+prom --> grafana : dashboards
+
+note right of desktop
+  Primary client with full
+  WebGL polynomial rendering
+end note
+
+note bottom of gpu_pool
+  Distributed GPU workers
+  for polynomial encoding,
+  decoding, and rendering
+end note
+@enduml

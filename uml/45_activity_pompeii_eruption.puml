@@ -1,0 +1,74 @@
+@startuml
+start
+
+:Initialize Scene;
+:Set canvas dimensions;
+:Set frame count;
+
+partition "Render Loop" {
+  repeat
+
+    :Render Sky;
+    note right: Gradient from orange
+    to dark ash gray
+
+    :Render Mountain;
+    note right: Mount Vesuvius
+    silhouette curves
+
+    :Render Eruption Plume;
+    note right: Expanding polynomial
+    smoke cloud
+
+    :Render Fire Glow;
+    note right: Radiating fire
+    and ember particles
+
+    :Render Lava Flows;
+    note right: Descending lava
+    stream curves
+
+    :Render Architecture
+    (back to front);
+    note right: Buildings, temples,
+    houses in layers
+
+    :Render Citizens;
+    note right: Panicking figures
+    fleeing the eruption
+
+    :Render Ash;
+    note right: Falling ash
+    particles
+
+    :Render Lightning;
+    note right: Electrical discharge
+    in ash cloud
+
+    :Apply Vignette;
+    note right: Dark vignette
+    around edges
+
+    :Save Frame;
+
+  repeat while (More Frames?) is (yes)
+  -> no;
+}
+
+:Assemble Frames into GIF;
+:Set delay and loop settings;
+:Save GIF File;
+
+stop
+
+note right of Initialize Scene
+  Scene is 480x480 pixels
+  with 30 frames at 100ms delay
+end note
+
+note right of Render Architecture
+  Architecture rendered in
+  depth order: far to near
+  for proper occlusion
+end note
+@enduml

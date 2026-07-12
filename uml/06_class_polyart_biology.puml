@@ -1,0 +1,74 @@
+@startuml
+title PolyArt Biology Class Diagram
+
+package "Biological Modeling" {
+  class GrowthCurves {
+    + GrowthCurves()
+    + generate_logistic_growth(max_pop: float, rate: float) -> PolyCurve
+    + generate_exponential_growth(rate: float) -> PolyCurve
+    + generate_sigmoid_growth(inflection: float, slope: float) -> PolyCurve
+    + generate_gompertz_growth(alpha: float, beta: float) -> PolyCurve
+    + generate_allometric_growth(scaling: float) -> PolyCurve
+    + generate_bacterial_growth(phase: str) -> list[PolyCurve]
+    + _logistic(t: float, K: float, r: float) -> float
+    + _gompertz(t: float, alpha: float, beta: float) -> float
+  }
+
+  class Phyllotaxis {
+    + Phyllotaxis()
+    + generate_fibonacci_spiral(n: int) -> list[PolyCurve]
+    + generate_sunflower_heads(n: int, angle: float) -> list[PolyCurve]
+    + generate_pine_cone_scales(n: int) -> list[PolyCurve]
+    + generate_leaf_arrangement(n: int, divergence: float) -> list[PolyCurve]
+    + generate_rose_pattern(n: int, k: float) -> list[PolyCurve]
+    + generate_daisy_pattern(radius: float, petals: int) -> list[PolyCurve]
+    + _golden_angle() -> float
+    + _fibonacci(n: int) -> int
+  }
+
+  class Biomechanics {
+    + Biomechanics()
+    + generate_muscle_force(length: float, velocity: float) -> PolyCurve
+    + generate_tendon_stress(strain: float) -> PolyCurve
+    + generate_bone_stress(strain: float) -> PolyCurve
+    + generate_joint_motion(angle: float, torque: float) -> PolyCurve
+    + generate_gait_cycle(phase: float) -> list[PolyCurve]
+    + generate_heart_pressure(phase: float) -> PolyCurve
+    + _hill_model(l: float, v: float) -> float
+    + _stress_strain(e: float, E: float) -> float
+  }
+
+  class TuringPatterns {
+    + TuringPatterns()
+    + generate_reaction_diffusion(size: int, steps: int) -> list[PolyCurve]
+    + generate_spots(width: int, height: int) -> list[PolyCurve]
+    + generate_stripes(width: int, height: int) -> list[PolyCurve]
+    + generate_camouflage(type: str) -> list[PolyCurve]
+    + generate_fish_patterns() -> list[PolyCurve]
+    + generate_shell_patterns() -> list[PolyCurve]
+    + _gray_scott(A: float, B: float, Da: float, Db: float, f: float, k: float)
+    + _rd_step(u: float, v: float, Du: float, Dv: float, f: float, k: float)
+  }
+
+  class VariantGenerator {
+    + VariantGenerator()
+    + generate_genetic_variant(base: PolyCurve, mutation_rate: float) -> PolyCurve
+    + generate_crossover(parent1: PolyCurve, parent2: PolyCurve) -> PolyCurve
+    + generate_population(base: PolyCurve, n: int, variance: float) -> list[PolyCurve]
+    + generate_evolutionary_series(base: PolyCurve, generations: int) -> list[PolyCurve]
+    + generate_natural_selection(population: list, fitness_fn) -> list[PolyCurve]
+    + _mutate_coefficients(coeffs: list, rate: float) -> list[float]
+    + _crossover_coefficients(c1: list, c2: list) -> list[float]
+  }
+}
+
+GrowthCurves --> Phyllotaxis: growth models used
+Biomechanics --> TuringPatterns: biological basis
+VariantGenerator --> GrowthCurves: applies to curves
+
+note top of TuringPatterns
+  Reaction-diffusion systems
+  for pattern formation
+end note
+
+@enduml

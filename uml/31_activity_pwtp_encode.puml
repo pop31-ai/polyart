@@ -1,0 +1,49 @@
+@startuml
+title PWTP Encoding Activity
+
+start
+
+:Get World State;
+
+fork
+  :Encode Terrain;
+  :  Heightmap to Polynomials;
+  :  Compress Coefficients;
+fork again
+  :Encode Buildings;
+  :  Column Profiles;
+  :  Arch Curves;
+  :  Wall Polygons;
+fork again
+  :Encode Heroes;
+  :  Skeleton Extraction;
+  :  Pose Polynomials;
+  :  Animation Interpolation;
+fork again
+  :Encode Camera;
+  :  Position Curves;
+  :  Target Curves;
+  :  FOV Encoding;
+end fork
+
+:Serialize All Coefficients;
+
+if (Packet Size > MTU) then (Yes)
+  :Fragment Packet;
+else (No)
+endif
+
+:Apply Compression;
+:Add Protocol Header;
+:Calculate Checksum;
+:Transmit to Network;
+
+stop
+
+note right of :Encode Heroes
+  Hero encoding includes
+  position, rotation, and
+  animation frame curves
+end note
+
+@enduml

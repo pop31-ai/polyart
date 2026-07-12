@@ -1,0 +1,73 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+
+actor "Teacher" as teacher
+actor "Student" as student
+actor "System" as system
+
+rectangle "Educational PolyArt Platform" {
+  usecase "Create Lesson" as UC1
+  usecase "Select Topic" as UC2
+  usecase "Upload Reference Material" as UC3
+  usecase "Define Learning Objectives" as UC4
+  usecase "Generate 3D Models" as UC5
+  usecase "Create Interactive Demo" as UC6
+  usecase "Set Assessment Criteria" as UC7
+  usecase "Join Class Session" as UC8
+  usecase "Interact with 3D Model" as UC9
+  usecase "Manipulate Parameters" as UC10
+  usecase "Submit Assignment" as UC11
+  usecase "Take Quiz" as UC12
+  usecase "View Progress" as UC13
+  usecase "Auto-Grade Submissions" as UC14
+  usecase "Generate Feedback" as UC15
+  usecase "Track Engagement" as UC16
+  usecase "Adapt Difficulty" as UC17
+  usecase "Create Collaboration Space" as UC18
+  usecase "Peer Review" as UC19
+}
+
+teacher --> UC1
+teacher --> UC2
+teacher --> UC3
+teacher --> UC4
+teacher --> UC5
+teacher --> UC6
+teacher --> UC7
+teacher --> UC13
+teacher --> UC18
+
+student --> UC8
+student --> UC9
+student --> UC10
+student --> UC11
+student --> UC12
+student --> UC13
+student --> UC19
+
+system --> UC14
+system --> UC15
+system --> UC16
+system --> UC17
+
+UC1 ..> UC2 : <<include>>
+UC1 ..> UC4 : <<include>>
+UC1 ..> UC5 : <<extend>>
+UC8 ..> UC9 : <<include>>
+UC11 ..> UC14 : <<include>>
+UC14 ..> UC15 : <<include>>
+UC16 ..> UC17 : <<include>>
+
+note right of UC10
+  Students manipulate
+  polynomial parameters
+  to explore math concepts
+end note
+
+note bottom of UC17
+  System adapts content
+  difficulty based on
+  student performance
+end note
+@enduml
