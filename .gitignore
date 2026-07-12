@@ -23,5 +23,5 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
-# Generated images (reproducible from code)
-*.png
+# Generated images kept for showcase
+# *.png
