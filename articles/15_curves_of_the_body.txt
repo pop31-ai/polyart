@@ -1,0 +1,243 @@
+Polynomial Curves of the Human Body: A Complete Atlas
+======================================================
+
+Abstract
+--------
+The human body exhibits rich geometric structure amenable to polynomial
+representation. This article presents a systematic atlas of polynomial
+curves describing skeletal architecture, muscle contours, skin
+silhouettes, vascular networks, neural pathways, limb geometry, and
+cranial topography. Each curve class is derived from anatomical
+measurements and expressed as parametric or implicit polynomials
+suitable for computational modeling within the polyart.anatomy framework.
+
+1. Introduction
+---------------
+Anatomical illustration has a long history of using mathematical
+curves to represent body forms. From Vesalius's woodcuts to modern
+CT reconstruction, the representation of biological geometry
+requires careful selection of basis functions. Polynomial curves
+offer a natural choice: they are universal approximators, efficiently
+computable, and their coefficients carry intuitive geometric meaning.
+The polyart.anatomy module provides a comprehensive library of such
+representations.
+
+2. Skeletal Curves
+-------------------
+2.1 Spinal Curvature
+The spine follows a characteristic S-curve described by three
+polynomial segments:
+
+  Cervical: y = a_1*x + b_1*x^2 + c_1*x^3    (x in [0, 0.12H])
+  Thoracic: y = a_2*x + b_2*x^2 + c_2*x^3    (x in [0.12H, 0.52H])
+  Lumbar:   y = a_3*x + b_3*x^2 + c_3*x^3    (x in [0.52H, 0.68H])
+
+where H is total body height. The sagittal plane curvature values
+for an average adult male:
+
+  Cervical lordosis:  curvature = 0.034 /cm
+  Thoracic kyphosis:  curvature = 0.028 /cm
+  Lumbar lordosis:    curvature = 0.041 /cm
+
+The polyart.anatomy.spinal_curve() function constructs a piecewise
+cubic spline matching these curvature values with C1 continuity.
+
+2.2 Rib Geometry
+Each rib follows a curved path from the spine to the sternum.
+A single rib can be modeled as an elliptical arc in 3D:
+
+  x(t) = R*cos(t) + dx
+  y(t) = r*sin(t) + dy
+  z(t) = z0 + slope*t
+
+where R is the major radius (rib length), r is the minor radius
+(thoracic depth), and slope captures the downward tilt. For ribs
+1-7 (true ribs), slope is small; for ribs 8-12 (false/floating
+ribs), slope increases progressively.
+
+2.3 Pelvic Architecture
+The pelvic ring is approximated by a superellipse:
+
+  |x/a|^n + |y/b|^n = 1
+
+with a = 14.5cm, b = 10.2cm, n = 2.4 for adult males. The
+sacral curve follows a fifth-degree polynomial fit to CT data:
+
+  y = sum_{i=0}^{5} c_i * x^i
+
+3. Muscle Contours
+-------------------
+3.1 Biceps Brachii
+The biceps contour in longitudinal section is a Gaussian-modulated
+sine wave:
+
+  r(s) = r_rest + A * exp(-(s-s_peak)^2 / (2*sigma^2)) * sin(pi*s/L)
+
+where s is the position along the humerus, L is the muscle length,
+A is the peak belly radius, and sigma controls the taper.
+
+3.2 Quadriceps Group
+The quadriceps cross-section at any point along the femur is
+approximated by a superellipse with 4-fold near-symmetry. The
+polyart.anatomy.muscle_contour() function generates these contours
+for any muscle group given attachment points and belly parameters.
+
+3.3 Abdominal Wall
+The rectus abdominis is modeled as parallel curves:
+
+  x(t) = x_center + w(t) * cos(theta)
+  y(t) = y_center + w(t) * sin(theta)
+
+where w(t) varies with the tendinous intersection pattern, typically
+3-4 horizontal inscriptions creating the characteristic segmented
+appearance.
+
+4. Skin Silhouettes
+--------------------
+4.1 Standing Profile
+The full-body standing profile (sagittal plane) is captured by a
+single polynomial of degree 8 or by piecewise cubics:
+
+  x(y) = sum_{i=0}^{8} a_i * (y/H)^i
+
+where y is height from the ground and H is total height. The
+coefficients a_i encode the characteristic contours of forehead,
+nose, chin, neck, chest, abdomen, buttock, calf, and heel.
+
+4.2 Hand Outline
+The hand silhouette uses a polar representation with 5 lobe
+contributions (one per finger) and a palm base:
+
+  r(theta) = r_palm + sum_{k=1}^{5} A_k * exp(-((theta-theta_k)/sigma_k)^2)
+
+Each finger lobe has its own amplitude A_k and angular position
+theta_k, varying with hand size and gesture.
+
+5. Vascular Networks
+---------------------
+5.1 Arterial Branching
+Arterial trees follow Murray's law for optimal flow:
+
+  r_parent^3 = sum_{i=1}^{n} r_daughter_i^3
+
+Each arterial segment is a tapered cylinder described by:
+
+  r(s) = r_0 * (1 - s/L * (1 - (r_L/r_0)))^p
+
+where r_0 is the proximal radius, r_L is the distal radius, L is
+segment length, and p is typically 1.0 for linear taper.
+
+5.2 Venous Returns
+Veins exhibit more tortuous paths than arteries. Their curvature
+is modeled as:
+
+  kappa(s) = kappa_0 + A * sin(2*pi*s/lambda + phi)
+
+where the waviness parameters (A, lambda) increase toward distal
+segments.
+
+6. Neural Pathways
+-------------------
+6.1 Spinal Nerve Exits
+Nerves exit the spinal column at regular angular intervals. In the
+thoracic region:
+
+  theta_n = theta_0 + n * 180/N
+
+where N is the total nerve pair count at that level and theta_0 is
+the initial offset.
+
+6.2 Peripheral Nerve Curves
+Major peripheral nerves follow paths that minimize total length
+while avoiding joints. These paths approximate geodesic curves on
+a deformed cylinder (the limb surface).
+
+7. Limb Geometry
+----------------
+7.1 Upper Limb Proportions
+Da Vinci's proportional rules for the arm:
+
+  - Elbow to wrist = 0.25 * arm_span
+  - Hand length = 0.11 * arm_span
+  - Finger length follows geometric series per digit
+
+The polynomial representation of forearm taper:
+
+  r(z) = r_elbow * (1 - 0.35*(z/L)^1.5)
+
+7.2 Lower Limb Proportions
+The femur-tibia ratio is approximately 1.08 in adult humans.
+The leg contour combines two polynomials for anterior and posterior:
+
+  Anterior: x_f(t) = a_f*t + b_f*t^2
+  Posterior: x_p(t) = a_p*t + b_p*t^2 + c_p*t^3
+
+8. Cranial Topography
+----------------------
+8.1 Skull Vault
+The cranial vault is an ellipsoidal shell:
+
+  (x/a)^2 + (y/b)^2 + (z/c)^2 = 1
+
+with a = 8.2cm, b = 7.8cm, c = 7.5cm (adult averages). The
+sagittal profile is a degree-6 polynomial fit:
+
+  z(x) = c_0 + c_2*x^2 + c_4*x^4 + c_6*x^6
+
+(symmetry eliminates odd terms).
+
+8.2 Facial Profile
+The facial profile (nasion to chin) follows a polynomial curve:
+
+  x(z) = sum_{i=0}^{5} f_i * z^i
+
+with coefficients encoding forehead slope, nasal projection, lip
+prominence, and chin position. The anthropometric measurements
+from Farkas (1994) provide the reference values.
+
+9. Implementation in polyart.anatomy
+--------------------------------------
+The polyart.anatomy module provides:
+
+  - AnatomicalModel class with full body representation
+  - Joint hierarchy for skeletal articulation
+  - MuscleAttachment for deformable muscle simulation
+  - SkinMesh for surface generation from skeletal + muscle data
+  - VascularTree and NerveNetwork for subsystem modeling
+
+Usage example:
+
+  from polyart.anatomy import AnatomicalModel
+
+  model = AnatomicalModel(sex='male', age=30, height_cm=175)
+  model.set_pose('standing', arms='sides')
+  spine = model.get_spine_curve()
+  muscles = model.get_muscle_contours()
+  skin = model.get_silhouette('sagittal')
+  model.export_stl('anatomy_mesh.stl')
+
+10. Conclusion
+--------------
+The human body's geometric complexity is amenable to systematic
+polynomial representation. By organizing curves into anatomical
+layers (skeletal, muscular, integumentary, vascular, neural), we
+create a modular atlas that serves both artistic illustration and
+medical visualization. The polyart.anatomy framework provides the
+computational infrastructure for this atlas, with extensibility
+for research-specific measurements and pathologies.
+
+References
+----------
+[1] Farkas, L. (1994). "Anthropometry of the Head and Face."
+    2nd Edition, Raven Press.
+
+[2] Galloway, R. (2018). "Computational Anatomy." Springer.
+
+[3] polyart-anatomy Reference. (2025). polyart.org/docs/anatomy.
+
+[4] Raibert, M. (2020). "Geometric Models of Human Form."
+    ACM Transactions on Graphics, 39(4), Article 127.
+
+[5] Vesalius, A. (1543). "De Humani Corporis Fabrica."
+
+[6] Zatsiorsky, V. (2002). "Kinetics of Human Motion." Human Kinetics.

@@ -1,0 +1,542 @@
+================================================================================
+    KINETIC MATHEMATICAL ART: ANIMATION WITH POLYNOMIAL CURVES
+================================================================================
+
+Author: PolyArt Research Group
+Date: 2026-07-12
+Keywords: animation, polynomial curves, easing, morphing, wave superposition
+
+================================================================================
+ABSTRACT
+================================================================================
+
+Mathematical art transcends static images when animated through kinetic
+methods. This article develops a comprehensive framework for animating
+polynomial curves using frame interpolation, polynomial trajectory
+planning, easing functions, morphing between polynomial forms,
+oscillatory motion, wave superposition, and a complete animation
+rendering pipeline. The polyart.animation module provides tools for
+creating time-based mathematical art with precise control over motion,
+timing, and visual dynamics.
+
+================================================================================
+1. FRAME INTERPOLATION
+================================================================================
+
+1.1 Polynomial Frame Interpolation
+
+Given keyframes at times t_0, t_1, ..., t_n with polynomial curve
+parameters theta_0, theta_1, ..., theta_n, interpolation generates
+intermediate frames:
+
+    theta(t) = sum( L_k(t) * theta_k, k = 0..n )
+
+where L_k(t) are Lagrange basis polynomials:
+
+    L_k(t) = product( (t - t_j) / (t_k - t_j), j != k )
+
+This produces a polynomial of degree n in t for each parameter.
+
+1.2 Cubic Hermite Interpolation
+
+For smoother interpolation, use cubic Hermite between consecutive
+keyframes:
+
+    theta(t) = h00(t) * theta_k + h10(t) * m_k
+             + h01(t) * theta_{k+1} + h11(t) * m_{k+1}
+
+where:
+    h00(t) = 2t^3 - 3t^2 + 1
+    h10(t) = t^3 - 2t^2 + t
+    h01(t) = -2t^3 + 3t^2
+    h11(t) = t^3 - t^2
+
+and m_k are tangent vectors (velocities) at each keyframe.
+
+1.3 Catmull-Rom Spline Interpolation
+
+The Catmull-Rom spline uses neighboring keyframes to compute tangents:
+
+    m_k = (theta_{k+1} - theta_{k-1}) / (t_{k+1} - t_{k-1})
+
+This ensures C1 continuity (continuous first derivative) at keyframes.
+
+1.4 Per-Parameter Interpolation
+
+Each polynomial coefficient can be interpolated independently:
+
+    a_k(t) = interpolate(a_k(t_0), a_k(t_1), ..., a_k(t_n), t)
+    b_k(t) = interpolate(b_k(t_0), b_k(t_1), ..., b_k(t_n), t)
+
+This preserves the polynomial structure at each frame.
+
+Polyart module: polyart.animation.interpolation provides:
+
+    PolynomialKeyframe(time, polynomial_coefficients)
+    interpolate_keyframes(keyframes, t) -> polynomial at time t
+    cubic_hermite_interpolate(kf0, kf1, t) -> polynomial
+    catmull_rom_spline(keyframes, t) -> polynomial
+
+================================================================================
+2. POLYNOMIAL TRAJECTORY PLANNING
+================================================================================
+
+2.1 The Trajectory Problem
+
+Given start point P_0, end point P_1, and constraints (velocity,
+acceleration bounds), find polynomial trajectory P(t) satisfying:
+
+    P(0) = P_0, P(T) = P_1
+    |P'(t)| <= v_max  (velocity constraint)
+    |P''(t)| <= a_max (acceleration constraint)
+
+2.2 Minimum-Jerk Trajectory
+
+The minimum-jerk trajectory minimizes the integral of squared jerk:
+
+    min integral( |P'''(t)|^2, dt, 0, T )
+
+The solution is a degree-5 polynomial:
+
+    P(t) = a_5*t^5 + a_4*t^4 + a_3*t^3 + a_2*t^2 + a_1*t + a_0
+
+with coefficients:
+    a_0 = P_0
+    a_1 = 0  (zero initial velocity)
+    a_2 = 0  (zero initial acceleration)
+    a_3 = 10 * (P_1 - P_0) / T^3
+    a_4 = -15 * (P_1 - P_0) / T^4
+    a_5 = 6 * (P_1 - P_0) / T^5
+
+This trajectory is C2 continuous (smooth acceleration) and produces
+natural-looking motion.
+
+2.3 Multi-Waypoint Trajectories
+
+For multiple waypoints P_0, P_1, ..., P_n at times t_0, ..., t_n:
+
+    Segment k: P_k(t) = cubic or quintic polynomial on [t_k, t_{k+1}]
+
+    Continuity constraints:
+        C0: P_k(t_{k+1}) = P_{k+1}(t_{k+1})  [position match]
+        C1: P_k'(t_{k+1}) = P_{k+1}'(t_{k+1})  [velocity match]
+        C2: P_k''(t_{k+1}) = P_{k+1}''(t_{k+1})  [acceleration match]
+
+    This creates a B-spline-like trajectory through the waypoints.
+
+2.4 Obstacle Avoidance
+
+Polynomial trajectories can be constrained to avoid obstacles:
+
+    constraint: P(t) not in obstacle_region for all t
+
+Using polynomial optimization with inequality constraints:
+
+    min cost(P) subject to distance(P(t), obstacle) >= margin
+
+Polyart module: polyart.animation.trajectory provides:
+
+    minimum_jerk_trajectory(P_start, P_end, T)
+    multi_waypoint_trajectory(waypoints, times, continuity='C2')
+    constrained_trajectory(start, end, obstacles, T)
+
+================================================================================
+3. EASING FUNCTIONS
+================================================================================
+
+3.1 Standard Easing Functions as Polynomials
+
+Easing functions control the rate of change in animations:
+
+    Linear:      E(t) = t
+    Ease-in:     E(t) = t^2
+    Ease-out:    E(t) = 1 - (1-t)^2
+    Ease-in-out: E(t) = 2*t^2                  for t < 0.5
+                 E(t) = -1 + (4-2*t)*t          for t >= 0.5
+
+All are polynomial functions of t.
+
+3.2 Smoothstep and Smootherstep
+
+Smoothstep (Hermite interpolation):
+
+    E(t) = 3*t^2 - 2*t^3    (degree 3)
+
+Smootherstep (Perlin's improvement):
+
+    E(t) = 6*t^5 - 15*t^4 + 10*t^3    (degree 5)
+
+The smootherstep has zero first and second derivatives at t=0 and t=1,
+producing smoother starts and stops.
+
+3.3 Custom Polynomial Easing
+
+Users can define custom easing as polynomial curves:
+
+    E(t) = sum( a_k * t^k, k = 0..n )
+
+with constraints:
+    E(0) = 0  (start at beginning)
+    E(1) = 1  (end at target)
+    E'(0) = 0 (smooth start) [optional]
+    E'(1) = 0 (smooth end) [optional]
+    0 <= E(t) <= 1 for t in [0,1]  (monotonicity)
+
+The polyart.easing module validates monotonicity by checking that
+E'(t) >= 0 for all t in [0, 1].
+
+3.4 Spring-Like Easing
+
+Spring dynamics produce physically-based easing:
+
+    E(t) = 1 - exp(-damping * t) * cos(frequency * t)
+
+Approximated as a polynomial:
+
+    E(t) = 1 - (1 - damping*t + (damping^2 - frequency^2)*t^2/2 + ...)
+         approx degree-5 polynomial
+
+Polyart module: polyart.animation.easing provides:
+
+    EasingFunction(polynomial_coefficients)
+    .validate() -> bool (monotonicity check)
+    .evaluate(t) -> float
+
+    Predefined easings:
+    linear(), ease_in(), ease_out(), ease_in_out()
+    smoothstep(), smootherstep(), spring(damping, frequency)
+
+================================================================================
+4. MORPHING BETWEEN POLYNOMIAL FORMS
+================================================================================
+
+4.1 Linear Coefficient Morphing
+
+The simplest morph interpolates polynomial coefficients:
+
+    C(t, s) = (1-s) * C_start + s * C_end
+
+where C_start and C_end are coefficient vectors, and s is the morph
+parameter.
+
+This works well when start and end have the same polynomial degree
+and similar shapes.
+
+4.2 Degree Matching
+
+When start and end curves have different degrees:
+
+    Method 1: Elevate degree of lower-degree curve
+    Method 2: Reduce degree of higher-degree curve
+    Method 3: Use the higher degree for both
+
+Degree elevation of a polynomial from degree n to degree n+1:
+
+    new_a_k = (n+1-k)/(n+1) * a_k + k/(n+1) * a_{k-1}
+
+4.3 Topological Morphing
+
+When curves have different topology (different number of loops,
+branches, or crossings), morphing requires topological change.
+
+Algorithm:
+    1. Subdivide both curves at matching parameter values
+    2. Morph corresponding segments
+    3. Add/remove topology at specific morph stages
+
+    topology_change_point s*: where a loop forms or dissolves
+    Before s*: 2-component curve
+    After s*:  1-component curve (merged)
+
+4.4 Feature-Preserving Morphing
+
+Preserving geometric features during morph:
+
+    Feature detection: identify critical points (maxima, minima,
+                       inflections, crossings)
+    Feature tracking: correspond features between start and end
+    Feature interpolation: interpolate feature positions and types
+
+    For each feature f_k:
+        position(s) = (1-s) * pos_start_k + s * pos_end_k
+        type(s) = type_start_k for s < s_k, type_end_k for s > s_k
+
+4.5 Multi-Curve Morphing
+
+Simultaneous morphing of multiple curves:
+
+    pattern(t, s) = sum( w_k(s) * C_k(t), k = 1..M )
+
+where w_k(s) are weight polynomials that smoothly transition between
+curves at different morph stages.
+
+Polyart module: polyart.animation.morph provides:
+
+    PolynomialMorph(curve_start, curve_end)
+    .linear_morph(s) -> polynomial
+    .feature_preserving_morph(s) -> polynomial
+    .topology_morph(s, topology_schedule) -> polynomial
+
+    MultiCurveMorph(curves_list)
+    .blend(s, weights) -> polynomial
+
+================================================================================
+5. OSCILLATORY MOTION
+================================================================================
+
+5.1 Simple Harmonic Motion
+
+The foundation of oscillatory animation:
+
+    x(t) = A * cos(omega * t + phi)
+    y(t) = B * cos(omega_y * t + phi_y)
+
+For animation, this is parameterized by:
+    A, B: amplitude
+    omega, omega_y: angular frequency
+    phi, phi_y: phase offset
+
+5.2 Polynomial Approximation of Oscillation
+
+Cosine and sine can be approximated by polynomials:
+
+    cos(x) = 1 - x^2/2 + x^4/24 - x^6/720 + ...
+    sin(x) = x - x^3/6 + x^5/120 - x^7/5040 + ...
+
+For animation purposes, degree-5 approximations are sufficient:
+
+    cos_5(x) = 1 - x^2/2 + x^4/24 - x^6/720 + x^8/40320
+    (truncated to degree 5 in x)
+
+This polynomial oscillation avoids trigonometric function calls in
+the animation loop.
+
+5.3 Coupled Oscillations
+
+Lissajous curves arise from coupled oscillations:
+
+    x(t) = A * sin(a*t + delta)
+    y(t) = B * sin(b*t)
+
+where a/b determines the shape and delta determines the phase.
+
+For a/b = 1/1:  ellipse (or circle, or line)
+For a/b = 1/2:  parabola-like
+For a/b = 3/2:  three-lobed figure
+For irrational a/b: curve fills a rectangle
+
+5.4 Damped Oscillations
+
+Physical oscillations decay over time:
+
+    x(t) = A * exp(-gamma*t) * cos(omega*t + phi)
+
+Polynomial approximation for short durations:
+
+    x(t) = A * (1 - gamma*t + (gamma^2 - omega^2)*t^2/2 + ...)
+
+Polyart module: polyart.animation.oscillation provides:
+
+    SimpleHarmonic(amplitude, frequency, phase)
+    CoupledOscillation(ax, bx, ay, by, delta)
+    DampedOscillation(amplitude, frequency, damping)
+    .position(t) -> (x, y)
+    .velocity(t) -> (vx, vy)
+
+================================================================================
+6. WAVE SUPERPOSITION
+================================================================================
+
+6.1 Linear Superposition
+
+Multiple waves combine by linear addition:
+
+    y(x, t) = sum( A_k * sin(k * x - omega_k * t + phi_k), k = 1..N )
+
+This creates complex wave patterns from simple sinusoidal components.
+
+6.2 Standing Waves
+
+When two waves of equal amplitude travel in opposite directions:
+
+    y(x, t) = 2 * A * sin(k*x) * cos(omega*t)
+
+The spatial part sin(k*x) is a polynomial (Taylor approximation),
+while the temporal part cos(omega*t) creates the oscillation.
+
+6.3 Wave Packets
+
+A localized wave packet:
+
+    y(x, t) = A * exp(-(x - v_g*t)^2 / (2*sigma^2))
+            * cos(k_0*x - omega_0*t)
+
+The Gaussian envelope is approximated by a polynomial.
+
+6.4 Wave on Polynomial Curves
+
+Waves can modulate polynomial curves:
+
+    curve_base(t): polynomial defining the base shape
+    wave(t, time) = sum( A_k * sin(2*pi*k*f*t + phi_k(time)), k )
+
+    modulated_curve(t) = curve_base(t) + wave_normal(t, time) * N(t)
+
+where N(t) is the normal direction at parameter t.
+
+Polyart module: polyart.animation.waves provides:
+
+    WaveSuperposition(waves_list)
+    .evaluate(x, t) -> float
+    .standing_wave(A, k, omega, x, t) -> float
+    .wave_packet(A, k0, omega0, sigma, x, t) -> float
+
+    WaveModulatedCurve(base_curve, waves)
+    .modulate(time) -> polynomial
+
+================================================================================
+7. ANIMATION RENDERING PIPELINE
+================================================================================
+
+7.1 Pipeline Architecture
+
+The complete polyart animation pipeline:
+
+    Frame 0:  Define initial state
+    For each frame f = 0, 1, ..., N-1:
+        t = f / fps  (current time in seconds)
+        1. Evaluate easing functions for current time
+        2. Interpolate polynomial parameters at time t
+        3. Apply wave modulation and oscillation
+        4. Render polynomial curves to frame buffer
+        5. Apply color polynomials and effects
+        6. Output frame to file or stream
+    Compile frames to video (optional)
+
+7.2 Time-Based Parameter Updates
+
+Each polynomial parameter is a function of time:
+
+    a_k(t) = base_a_k + velocity_a_k * t + acceleration_a_k * t^2 / 2
+
+This polynomial parameter evolution ensures smooth motion at any
+frame rate.
+
+7.3 Motion Blur
+
+Motion blur simulates camera exposure:
+
+    blurred_frame(t, exposure) = integral( frame(t + delta), delta,
+                                   -exposure/2, exposure/2 )
+
+For polynomial curves, this integral can be computed analytically:
+
+    blurred_curve(t) = average of polynomial at t-e/2 to t+e/2
+                     = polynomial evaluated at midpoint with widened stroke
+
+7.4 Render Output Formats
+
+    Individual frames: PNG, SVG, or direct pixel buffer
+    Video: FFmpeg pipeline for MP4, WebM, GIF
+    Interactive: JavaScript/WebGL for browser playback
+    Print: high-resolution PNG for exhibition prints
+
+Polyart module: polyart.animation.pipeline provides:
+
+    AnimationPipeline(fps, duration, resolution)
+    .add_element(polynomial_element, time_range, animation_config)
+    .render_frame(t) -> image
+    .render_all() -> list of images
+    .compile_video(output_path, codec)
+    .export_interactive(output_path)
+
+================================================================================
+8. APPLICATION EXAMPLES
+================================================================================
+
+8.1 Rotating Rose Curve
+
+    rose(t) = cos(k * (theta + omega*t))
+
+    At each frame, the rose rotates by omega * t radians.
+
+    k = 5: five-petaled rose rotating
+    k = 7: seven-petaled rose rotating
+
+    Combined with color cycling:
+        hue(theta, t) = theta * 360/(2*pi) + t * 360/duration
+
+8.2 Morphing Mandala
+
+    mandala_t(t) = morph(mandala_start, mandala_end, easing(t/T))
+
+    Multiple rings morph independently at different rates:
+        ring_k(t) = morph(ring_k_start, ring_k_end, easing_k(t/T))
+
+8.3 Particle Wave System
+
+    n_particles = 1000
+    For each particle i:
+        x_i(t) = base_x_i + wave_x(t)
+        y_i(t) = base_y_i + wave_y(t)
+        r_i(t) = radius_easing(t)
+        color_i(t) = polynomial_color_map(t, i/n_particles)
+
+8.4 Breathing Geometry
+
+    scale(t) = 1 + amplitude * sin(2*pi*frequency*t)
+    polygon_k(t) = scale(t) * polygon_base * rotation(t)
+
+    The entire polygon breathes in and out while rotating.
+
+================================================================================
+9. CONCLUSION
+================================================================================
+
+Kinetic mathematical art transforms static polynomial curves into
+dynamic, time-based expressions. The polyart.animation module provides
+a comprehensive toolkit for creating mathematical animations with
+precise control over timing (easing), trajectory (polynomial planning),
+shape change (morphing), and physical dynamics (oscillation, waves).
+
+The polynomial foundation ensures that animations are resolution-
+independent, mathematically precise, and computationally efficient.
+Frame interpolation using polynomial methods guarantees smooth motion,
+while wave superposition and oscillatory motion create organic, lifelike
+dynamics.
+
+Future work includes GPU-accelerated polynomial curve animation,
+real-time interactive mathematical art in web browsers, and haptic
+feedback systems that let users "feel" the mathematics of animated
+polynomial curves.
+
+================================================================================
+REFERENCES
+================================================================================
+
+[1]  Parent, R. (2012). "Computer Animation: Algorithms and Techniques."
+     3rd ed., Morgan Kaufmann.
+
+[2]  Ken Shoemake (1985). "Animating Rotation with Quaternion Curves."
+     SIGGRAPH, 18(3), 245-254.
+
+[3]  Witkin, A. & Kass, M. (1988). "Spacetime Constraints." SIGGRAPH,
+     22(4), 159-168.
+
+[4]  Adamenko, A. (2021). "Kinetic Polynomial Art: Animation Methods."
+     J. Comp. Aesthetics, 14(2).
+
+[5]  Perlin, K. (2002). "Improving Noise." SIGGRAPH, 31(2), 681-682.
+
+[6]  Laszlo, M.J. (1996). "Computer Graphics and Geometric Modeling:
+     Implementation and Algorithms." Springer.
+
+[7]  Hecht, E. (2017). "Physics of Oscillations and Waves." Springer
+     Undergraduate Texts.
+
+[8]  Glassner, A. (2002). "Principles of Digital Image Synthesis."
+     Morgan Kaufmann.
+
+================================================================================
+END OF ARTICLE
+================================================================================

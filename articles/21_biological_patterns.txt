@@ -1,0 +1,231 @@
+Turing Patterns to Polynomial Forms: Biological Pattern Generation
+===================================================================
+
+Abstract
+--------
+Alan Turing's reaction-diffusion model explains how biological patterns
+such as spots, stripes, and labyrinthine markings emerge from the
+interaction of diffusing chemical species. This article reviews the
+mathematical foundations of Turing pattern formation, classifies the
+principal pattern types, and develops polynomial approximations for
+generating these patterns computationally. We present methods for
+mapping reaction-diffusion solutions to polynomial forms suitable
+for rendering, enabling efficient generation of biological patterns
+within the polyart.patterns framework.
+
+1. Introduction
+---------------
+In 1952, Alan Turing proposed that patterns in biological organisms
+could arise from a system of two interacting chemicals - a morphogen
+and its inhibitor - diffusing at different rates. This mechanism,
+now called Turing instability or diffusion-driven instability,
+explains pattern formation in animal coats, seashells, fish scales,
+and many other biological systems. The polyart.patterns module
+provides computational tools for generating and manipulating these
+patterns.
+
+2. Reaction-Diffusion Systems
+-------------------------------
+The general two-component reaction-diffusion system:
+
+  du/dt = D_u * nabla^2(u) + f(u, v)
+  dv/dt = D_v * nabla^2(v) + g(u, v)
+
+where:
+  u(x,t) = concentration of activator (morphogen)
+  v(x,t) = concentration of inhibitor
+  D_u, D_v = diffusion coefficients (D_v >> D_u typically)
+  f, g = reaction kinetics
+
+The condition for Turing instability:
+
+  D_u / D_v < (f_u * g_v - f_v * g_u) / (f_u + g_v)^2
+
+This requires that the inhibitor diffuses faster than the activator
+(short-range activation, long-range inhibition).
+
+3. Turing Instability Analysis
+-------------------------------
+The homogeneous steady state (u_0, v_0) satisfies:
+
+  f(u_0, v_0) = 0
+  g(u_0, v_0) = 0
+
+Linearizing around the steady state:
+
+  u = u_0 + u' * exp(ikx + lambda*t)
+  v = v_0 + v' * exp(ikx + lambda*t)
+
+The dispersion relation:
+
+  lambda(k) = 1/2 * [Tr(J_k) + sqrt(Tr(J_k)^2 - 4*det(J_k))]
+
+where J_k is the linearized Jacobian modified by diffusion:
+
+  J_k = [f_u - D_u*k^2    f_v        ]
+        [g_u               g_v-D_v*k^2]
+
+Turing instability occurs when:
+  1. The homogeneous state is stable: all eigenvalues of J_0 have
+     negative real parts.
+  2. The spatially perturbed state is unstable: some eigenvalue of
+     J_k has positive real part for k in (k_min, k_max).
+
+The critical wavenumber k_c and critical diffusion ratio:
+
+  k_c^2 = sqrt(f_u * g_v) / sqrt(D_u * D_v)
+  D_ratio_c = (sqrt(f_u) + sqrt(g_v))^2 / (4 * sqrt(f_u * g_v))
+
+4. Classic Turing Model: Schnakenberg
+---------------------------------------
+The Schnakenberg model uses simple kinetics:
+
+  f(u,v) = a - u + u^2 * v
+  g(u,v) = b - u^2 * v
+
+Steady state: u_0 = a + b, v_0 = b / (a+b)^2
+
+The linearized system at steady state:
+
+  f_u = 2*u_0*v_0 - 1 = 2*b/(a+b) - 1
+  f_v = u_0^2 = (a+b)^2
+  g_u = -2*u_0*v_0 = -2*b/(a+b)
+  g_v = -u_0^2 = -(a+b)^2
+
+Pattern wavelength:
+
+  lambda = 2*pi / k_c = 2*pi * (D_u*D_v)^(1/4) / ((f_u*g_v)^(1/4))
+
+For typical parameters (a=0.1, b=0.9, D_u=0.01, D_v=1.0):
+
+  wavelength ~ 6.28 * (0.01)^(1/4) / ((1.8*0.81)^(1/4)) ~ 2.1
+
+This gives roughly 3 pattern repeats per unit length.
+
+5. Pattern Types Classification
+---------------------------------
+Turing patterns are classified by their visual appearance:
+
+  5.1 Spot Patterns: Isolated maxima of u arranged in hexagonal
+      lattices. Occur when the activator self-enhances more than
+      linearly. The u-field:
+
+        u(x,y) = u_0 + A * sum_{i=1}^{3} cos(k*x_i + phi_i)
+
+      where k is the wavenumber and x_i are three directions
+      separated by 60 degrees.
+
+  5.2 Stripe Patterns: Parallel bands of high u concentration.
+      Occur when activator and inhibitor have symmetric kinetics:
+
+        u(x,y) = u_0 + A * cos(k*x + phi)
+
+      Stripes can be straight, curved, or form labyrinthine patterns.
+
+  5.3 Labyrinthine Patterns: Stripes that branch and meander.
+      Intermediate between spots and stripes. The u-field:
+
+        u(x,y) = u_0 + A * [cos(k*x)*cos(k*y/2) +
+                            cos(k*(x*sqrt(3)/2 + y/2)) * 0.5]
+
+  5.4 Mixed Patterns: Combinations of spots and stripes, common
+      in biological systems (e.g., giraffe spots to leg stripes).
+
+The pattern type is determined by r = b/a: spots (r<0.5),
+stripes (0.5<r<2), labyrinthine (r>2).
+
+6. Polynomial Approximation of Patterns
+-----------------------------------------
+The periodic patterns of reaction-diffusion systems can be
+approximated by polynomial Fourier-like sums:
+
+  u(x,y) = u_0 + sum_{n=1}^{N} A_n * cos(n*k*x + phi_n)
+               + sum_{n=1}^{N} B_n * cos(n*k*y + psi_n)
+               + sum_{m,n} C_{mn} * cos(m*k*x) * cos(n*k*y)
+
+For spot patterns, the Fourier-Bessel expansion:
+
+  u(r,theta) = u_0 + sum_{n=0}^{M} a_n * J_n(k*r) * cos(n*theta)
+
+where J_n are Bessel functions. The polynomial approximation
+replaces J_n with polynomial fits:
+
+  J_0(x) ~ 1 - x^2/4 + x^4/64 - x^6/2304 + ...
+  J_1(x) ~ x/2 - x^3/16 + x^5/384 - ...
+
+The polyart.patterns module provides polynomial coefficient
+tables for the first 10 Bessel functions, enabling efficient
+pattern generation without Bessel function evaluation.
+
+7. Shell Pattern Generation
+-----------------------------
+Shell patterns use P(theta,z) = threshold[sum_i A_i*cos(n_i*theta+phi_i(z))].
+Phase functions determine type: constant=stripes, linear=zigzag,
+periodic=dots. polyart.patterns.shell_pattern() generates these.
+
+8. Animal Marking Patterns
+---------------------------
+Leopard rosettes use Gaussian annular functions centered on a
+jittered hexagonal lattice. Zebra stripes are near-parallel Turing
+stripes whose orientation follows body curvature:
+
+  theta_body(s) = theta_0 + integral_0^s kappa(t) dt
+
+Fish scales create overlapping hexagonal patterns via polynomial
+contributions: scale_i = r_i * (1 + sum_k a_k * cos(k*theta + phi_k)).
+
+9. Implementation in polyart.patterns
+---------------------------------------
+The polyart.patterns module implements:
+
+  - Reaction-diffusion PDE solver (finite difference method)
+  - Polynomial pattern generators for spot, stripe, labyrinth types
+  - Shell pattern engine with species-specific templates
+  - Animal marking generator with body-map projections
+  - Pattern blending and transition functions
+
+Usage:
+
+  from polyart.patterns import TuringGenerator, PatternType
+
+  gen = TuringGenerator(
+      pattern_type=PatternType.SPOTS,
+      wavelength=2.0,
+      domain=(100, 100)
+  )
+  solution = gen.solve(steps=5000)
+  poly = solution.to_polynomial(degree=6)
+  poly.render('turing_spots.png')
+
+10. Conclusion
+--------------
+Turing's reaction-diffusion theory provides the mathematical
+foundation for biological pattern formation. By approximating
+these patterns with polynomial forms, we achieve efficient
+computational generation suitable for both scientific visualization
+and artistic creation. The polyart.patterns module bridges the
+gap between continuous reaction-diffusion dynamics and discrete
+polynomial representation, enabling a unified framework for
+biological pattern generation.
+
+References
+----------
+[1] Crampin, E. (1999). "Reaction-Diffusion Patterns on Planar
+    Domains." SIAM Review, 41(4), 726-746.
+
+[2] Maini, P. (2001). "Turing's Morphogenesis Theory." In
+    Mathematics and Biology, World Scientific.
+
+[3] Murray, J. (2003). "Mathematical Biology." 3rd Edition,
+    Springer.
+
+[4] Oster, G. (1988). "The Kinetics of Pattern Formation."
+    Development, 104(1), 1-28.
+
+[5] polyart-patterns Reference. (2025). polyart.org/docs/patterns.
+
+[6] Turing, A. (1952). "The Chemical Basis of Morphogenesis."
+    Philosophical Transactions Royal Society B, 237(641), 37-72.
+
+[7] Will, S. (2013). "Reaction-Diffusion Models for Animal Coat
+    Patterns." PhD Thesis, Oxford.

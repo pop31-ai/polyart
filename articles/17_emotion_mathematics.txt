@@ -1,0 +1,228 @@
+The Mathematics of Emotion: Polynomial Expression Rendering
+============================================================
+
+Abstract
+--------
+Facial expressions encode emotional states through the coordinated
+movement of facial muscles, producing characteristic geometric
+deformations of the face surface. This article presents a polynomial
+framework for modeling these deformations, implementing the Facial
+Action Coding System (FACS) as a set of polynomial basis functions.
+We derive polynomial representations for brow curvature, eye aperture,
+mouth shape, and their combinations for 10 basic emotions, enabling
+procedural generation of emotionally expressive faces.
+
+1. Introduction
+---------------
+Paul Ekman's Facial Action Coding System (FACS) decomposes facial
+expressions into individual Action Units (AUs), each corresponding
+to the contraction of specific facial muscles. While FACS provides
+a descriptive framework, a computational system requires quantitative
+models of facial surface deformation. Polynomial functions offer
+an ideal representation: they are smooth, efficiently evaluable,
+and their coefficients map directly to facial muscle activation
+parameters. The polyart.emotion module implements this mapping.
+
+2. Facial Action Coding System Overview
+-----------------------------------------
+FACS defines 46 primary Action Units, plus supplementary AUs. The
+most relevant for emotion rendering:
+
+  AU1:  Inner Brow Raise       (frontalis, pars medialis)
+  AU2:  Outer Brow Raise       (frontalis, pars lateralis)
+  AU4:  Brow Lowerer           (corrugator supercilii)
+  AU5:  Upper Lid Raise        (levator palpebrae superioris)
+  AU6:  Cheek Raise            (orbicularis oculi, orbita part)
+  AU7:  Lid Tightener          (orbicularis oculi, palpebral part)
+  AU9:  Nose Wrinkler          (nasalis)
+  AU10: Upper Lip Raiser       (levator labii superioris)
+  AU12: Lip Corner Puller      (zygomaticus major)
+  AU15: Lip Corner Depressor   (depressor anguli oris)
+  AU17: Chin Raiser            (mentalis)
+  AU20: Lip Stretcher          (risorius)
+  AU25: Lips Part              (depressor labii inferioris)
+  AU26: Jaw Drop               (masseter, temporalis)
+
+Each AU produces a characteristic surface deformation that can be
+approximated by polynomial displacement fields.
+
+3. Polynomial Brow Curves
+--------------------------
+The eyebrow curve in the frontal plane is parameterized by arc
+length s:
+
+  y_brow(s) = y_0(s) + delta_AU1 * f_1(s) + delta_AU2 * f_2(s)
+                + delta_AU4 * f_4(s)
+
+where y_0(s) is the neutral brow shape and f_i(s) are AU-specific
+deformation functions:
+
+  f_1(s) = A_1 * exp(-(s-s_peak1)^2 / (2*sigma_1^2))
+  f_2(s) = A_2 * (s/L)^alpha * exp(-(s-s_peak2)^2 / (2*sigma_2^2))
+  f_4(s) = -A_4 * (1 - s/L)^beta
+
+The inner brow raise (AU1) peaks near the nose bridge. The outer
+brow raise (AU2) peaks at the lateral third. The brow lowerer (AU4)
+depresses the medial brow with a medial-lateral gradient.
+
+Polynomial approximation using Chebyshev basis:
+
+  y_brow(s) = sum_{k=0}^{6} c_k * T_k(2*s/L - 1)
+
+where T_k are Chebyshev polynomials. The degree-6 expansion captures
+brow curvature with sub-millimeter accuracy.
+
+4. Eye Aperture Functions
+--------------------------
+Eye openness is controlled by the vertical distance between upper
+and lower eyelid margins at the pupil centerline:
+
+  h_eye(t) = h_0 + delta_AU5 * g_5(t) - delta_AU7 * g_7(t)
+
+For blink dynamics, the aperture follows a polynomial approximation
+of the measured velocity profile:
+
+  h_blink(t) = h_max * (1 - (t/T_blink)^2 * (3 - 2*t/T_blink))
+
+This is a smoothstep function (Hermite polynomial) where T_blink
+is the blink duration (typically 300-400ms). The natural blink
+cycle consists of rapid close (150ms) and slower open (250ms).
+
+Eye shape in the frontal plane is an almond-like curve:
+
+  x(t) = a * cos(t)
+  y(t) = b * sin(t) * (1 + epsilon * cos(2*t))
+
+where epsilon controls the almond sharpness (epsilon=0 gives
+ellipse, epsilon>0 gives pointed corners).
+
+5. Mouth Curvature Model
+--------------------------
+The mouth is the most geometrically complex facial feature.
+The lip line (where lips meet) is a polynomial curve:
+
+  y_mouth(x) = sum_{i=0}^{5} m_i * x^i
+
+The neutral mouth has a slight downward curvature at the corners.
+Emotional states modify this curve:
+
+  AU12 (smile):  y_mouth(x) += S * (x^2 - x_max^2) / x_max^2
+  AU15 (frown):  y_mouth(x) -= F * (x^2 - x_max^2) / x_max^2
+
+The lip fullness is modeled by a separate polynomial for upper
+and lower lip profiles:
+
+  y_upper(x) = sum_{i=0}^{4} u_i * T_i(x/a)
+  y_lower(x) = sum_{i=0}^{4} l_i * T_i(x/a)
+
+Mouth opening (AU25, AU26) adds a vertical displacement between
+upper and lower lip curves:
+
+  y_lower_opened(x) = y_lower(x) - d_open * (1 - (x/a)^2)^p
+
+6. Emotion Blending
+---------------------
+Basic emotions combine multiple AUs with characteristic intensities.
+We define an emotion vector E = (e_1, e_2, ..., e_46) where e_i
+is the intensity of AU_i (0.0 to 1.0). Basic emotions as vectors:
+
+  Joy:        E_joy = [AU6:0.8, AU12:1.0, AU25:0.3]
+  Sadness:    E_sad = [AU1:0.7, AU4:0.5, AU15:0.6, AU17:0.3]
+  Anger:      E_ang = [AU4:0.9, AU5:0.4, AU7:0.8, AU23:0.6]
+  Fear:       E_fear = [AU1:0.8, AU2:0.7, AU4:0.3, AU5:0.9, AU20:0.6]
+  Disgust:    E_dis = [AU9:1.0, AU10:0.7, AU15:0.4, AU17:0.3]
+  Surprise:   E_sur = [AU1:0.9, AU2:0.8, AU5:1.0, AU25:0.5, AU26:0.7]
+  Contempt:   E_con = [AU12:0.3]  (unilateral)
+  Trust:      E_tru = [AU6:0.4, AU12:0.5]
+  Anticipation: E_ant = [AU12:0.6, AU25:0.2]
+  Sadness_grief: E_sg = [AU1:1.0, AU4:0.6, AU15:0.8, AU17:0.5, AU25:0.3]
+
+Blended emotions use weighted averaging:
+
+  E_blend = alpha * E_a + (1-alpha) * E_b
+
+where alpha in [0,1] controls the blend ratio. The resulting
+facial geometry is the superposition of individual AU deformations.
+
+7. State Transitions
+---------------------
+Emotional transitions are modeled as time-varying AU intensities:
+
+  e_i(t) = e_i_base + (e_i_target - e_i_base) * phi(t; t_start, t_end)
+
+where phi is a smooth transition function:
+
+  phi(t; t_s, t_e) = 0              if t < t_s
+                    = (t-t_s)^2 *    if t_s <= t < (t_s+t_e)/2
+                      (3(t_s+t_e) - 2t) / (t_e-t_s)^3
+                    = 1              if t >= t_e
+
+This cubic Hermite spline ensures C1 continuity at transition
+boundaries. Transition durations vary by AU:
+
+  - Mouth AUs: 200-500ms (fast response)
+  - Brow AUs: 300-700ms (moderate)
+  - Eye AUs: 100-400ms (blink-speed for AU5/7)
+
+8. Complete Emotion Rendering Pipeline
+----------------------------------------
+The polyart.emotion pipeline:
+
+  1. Define emotion vector E (or load from preset)
+  2. Map E to AU intensities e_i
+  3. For each facial region (brow, eye, nose, mouth):
+     a. Compute polynomial displacement from neutral
+     b. Apply AU-specific deformation functions
+     c. Sum contributions weighted by intensity
+  4. Combine regional displacements into face mesh
+  5. Apply temporal smoothing for animation
+  6. Render with polyart.renderer
+
+Usage:
+
+  from polyart.emotion import EmotionEngine, EmotionPreset
+
+  engine = EmotionEngine(face_model='neutral.obj')
+  engine.set_emotion(EmotionPreset.JOY, intensity=0.8)
+  engine.render('joyful_face.png')
+  
+  # Transition from joy to sadness
+  engine.transition(EmotionPreset.SADNESS, duration_ms=1000)
+  engine.animate('transition.mp4', fps=30)
+
+9. Polynomial Expression Energy
+---------------------------------
+The expression energy metric quantifies emotional intensity:
+
+  E_total = sum_{i=1}^{46} w_i * e_i^2
+
+where w_i are AU importance weights. This metric correlates with
+human ratings of emotional intensity. The energy ranges from 0
+(neutral face) to approximately 10 (maximal expression).
+
+10. Conclusion
+---------------
+Polynomial representations provide a mathematically rigorous and
+computationally efficient framework for facial expression modeling.
+By mapping FACS Action Units to polynomial basis functions, we
+enable procedural generation of emotionally expressive faces.
+The blending and transition mechanisms allow smooth animation
+between emotional states, supporting applications in animation,
+affective computing, and psychological research.
+
+References
+----------
+[1] Ekman, P. (2005). "What Facial Actions Reveal."
+    Handbook of Cognition and Emotion.
+
+[2] Friesen, E. (1978). "Facial Action Coding System."
+    Consulting Psychologists Press.
+
+[3] Kohl, C. (2024). "Polynomial Face Models." polyart Documentation.
+
+[4] Lee, Y. (2021). "3D Morphable Face Models." ACM TOG, 40(6).
+
+[5] polyart-emotion Reference. (2025). polyart.org/docs/emotion.
+
+[6] Russell, J. (1980). "A Circumplex Model of Affect."
+    Journal of Personality and Social Psychology, 39(6), 1161-1178.

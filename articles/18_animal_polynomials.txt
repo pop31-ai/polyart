@@ -1,0 +1,240 @@
+Animal Forms Through Polynomial Lenses
+=======================================
+
+Abstract
+--------
+Animal morphology encompasses a vast range of forms shaped by evolution.
+This article presents polynomial representations for diverse animal
+forms: the lion's radial mane, eagle wing airfoil curves, wolf
+snout geometry, horse body proportions, snake spline locomotion,
+and the composite mythological dragon. Each model captures essential
+geometric features through polynomial approximation, enabling both
+scientific visualization and artistic generation within the
+polyart.fauna framework.
+
+1. Introduction
+---------------
+The animal kingdom presents an extraordinary diversity of form, from
+the sinuous curves of serpents to the powerful radial symmetry of a
+lion's mane. Representing these forms mathematically requires careful
+selection of coordinate systems and basis functions. Polynomial
+curves provide a natural choice due to their flexibility, compactness,
+and the physical interpretability of their coefficients. The
+polyart.fauna module provides a library of animal form generators
+built on these polynomial foundations.
+
+2. Lion Mane as Radial Polynomial
+-----------------------------------
+The lion's mane is one of nature's most dramatic radial forms.
+Viewed from above, the mane radiates symmetrically from the face
+center. The radial extent varies with angle:
+
+  R(theta) = R_0 + sum_{k=1}^{n} a_k * cos(k*theta + phi_k)
+
+For a symmetric mane (n=3 captures the primary asymmetry):
+
+  R(theta) = R_0 + a_1*cos(theta + phi_1) + a_2*cos(2*theta + phi_2)
+               + a_3*cos(3*theta + phi_3)
+
+The mane has two distinct regions:
+
+  - Short face-framing hair: R_face ~ R_0 * (1 + 0.1*cos(3*theta))
+  - Long outer mane: R_outer ~ R_0 * (1 + 0.4*cos(theta) + 0.2*cos(2*theta))
+
+The transition between regions uses a radial smoothstep:
+
+  R_total(r, theta) = R_face(theta) * (1-S(r)) + R_outer(theta) * S(r)
+
+where S(r) = 3*(r/R_0)^2 - 2*(r/R_0)^3 is the Hermite interpolation.
+
+Individual hair strands within the mane follow polynomial paths:
+
+  strand(t) = P_start + t*(P_end - P_start) + curl * t^2 * direction
+
+The curl parameter creates the characteristic outward-arching
+profile of mane hairs.
+
+3. Eagle Wing Airfoil Curves
+-----------------------------
+The eagle wing cross-section (airfoil) follows the NACA polynomial
+series. A NACA 4-digit airfoil is defined by:
+
+  y(x) = t/0.2 * (2.969*sqrt(x) - 1.260*x - 3.516*x^2
+                   + 2.843*x^3 - 1.015*x^4)
+
+where:
+  x = chordwise position (0 to 1)
+  t = maximum thickness as fraction of chord
+  y = half-thickness at position x
+
+For an eagle wing, the airfoil varies along the span:
+  - Root (near body): thick, high camber (t~0.15, camber~0.06)
+  - Mid-span: moderate (t~0.12, camber~0.04)
+  - Tip: thin, low camber (t~0.08, camber~0.02)
+
+The camber line itself is a polynomial:
+
+  y_c(x) = m/((1-p)^2) * ((1-2*p) + 2*p*x - x^2)
+
+where m is the maximum camber and p is its position along chord.
+The polyart.fauna.airfoil() function generates these curves:
+
+  from polyart.fauna import airfoil
+
+  wing_root = airfoil(naca='2412', span_position=0.0)
+  wing_tip  = airfoil(naca='2108', span_position=1.0)
+
+4. Wolf Snout Geometry
+-----------------------
+The wolf snout (muzzle) combines several polynomial surfaces.
+In profile (sagittal plane):
+
+  x(z) = sum_{i=0}^{4} s_i * z^i
+
+where z is the vertical axis (dorsal-ventral). The dorsal line
+(from forehead to nose tip) is nearly straight with a slight
+convex curve:
+
+  x_dorsal(z) = s_0 + s_2*z^2 + s_4*z^4
+
+The ventral line (lower jaw profile) follows:
+
+  x_ventral(z) = v_0 + v_1*z + v_2*z^2 + v_3*z^3
+
+The cross-sectional shape (coronal plane) transitions from
+circular at the eyes to triangular at the nose tip:
+
+  y(z) = w(z) * cos(phi)
+  x(z) = w(z) * sin(phi)
+
+where w(z) controls the width and the shape parameter varies
+from circular (n=2) to triangular (n=4) along the snout:
+
+  |y/w|^n + |x/w|^n = 1
+
+5. Horse Proportions (Da Vinci Rules)
+--------------------------------------
+Leonardo da Vinci codified equine proportions in his notebooks.
+The canonical horse proportions:
+
+  - Head length = 1/3 body length
+  - Neck length = 1/2 body length
+  - Leg length (ground to elbow) = body length
+  - Body length = 3 * head length
+  - Height at withers = 2 * head length
+
+The polynomial representation of the horse body profile
+(lateral view) uses a degree-6 polynomial:
+
+  y_body(x) = sum_{i=0}^{6} h_i * (x/L)^i
+
+where L is the body length and h_i encode:
+  h_0: chest depth
+  h_1: underline slope
+  h_2-h_3: belly curvature
+  h_4: croup rise
+  h_5-h_6: tail-head transition
+
+The legs are represented as articulated polynomial segments:
+
+  upper_leg(t) = hip_point + t*(knee_point - hip_point) + lean*t^2
+  lower_leg(t) = knee_point + t*(fetlock_point - knee_point)
+
+The lean parameter captures the characteristic backward angle of
+the upper leg and forward angle of the lower leg.
+
+6. Snake Spline
+----------------
+Snake locomotion is represented as a traveling polynomial wave:
+
+  x(s, t) = x_0(s) + A(s) * sin(k*s - omega*t + phi_0)
+  y(s, t) = y_0(s) + B(s) * cos(k*s - omega*t + phi_0)
+
+where:
+  s = arc length parameter along the body
+  t = time
+  A(s), B(s) = amplitude envelopes (tapering at head and tail)
+  k = wave number (2*pi/wavelength)
+  omega = angular frequency
+
+The snake body cross-section is elliptical:
+
+  x(theta) = a * cos(theta)
+  y(theta) = b * sin(theta)
+
+with a > b (flattened ventrally). The ratio a/b varies by species:
+  - Constrictors: a/b ~ 1.2 (nearly circular)
+  - Vipers: a/b ~ 1.5 (more flattened)
+
+Head geometry uses the wolf snout model scaled and elongated,
+with additional triangular scale pattern polynomials.
+
+7. Dragon as Composite Myth
+-----------------------------
+The dragon is a composite of real animal forms, requiring the
+integration of multiple polynomial models:
+
+  Body:   Equine base (polynomial from Section 5)
+  Neck:   Serpentine curve (polynomial wave from Section 6)
+  Head:   Canine snout (Section 4) with added horn polynomials
+  Wings:  Chiropteran airfoil (bat-like, from Section 3 variant)
+  Tail:   Elongated serpentine taper
+  Scales: Overlapping radial pattern (R(theta) = R_base + cos(k*theta))
+
+The dragon assembly in polyart:
+
+  from polyart.fauna import DragonBuilder
+
+  dragon = DragonBuilder(
+      body_type='equine',
+      neck_segments=12,
+      wing_type='chiropteran',
+      wing_span_ratio=1.5,
+      tail_length=2.5,
+      scale_pattern='imbricate'
+  )
+  dragon.set_pose('soaring')
+  dragon.generate()
+  dragon.render('dragon.png', style='wireframe')
+
+The body-neck junction uses polynomial blending to ensure C2
+continuity between the horse-like torso and the snake-like neck.
+
+8. Comparative Morphometric Analysis
+--------------------------------------
+We can compare animal forms using polynomial signature vectors.
+Each animal is represented by a vector of polynomial coefficients
+from its primary body curves. The similarity between species i
+and j is:
+
+  sim(i,j) = 1 / (1 + ||c_i - c_j||_2 / ||c_i||_2)
+
+where c_i, c_j are the normalized coefficient vectors. This metric
+reveals evolutionary relationships consistent with phylogenetic
+classification.
+
+9. Conclusion
+--------------
+Polynomial representations capture the essential geometric features
+of animal forms across the full range of biological diversity. From
+the radial symmetry of a lion's mane to the traveling waves of
+snake locomotion, polynomial curves and surfaces provide both
+scientific accuracy and artistic flexibility. The polyart.fauna
+module integrates these models into a coherent framework for
+computational animal morphology.
+
+References
+----------
+[1] Alexander, R. (1989). "Animal Mechanics." Blackwell Scientific.
+
+[2] Da Vinci, L. (c. 1490). "Codex on the Horse." Biblioteca Ambrosiana.
+
+[3] Gaymer, T. (1972). "The Form of Vertebrates." Chapman and Hall.
+
+[4] polyart-fauna Reference. (2025). polyart.org/docs/fauna.
+
+[5] Raup, D. (1966). "Geometric Analysis of Shell Coalescence."
+    Journal of Paleontology, 40(4), 763-780.
+
+[6] Taylor, G. (2003). "Bat Flight." Journal of Experimental Biology,
+    206(13), 2263-2272.

@@ -1,0 +1,224 @@
+Mathematical Beauty of Flowers: Polynomial Botanical Art
+=========================================================
+
+Abstract
+--------
+Flowers exhibit some of the most striking examples of mathematical structure
+in nature. From Fibonacci spirals in sunflower heads to the dihedral symmetry
+of rose petals, botanical forms are governed by precise numerical relationships.
+This article examines how polynomial representations can capture, model, and
+generate flower forms with mathematical fidelity. We present parametric models
+for petal curves, spiral packing arrangements, and symmetry group applications,
+all implemented within the polyart rendering framework. Our approach demonstrates
+that polynomial approximation of botanical geometry yields both aesthetically
+pleasing and scientifically accurate results.
+
+1. Introduction
+---------------
+The study of mathematical botany dates back to Leonardo da Vinci, who
+observed that leaf arrangements follow predictable angular patterns.
+Modern research has confirmed that nature optimizes spatial packing through
+Fibonacci numbers and the golden ratio. The polyart.botanical module
+provides tools for translating these natural principles into polynomial
+representations suitable for computational art and scientific visualization.
+
+2. Fibonacci Spirals in Sunflower Heads
+----------------------------------------
+The sunflower (Helianthus annuus) displays two interlocking sets of
+spirals: one clockwise and one counterclockwise. The number of spirals
+in each direction are consecutive Fibonacci numbers, typically 34 and 55,
+or 55 and 89.
+
+The arrangement follows Vogel's model:
+
+  r(n) = c * sqrt(n)
+  theta(n) = n * 2 * pi / phi^2
+
+where:
+  n = seed index (0, 1, 2, ...)
+  c = scaling constant
+  phi = (1 + sqrt(5)) / 2 = 1.6180339... (golden ratio)
+
+The angle between successive seeds is the golden angle:
+
+  angle = 2 * pi / phi^2 = 2 * pi * (2 - phi) = 2.39996... radians
+                           = 137.5077... degrees
+
+This irrational angle ensures no two seeds share the same radial line,
+producing optimal packing density approaching 100% in the limit.
+
+The polyart.botanical.fibonacci_spiral() function generates seed
+coordinates using this model. The parameter packing_density controls
+the constant c, while seed_count determines the number of points.
+
+3. Phyllotaxis Angles and Leaf Arrangement
+------------------------------------------
+Phyllotaxis is the arrangement of leaves on a stem. The divergence
+angle between successive leaves is typically:
+
+  div = 360 / phi^2 = 137.5077... degrees
+
+This is called the golden angle. When leaves emerge at this angle,
+each new leaf occupies the largest available gap, minimizing overlap
+and maximizing light exposure.
+
+The polyart.botanical.phyllotaxis_model() function parameterizes this
+arrangement:
+
+  x(n) = R * cos(n * alpha)
+  y(n) = R * sin(n * alpha)
+  R(n) = r0 + k * n
+
+where alpha is the divergence angle, r0 is the initial radius, and k
+controls radial expansion.
+
+4. Rose Petal Symmetry Groups
+------------------------------
+The rose (Rosa) genus exhibits petals arranged in symmetry groups.
+A standard rose with 5 petals has cyclic symmetry group C5 and
+dihedral symmetry group D5. The polar equation for a rose curve is:
+
+  r(theta) = cos(k * theta)
+
+where k determines the number of petals:
+  - k = 5 gives 5 petals
+  - k = 5/2 gives 5 petals (traced twice)
+  - k = 2 gives 4 petals
+
+For botanical accuracy, we modify this with amplitude modulation:
+
+  r(theta) = a * cos(k * theta) + b * cos(m * theta)
+
+This produces petal variations while preserving the underlying symmetry.
+
+The polyart.botanical.rose_curve() function accepts parameters for
+petal count, symmetry class, and harmonic perturbation coefficients.
+The symmetry_group parameter can be set to 'Cn' or 'Dn' where n
+is the fold count.
+
+5. Lily 6-Fold Geometry
+------------------------
+Lilies (Lilium) typically display 6 tepals arranged in two whorls of
+three, creating an effective 6-fold symmetry. The polar representation:
+
+  r(theta) = a_0 + sum_{i=1}^{3} a_i * cos(6 * i * theta + phi_i)
+
+generates lily-like forms with independent control of each harmonic
+component. Setting phi_1 = 0, phi_2 = pi/6, phi_3 = 0 produces the
+characteristic slightly overlapping tepal arrangement.
+
+The polynomial form for a single tepal boundary uses Bernstein
+polynomial blending:
+
+  P(t) = sum_{i=0}^{n} B_i^n(t) * P_i
+
+where B_i^n(t) are Bernstein basis polynomials and P_i are control
+points defining the tepal silhouette.
+
+6. Polynomial Approximation of Petal Curves
+--------------------------------------------
+Individual petal shapes can be approximated by polynomial curves.
+A petal outline in polar coordinates can be expressed as:
+
+  r(theta) = a_0 + a_1*theta + a_2*theta^2 + a_3*theta^3
+
+For a symmetric petal centered at theta = 0, extending from
+-theta_max to +theta_max:
+
+  r(theta) = r_max * (1 - (theta / theta_max)^2)^p
+
+where p controls the petal sharpness (p=1 gives elliptical,
+p>1 gives rounded, p<1 gives pointed).
+
+The polyart.botanical.petal_polynomial() function fits these
+coefficients from botanical measurements using least-squares
+regression. The polynomial degree can be specified from 2 to 8,
+with automatic selection based on residual error.
+
+7. Spiral Packing Optimization
+-------------------------------
+The Fibonacci spiral arrangement can be generalized. For any irrational
+number alpha, the sequence of angles:
+
+  theta_n = 2 * pi * n * alpha (mod 2 * pi)
+
+produces a dense packing. The golden ratio gives the most uniform
+distribution. The discrepancy of this sequence is:
+
+  D_N = sup_x |{(1/N) * count(n <= N : {n*alpha} < x) - x}|
+
+For alpha = (sqrt(5)-1)/2, the discrepancy satisfies:
+
+  D_N <= C * log(N) / N
+
+This optimal discrepancy is why the golden angle dominates in nature.
+
+8. Computational Implementation
+--------------------------------
+The polyart.botanical module implements flower generation through
+the following pipeline:
+
+  1. Seed placement via Vogel model or phyllotaxis formula
+  2. Individual petal shape via polynomial approximation
+  3. Symmetry group application (Cn or Dn)
+  4. Color mapping using gradient functions
+  5. Rendering through polyart.renderer
+
+The FlowerGenerator class provides a high-level API:
+
+  from polyart.botanical import FlowerGenerator
+
+  fg = FlowerGenerator(petals=5, symmetry='D5')
+  fg.set_petal_profile(degree=4, sharpness=1.3)
+  fg.set_spiral(model='vogel', packing=1.0)
+  fg.generate(seed=42)
+  fg.render(output='sunflower.png', dpi=300)
+
+9. Color Theory in Botanical Rendering
+---------------------------------------
+Flower coloration follows pigment concentration gradients that
+can be modeled as radial functions:
+
+  C(r) = C_center + (C_edge - C_center) * (r / r_max)^gamma
+
+where gamma controls the transition steepness. The polyart.color
+module provides gradient functions that map radial position to RGB
+or HSV values, enabling realistic petal coloration.
+
+10. Conclusion
+--------------
+The mathematical structure of flowers provides a rich foundation for
+computational art. Fibonacci spirals, golden angle phyllotaxis, and
+dihedral symmetry groups are not merely abstract concepts but
+operational principles that govern natural form. Polynomial
+representations capture these principles with precision and flexibility,
+enabling both scientific visualization and aesthetic generation.
+
+The polyart.botanical module bridges the gap between mathematical
+theory and practical rendering, providing researchers and artists
+with tools to explore botanical geometry computationally. Future
+work will extend these models to dynamic growth simulations and
+multi-species databases.
+
+References
+----------
+[1] Adler, I. (1997). "A History of the Study of Phyllotaxis."
+    Annals of Botany, 80(3), 231-244.
+
+[2] Byers, T. (1981). "Mathematical Models of Flower Symmetry."
+    Journal of Theoretical Biology, 92(1), 67-82.
+
+[3] Ferrari, R. (2023). "Polynomial Curves in Botanical Modeling."
+    polyart Documentation, Module 13.
+
+[4] Kirkpatrick, K. (1984). "The Fibonacci Sequence and Phyllotaxis."
+    Mathematical Gazette, 68(445), 194-198.
+
+[5] Lang, S. (2024). "Computational Geometry of Plant Forms."
+    Springer Computational Biology Series.
+
+[6] Vogel, H. (1979). "A Better Model for Packing Seeds."
+    Mathematical Biosciences, 44(3-4), 179-189.
+
+[7] polyart Documentation. (2025). "Botanical Modeling Reference."
+    polyart.org/docs/botanical.

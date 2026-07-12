@@ -1,0 +1,500 @@
+================================================================================
+    SYMMETRY GROUPS AND POLYNOMIAL ART: FROM WALLPAPER TO MANDALAS
+================================================================================
+
+Author: PolyArt Research Group
+Date: 2026-07-12
+Keywords: symmetry groups, wallpaper groups, rosettes, friezes, mandalas
+
+================================================================================
+ABSTRACT
+================================================================================
+
+Symmetry is the organizing principle behind the most compelling patterns
+in art, nature, and mathematics. This article develops a comprehensive
+framework for generating art through symmetry group operations applied
+to polynomial base curves. We cover crystallographic symmetry groups,
+the 17 wallpaper groups (p1-p6), rosette groups, frieze groups, mandala
+generation, and group-theoretic foundations for mathematical art. All
+implementations are provided in the polyart.symmetry module.
+
+================================================================================
+1. GROUP THEORY FOUNDATIONS
+================================================================================
+
+1.1 Definition
+
+A symmetry group G is a set of transformations (isometries) that:
+    1. Closure:    g1 * g2 in G for all g1, g2 in G
+    2. Identity:   e in G (identity transformation)
+    3. Inverse:    g^(-1) in G for all g in G
+    4. Associativity: (g1 * g2) * g3 = g1 * (g2 * g3)
+
+1.2 Isometries of the Plane
+
+The four types of planar isometries are:
+    Translation:    T_v(p) = p + v
+    Rotation:       R_alpha(p) = rotation of p by angle alpha about origin
+    Reflection:     M_line(p) = reflection of p across line
+    Glide Reflection: G_line,v(p) = M_line(T_v(p)) where v is parallel
+                                       to the line
+
+1.3 Fixed Points and Orbits
+
+The orbit of a point p under group G:
+    Orb(p) = { g(p) : g in G }
+
+The stabilizer of p:
+    Stab(p) = { g in G : g(p) = p }
+
+Orbit-Stabilizer Theorem:
+    |Orb(p)| * |Stab(p)| = |G|  (for finite groups)
+
+This is crucial for generating symmetric art: place a motif in a
+fundamental domain, then orbit it under the group to fill the plane.
+
+1.4 Fundamental Domain
+
+A fundamental domain D is a region that tiles the plane under G:
+    - Union of g(D) for all g in G covers the plane
+    - Interior of g1(D) and g2(D) are disjoint for g1 != g2
+
+The motif placed in D generates the entire pattern.
+
+Polyart module: polyart.symmetry.group provides:
+
+    SymmetryGroup(type, generators)
+    .orbit(point) -> list of image points
+    .orbit_motif(motif, domain) -> complete pattern
+    .fundamental_domain() -> polygon vertices
+
+================================================================================
+2. ROSETTE GROUPS (FINITE SYMMETRY)
+================================================================================
+
+2.1 Classification
+
+Finite symmetry groups of the plane are the cyclic group C_n and the
+dihedral group D_n:
+
+    C_n: rotations by 2*pi*k/n, k = 0, 1, ..., n-1
+    D_n: C_n plus n reflections
+
+For art, the most common:
+    C1: no symmetry (asymmetric)
+    C2: 180-degree rotation only
+    C3, C4, C5, C6: 3-, 4-, 5-, 6-fold rotation
+    D1: single reflection (bilateral symmetry)
+    D2, D3, D4, D5, D6: rotation + reflection
+
+2.2 Generating Rosette Patterns
+
+Algorithm for D_n rosette:
+    1. Define motif in fundamental domain (sector of angle 2*pi/n)
+    2. Apply C_n rotations: n copies
+    3. Reflect each copy across sector boundaries: n reflections
+    4. Total: 2n images in the complete rosette
+
+For C_n rosette:
+    1. Define motif in fundamental domain
+    2. Apply C_n rotations only: n images
+    3. No reflections
+
+2.3 Polynomial Motifs in Rosettes
+
+The motif itself is defined by polynomial curves:
+
+    motif = { polynomial_curve_1, polynomial_curve_2, ... }
+
+Each curve is defined by polynomial coefficients within the fundamental
+domain. After group action, each copy of the motif is transformed:
+
+    g(polynomial_curve) = polynomial_curve composed with g^(-1)
+
+For rotation by alpha:
+    R_alpha(polynomial(t)) = [x(t)*cos(alpha) - y(t)*sin(alpha),
+                               x(t)*sin(alpha) + y(t)*cos(alpha)]
+
+This is still polynomial in t since rotation is linear.
+
+For reflection across x-axis:
+    M_x(polynomial(t)) = [x(t), -y(t)]
+
+Polyart module: polyart.symmetry.rosette provides:
+
+    RosetteGroup(n, dihedral=True)
+    .generate(motif_polynomial, base_hue, palette)
+    .fundamental_domain_vertices()
+    .apply_symmetry(motif, group_element)
+
+================================================================================
+3. FRIEZE GROUPS (1D TRANSLATION)
+================================================================================
+
+3.1 Classification
+
+There are exactly 7 frieze groups, classified by their symmetries:
+
+    p1: T only (translation only)
+    p2: T + R_pi (translation + 180-degree rotation)
+    pm: T + M (translation + reflection across translation axis)
+    pg: T + G (translation + glide reflection)
+    pmm: T + M1 + M2 (translation + two perpendicular reflections)
+    pmg: T + M1 + G2 (translation + reflection + perpendicular glide)
+    p4m: T + R_pi/2 + M (translation + 90-degree rotation + reflection)
+
+3.2 Frieze Pattern Generation
+
+For each frieze group, the fundamental domain is a strip of width W
+and length L (typically L = 2*pi/n or similar).
+
+    p1: motif repeated by translation T(L)
+    p2: motif + rotated copy, repeated by T(L/2)
+    pm: motif + reflected copy, repeated by T(L)
+    pg: motif + glide-reflected copy, repeated by T(L)
+    pmm: motif + 3 copies (reflections in both axes), repeated by T(L/2)
+    pmg: motif + 3 copies, repeated by T(L/2)
+    p4m: motif + 7 copies (rotations + reflections), repeated by T(L/2)
+
+3.3 Polynomial Frieze Motifs
+
+Frieze motifs are polynomial curves with periodic structure:
+
+    motif(t) = sum( a_k * cos(2*pi*k*t/L) + b_k * sin(2*pi*k*t/L),
+                    k = 0..K )
+
+This Fourier-polynomial form naturally has period L, making it
+ideal for frieze generation.
+
+For non-periodic motifs, use polynomial splines with matching
+boundary conditions:
+
+    motif(0) = motif(L)
+    motif'(0) = motif'(L)  [for C1 continuity]
+
+Polyart module: polyart.symmetry.frieze provides:
+
+    FriezeGroup(type)
+    .generate(motif, length, repetitions)
+    .fundamental_strip()
+
+================================================================================
+4. WALLPAPER GROUPS (2D TRANSLATION)
+================================================================================
+
+4.1 The 17 Wallpaper Groups
+
+All 2D periodic patterns belong to one of 17 wallpaper groups,
+classified by their lattice type and symmetry operations:
+
+    Lattice types:
+        oblique:   no special lattice symmetry
+        rectangular: two perpendicular translation axes
+        centered rectangular (rhombic)
+        square:    two equal perpendicular axes
+        hexagonal: 60-degree angle between axes
+
+    Groups (using orbifold notation):
+
+    p1:    translational symmetry only
+    p2:    half-turns
+    pm:    reflections (axes parallel to one lattice direction)
+    pg:    glide reflections (parallel to one direction)
+    pgg:   glide reflections in two directions
+    pmm:   reflections in two directions
+    cm:    reflections and glide reflections (parallel)
+    cmm:   half-turns with two reflection families
+    p4:    four-fold rotations, no reflections
+    p4m:   four-fold rotations with reflections
+    p4g:   four-fold rotations with glide reflections
+    p3:    three-fold rotations
+    p3m1:  three-fold rotations with one reflection family
+    p31m:  three-fold rotations with another reflection family
+    p6:    six-fold rotations
+    p6m:   six-fold rotations with reflections
+
+4.2 Lattice Vectors
+
+Each wallpaper group has characteristic lattice vectors:
+
+    p1, pm, pg, cm:       a1 = (a, 0), a2 = (b*cos(gamma), b*sin(gamma))
+    p2, pgg, pmm, cmm:    rectangular: a1 = (a, 0), a2 = (0, b)
+    p4, p4m, p4g:         square: a1 = (a, 0), a2 = (0, a)
+    p3, p3m1, p31m:       hexagonal: a1 = (a, 0), a2 = (a/2, a*sqrt(3)/2)
+    p6, p6m:              hexagonal: same as p3 families
+
+4.3 Generating Wallpaper Patterns
+
+Algorithm:
+    1. Determine fundamental domain for the wallpaper group
+    2. Define polynomial motif within the fundamental domain
+    3. Apply all symmetry operations within one unit cell
+    4. Tile the unit cell across the plane using lattice translations
+
+For group G with fundamental domain D:
+
+    pattern = union( g(motif) : g in generators(D) )  [within unit cell]
+    full_pattern = union( T_v(pattern) : v in lattice )
+
+4.4 Wallpaper Group Detection
+
+Given a periodic pattern, detecting its wallpaper group:
+
+    1. Find translation vectors (FFT-based)
+    2. Classify lattice type from vectors
+    3. Test for rotations (check if motif is invariant under R_alpha)
+    4. Test for reflections (check for mirror lines)
+    5. Test for glide reflections
+    6. Match to one of 17 groups
+
+The polyart.symmetry.detection module automates this process.
+
+Polyart module: polyart.symmetry.wallpaper provides:
+
+    WallpaperGroup(type, lattice_params)
+    .generate(motif, tile_count_x, tile_count_y)
+    .fundamental_domain()
+    .unit_cell(motif)
+
+    WallpaperDetector(pattern_image)
+    .detect() -> group_type, confidence
+
+================================================================================
+5. MANDALA GENERATION
+================================================================================
+
+5.1 Mandala as Composite Symmetry
+
+Mandalas combine multiple symmetry groups in concentric rings:
+
+    Ring k (radius r_k):
+        Symmetry group: D_{n_k} (n_k-fold dihedral)
+        Motif: polynomial curves M_k(r, theta)
+
+The complete mandala:
+
+    Mandala(r, theta) = sum( M_k(r, theta) * indicator(r in ring_k),
+                             k = 1..K )
+
+5.2 Polynomial Ring Profiles
+
+Each ring has a polynomial radial profile:
+
+    ring_inner(r) = r_k - w_k/2
+    ring_outer(r) = r_k + w_k/2
+    ring_width(r) = outer(r) - inner(r)
+
+The motif within each ring is a polynomial curve:
+
+    M_k(r, theta) = sum( a_{k,j} * cos(n_k * j * theta)
+                       + b_{k,j} * sin(n_k * j * theta), j = 0..J )
+
+This Fourier-polynomial form naturally has D_{n_k} symmetry.
+
+5.3 Inter-Ring Coherence
+
+To ensure visual coherence between rings, adjacent rings share
+harmonic content:
+
+    M_{k+1}(r, theta) = alpha * M_k(r, theta) * scale_factor
+                       + (1-alpha) * new_motif_k(r, theta)
+
+where alpha controls continuity vs. novelty.
+
+5.4 Color Harmonics
+
+Color in mandalas follows polynomial functions of ring index and angle:
+
+    hue(r, theta) = H_0 + sum( delta_H_k * cos(n_k * theta + phi_k),
+                                k = 1..K )
+
+Using the golden angle for inter-ring hue shifts:
+
+    H_k = H_0 + k * golden_angle  (mod 360)
+
+5.5 Mandala Complexity Levels
+
+    Simple:     K=3 rings, low-degree polynomials (d<=3), n=4-8
+    Moderate:   K=5 rings, medium-degree (d<=6), n=4-12
+    Complex:    K=8 rings, high-degree (d<=10), n=3-16
+    Fractal:    Infinite rings via recursive subdivision
+
+Polyart module: polyart.symmetry.mandala provides:
+
+    MandalaGenerator(rings_config, color_config)
+    .generate(radius, center)
+    .add_ring(radius, symmetry_n, motif_polynomial, color)
+    .to_svg()
+    .to_png(resolution)
+
+    MandalaFromImage(image, n_rings)
+    .detect_symmetry() -> n_fold
+    .extract_motifs() -> list of polynomial motifs
+    .regenerate(color_scheme) -> new mandala
+
+================================================================================
+6. GROUP THEORY IN POLYNOMIAL ART
+================================================================================
+
+6.1 Orbit of Polynomial Curves
+
+Given a polynomial curve C and a group G, the orbit is:
+
+    Orb(C) = { g(C) : g in G }
+
+Each element g(C) is obtained by composing the polynomial coefficients
+with the transformation g.
+
+For rotation by angle alpha:
+    g(C) = R_alpha(C(t)) = (x(t)*cos(alpha) - y(t)*sin(alpha),
+                              x(t)*sin(alpha) + y(t)*cos(alpha))
+
+This is polynomial in t since sin(alpha) and cos(alpha) are constants.
+
+6.2 Stabilizer of a Curve
+
+The stabilizer of C consists of all g in G that map C to itself:
+
+    Stab(C) = { g in G : g(C) = C }
+
+For a general polynomial curve of degree d >= 3, the stabilizer is
+typically trivial. Special cases:
+    Circle (d=2): stabilizer is all of O(2)
+    Line (d=1): stabilizer includes reflection across the line
+
+6.3 Quotient Art
+
+Quotienting by a group action creates a compressed representation:
+
+    Art_quotient = Art / G
+
+The quotient art is defined on the fundamental domain, with boundary
+conditions encoding the symmetry. This is useful for:
+    - Efficient storage (store 1/|G| of the full pattern)
+    - Interactive editing (modify quotient, propagate to full pattern)
+    - Mathematical analysis (symmetry-breaking studies)
+
+6.4 Symmetry Breaking
+
+Starting with a highly symmetric pattern and reducing symmetry:
+
+    p6m -> p6 (remove reflections)
+    p6 -> p3  (reduce 6-fold to 3-fold)
+    p3 -> p1  (remove all but translations)
+
+Each symmetry-breaking step is achieved by polynomial perturbation:
+
+    g(C) + epsilon * P(t)
+
+where P(t) is a polynomial that breaks the specific symmetry.
+
+Polyart module: polyart.symmetry.operations provides:
+
+    orbit(curve, group)
+    stabilizer(curve, group)
+    quotient(pattern, group)
+    symmetry_break(pattern, target_group, perturbation_strength)
+
+================================================================================
+7. TESSELLATION AND TILING
+================================================================================
+
+7.1 Polynomial Tessellation
+
+Many tilings can be described by polynomial curves:
+
+    Regular tilings:  equilateral triangles, squares, hexagons
+    Semiregular tilings: combinations of regular polygons
+    Aperiodic tilings: Penrose-like with polynomial approximations
+
+The dual of a tiling is obtained by connecting face centers:
+
+    dual_vertex(face_center) = polynomial_transform(face_center)
+
+7.2 Substitution Tilings
+
+Substitution rules replace each tile with smaller tiles:
+
+    Triangle -> 4 smaller triangles (Sierpinski-like)
+    Square -> 4 smaller squares (quadtree)
+    Hexagon -> 7 smaller hexagons (hexagonal subdivision)
+
+Each substitution is a polynomial mapping of tile vertices.
+
+7.3 Islamic Geometric Patterns
+
+Islamic geometric art follows specific symmetry constraints:
+
+    No figurative representation
+    Complex interlocking patterns
+    Mathematical precision
+
+These patterns are generated using:
+
+    1. Choose wallpaper group (typically p4m, p6m)
+    2. Construct rosette at lattice points
+    3. Connect rosettes with polynomial interlace curves
+    4. Apply over-under interlacing rules
+
+Polyart module: polyart.symmetry.tessellation provides:
+
+    Tessellation(type, symmetry_group)
+    .generate(motif, tile_count)
+    .dual()
+    .substitute(rule, iterations)
+    islamic_pattern(group, complexity, seed)
+
+================================================================================
+8. CONCLUSION
+================================================================================
+
+Symmetry groups provide the mathematical skeleton for pattern generation.
+By applying group operations to polynomial base curves, the polyart.symmetry
+module generates rosettes, friezes, wallpaper patterns, mandalas, and
+tessellations with guaranteed mathematical correctness and aesthetic
+quality. The interplay between group theory and polynomial geometry
+creates a rich design space where algebraic constraints produce visual
+beauty.
+
+The classification of all 17 wallpaper groups, 7 frieze groups, and
+infinite rosette groups ensures completeness: any periodic pattern in
+the plane can be analyzed and generated within this framework. Combined
+with the polynomial curve tools from earlier articles, the symmetry module
+provides a comprehensive toolkit for mathematical pattern art.
+
+Future work includes 3D symmetry groups (230 space groups), quasicrystal
+symmetry (5-fold, 8-fold, 10-fold, 12-fold), and real-time interactive
+symmetry manipulation for virtual reality art installations.
+
+================================================================================
+REFERENCES
+================================================================================
+
+[1]  Coxeter, H.S.M. (1969). "Introduction to Geometry." 2nd ed.,
+     Wiley.
+
+[2]  Grünbaum, B. & Shephard, G.C. (1987). "Tilings and Patterns."
+     W.H. Freeman.
+
+[3]  Conrad, K. (2020). "The 17 Planar Wallpaper Groups." University
+     of Connecticut lecture notes.
+
+[4]  Adamenko, A. (2021). "Symmetry Operations in Polynomial
+     Mathematical Art." J. Comp. Aesthetics, 14(2).
+
+[5]  Washburn, D.K. & Crowe, D.W. (2003). "Symmetries of Culture:
+     Theory and Practice of Plane Pattern Analysis." 2nd ed.,
+     University of Washington Press.
+
+[6]  Lee, A.J. (1986). "Islamic Star Patterns in Absolute Geometry."
+     Duke Mathematics Journal, 53(2), 475-521.
+
+[7]  Kappraff, J. (2002). "Beyond Measure: A Guided Tour Through
+     Nature, Myth, and Number." World Scientific.
+
+[8]  Armstrong, M.A. (1988). "Groups and Symmetry." Springer
+     Undergraduate Mathematics Series.
+
+================================================================================
+END OF ARTICLE
+================================================================================

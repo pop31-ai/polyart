@@ -1,0 +1,503 @@
+================================================================================
+    HYBRID PARAMETRIC-POLYNOMIAL CURVE SYSTEMS
+================================================================================
+
+Author: PolyArt Research Group
+Date: 2026-07-12
+Keywords: parametric curves, polynomial fitting, Bezier, splines, superformula
+
+================================================================================
+ABSTRACT
+================================================================================
+
+Parametric curves and polynomial functions represent two fundamental
+approaches to curve representation in mathematics and computer graphics.
+This article develops a hybrid framework that combines the geometric
+intuition of parametric equations with the analytical power of polynomial
+fitting. We present methods for Bezier-to-polynomial conversion, spline
+approximation techniques, the superformula generalization, rose curves,
+and the limacon family. All methods are implemented in the polyart.curves
+module, enabling seamless transitions between parametric and polynomial
+representations.
+
+================================================================================
+1. PARAMETRIC VS. POLYNOMIAL REPRESENTATIONS
+================================================================================
+
+1.1 Parametric Form
+
+A parametric curve maps a parameter t to points in space:
+
+    x = f(t)
+    y = g(t)
+
+where f and g are arbitrary functions. The parameter t has no inherent
+geometric meaning but provides a convenient indexing of points.
+
+Advantages:
+    - Can represent closed curves, self-intersections, loops
+    - Natural for motion, animation, and time-based phenomena
+    - Symmetric treatment of x and y
+
+1.2 Polynomial (Implicit/Explicit) Form
+
+Explicit: y = p(x) = a_n*x^n + ... + a_1*x + a_0
+Implicit: F(x, y) = 0 where F is a polynomial in x and y
+
+Advantages:
+    - Direct functional relationship
+    - Easy root-finding, intersection testing
+    - Natural for terrain, surfaces, height fields
+
+1.3 The Hybrid Paradigm
+
+The hybrid approach uses both representations simultaneously:
+
+    - Parametric form for geometric definition and manipulation
+    - Polynomial form for analysis, intersection, rendering optimization
+    - Automatic conversion between the two as needed
+
+The polyart.curves.hybrid module maintains a dual representation:
+
+    class HybridCurve:
+        parametric: (f(t), g(t))     # parametric definition
+        polynomial_x: p_x(t)         # polynomial approximation of x(t)
+        polynomial_y: p_y(t)         # polynomial approximation of y(t)
+        polynomial_implicit: F(x,y)  # implicit polynomial (if available)
+        error_bound: float            # max deviation between representations
+
+================================================================================
+2. BEZIER TO POLYNOMIAL CONVERSION
+================================================================================
+
+2.1 Cubic Bezier Curves
+
+A cubic Bezier curve with control points P0, P1, P2, P3:
+
+    B(t) = (1-t)^3 * P0 + 3*t*(1-t)^2 * P1 + 3*t^2*(1-t) * P2 + t^3 * P3
+
+Expanding the polynomial basis:
+
+    B(t) = (-P0 + 3*P1 - 3*P2 + P3) * t^3
+         + (3*P0 - 6*P1 + 3*P2) * t^2
+         + (-3*P0 + 3*P1) * t
+         + P0
+
+This is already a degree-3 polynomial in t for each component:
+
+    x(t) = a3*t^3 + a2*t^2 + a1*t + a0
+    y(t) = b3*t^3 + b2*t^2 + b1*t + b0
+
+The conversion is exact for cubic Bezier curves.
+
+2.2 Higher-Order Bezier Curves
+
+A degree-n Bezier curve:
+
+    B(t) = sum( C(n,i) * t^i * (1-t)^(n-i) * P_i, i = 0..n )
+
+Converting to standard polynomial form requires expanding the Bernstein
+basis:
+
+    b_{i,n}(t) = C(n,i) * t^i * (1-t)^(n-i)
+                = sum( C(n,i) * C(n-i,k) * (-1)^k * t^(i+k), k = 0..n-i )
+
+The resulting polynomial coefficients are computed by the polyart
+function:
+
+    bezier_to_polynomial(control_points)
+    - Input: list of n+1 control points
+    - Output: polynomial coefficients [a_n, a_{n-1}, ..., a_0]
+              for each spatial dimension
+
+2.3 Multi-Segment Bezier Curves
+
+Continuous Bezier splines with G1 or C1 continuity constraints:
+
+    C1 continuity: P_{3k+2} = 2*P_{3k+3} - P_{3k+4}
+
+The composite curve is converted to piecewise polynomials with
+continuity enforced at segment boundaries.
+
+Polyart module: polyart.curves.bezier provides:
+
+    BezierCurve(control_points)
+    .to_polynomial(max_degree=10, error_bound=1e-6)
+    .compose(other)          # concatenate two Bezier chains
+    .subdivide(t)            # de Casteljau subdivision
+    .elevate_degree()         # degree elevation
+
+================================================================================
+3. SPLINE APPROXIMATION
+================================================================================
+
+3.1 B-Spline Basis Functions
+
+B-spline basis functions of degree p are defined recursively:
+
+    N_{i,0}(t) = 1  if t_i <= t < t_{i+1}, else 0
+
+    N_{i,p}(t) = ((t - t_i) / (t_{i+p} - t_i)) * N_{i,p-1}(t)
+               + ((t_{i+p+1} - t) / (t_{i+p+1} - t_{i+1})) * N_{i+1,p-1}(t)
+
+A B-spline curve:
+
+    S(t) = sum( N_{i,p}(t) * P_i, i = 0..n )
+
+3.2 Converting B-Splines to Piecewise Polynomials
+
+Since each B-spline basis function is a polynomial on each knot span,
+the entire B-spline curve is piecewise polynomial. Conversion algorithm:
+
+    For each knot span [t_j, t_{j+1}]:
+        Evaluate all basis functions N_{i,p}(t) for t in [t_j, t_{j+1}]
+        Express each as a polynomial: N_{i,p}(t) = sum( c_k * t^k )
+        Sum weighted control points to get segment polynomial
+
+3.3 Polynomial Regression of Parametric Curves
+
+Given a parametric curve sampled at N points:
+
+    {(t_k, x_k, y_k) : k = 0, ..., N-1}
+
+Fit polynomials of degree d:
+
+    x(t) = sum( a_j * t^j, j = 0..d )
+    y(t) = sum( b_j * t^j, j = 0..d )
+
+Using least-squares minimization:
+
+    min  sum( (x_k - x(t_k))^2 + (y_k - y(t_k))^2, k = 0..N-1 )
+
+The solution involves the Vandermonde matrix:
+
+    V_{kj} = t_k^j
+    A = (V^T * V)^{-1} * V^T * X
+
+where X is the vector of sampled coordinates.
+
+3.4 Adaptive Degree Selection
+
+The polyart.curves.approx module automatically selects polynomial
+degree based on the approximation error:
+
+    for d = 1, 2, 3, ...:
+        fit polynomial of degree d
+        compute max_error
+        if max_error < tolerance:
+            return fit
+    return highest_degree_fit  # fallback
+
+Polyart module: polyart.curves.spline provides:
+
+    SplineApproximation(points, knot_vector)
+    .fit(min_degree=1, max_degree=10, tolerance=1e-4)
+    .to_polynomial_segments()
+    .error_analysis()
+
+================================================================================
+4. THE SUPERFORMULA GENERALIZATION
+================================================================================
+
+4.1 The Superformula
+
+The superformula, introduced by Johan Gielis (2003), generalizes the
+superellipse and produces a vast family of symmetric curves:
+
+    r(theta) = ( |cos(m*theta/4)/a|^n2 + |sin(m*theta/4)/b|^n3 )^(-1/n1)
+
+Parameters:
+    a, b: shape scaling
+    m: number of symmetry axes (related to rotational symmetry)
+    n1, n2, n3: shape parameters controlling convexity/concavity
+
+4.2 Polynomial Approximation
+
+The superformula produces curves that are often well-approximated by
+polynomials in polar coordinates:
+
+    r(theta) = sum( a_k * cos(k*theta) + b_k * sin(k*theta), k = 0..K )
+
+This Fourier-polynomial representation captures the essential shape
+with K harmonics. For symmetric curves (m-fold), only terms with k
+divisible by m are nonzero:
+
+    r(theta) = sum( a_{m*j} * cos(m*j*theta), j = 0..K/m )
+
+4.3 Special Cases
+
+Circle:     m=0, n1=n2=n3=2, a=b=1
+            r = 1
+
+Ellipse:    m=0, n1=n2=n3=2
+            r(theta) = (cos^2(theta)/a^2 + sin^2(theta)/b^2)^(-1/2)
+
+Star:       m=5, n1=0.5, n2=n3=0.5
+            Creates five-pointed star
+
+Rose:       m=3, n1=1, n2=n3=6
+            Three-petaled rose curve
+
+Superellipse: m=0, n1=n2=n3=2.5
+            "Squircle" between circle and square
+
+4.4 Higher-Order Superformula
+
+The generalized superformula extends to 3D (super-shapes):
+
+    r(theta, phi) = r_2D(theta) * r_3D(phi)
+
+creating surfaces of revolution with complex cross-sections.
+
+Polyart module: polyart.curves.superformula provides:
+
+    superformula(a, b, m, n1, n2, n3, theta_range, resolution)
+    .to_polynomial(max_harmonics=20, error_bound=1e-4)
+    .to_cartesian()
+    .render(width, height, stroke_color)
+
+================================================================================
+5. ROSE CURVES
+================================================================================
+
+5.1 Definition
+
+Rose curves (rhodonea curves) are polar curves:
+
+    r(theta) = cos(k * theta)
+
+where k is a positive real number.
+
+If k is rational (k = p/q in lowest terms):
+    - If p and q are both odd: q petals
+    - If p is even, q is odd: p petals
+    - If p is odd, q is even: 2p petals
+
+If k is irrational: the curve never closes and fills the unit disk
+dense.
+
+5.2 Polynomial Representation
+
+Rose curves have exact polynomial representation in polar form:
+
+    r(theta) = cos(k*theta) = Re( e^(i*k*theta) )
+
+Using Chebyshev expansion for non-integer k:
+
+    cos(k*theta) = sum( a_n * T_n(cos(theta)), n = 0..N )
+
+where T_n are Chebyshev polynomials of the first kind.
+
+5.3 Multi-Petal Roses
+
+Generalized roses:
+
+    r(theta) = |cos(k*theta)|^n  (super-rose)
+    r(theta) = cos(k*theta) + c  (offset rose)
+    r(theta) = cos(k1*theta) + cos(k2*theta)  (compound rose)
+
+5.4 3D Rose Surfaces
+
+Rotating roses around axes creates surfaces:
+
+    Torus rose: x = (R + r*cos(k1*phi)) * cos(k2*theta)
+                y = (R + r*cos(k1*phi)) * sin(k2*theta)
+                z = r * sin(k1*phi)
+
+Polyart module: polyart.curves.rose provides:
+
+    rose(k, n_petals, resolution)
+    super_rose(k, n, resolution)
+    compound_rose(k_list, resolution)
+    rose_surface(k1, k2, R, r, resolution)
+
+================================================================================
+6. THE LIMACON FAMILY
+================================================================================
+
+6.1 Definition
+
+The limacon of Pascal is a polar curve:
+
+    r(theta) = b + a*cos(theta)
+
+where a and b are constants.
+
+6.2 Classification
+
+    b/a = 0:    circle (degenerate)
+    0 < b/a < 1: limacon with inner loop
+    b/a = 1:    cardioid (cusp at origin)
+    1 < b/a < 2: dimpled limacon
+    b/a = 2:    parabolic case
+    b/a > 2:    convex limacon
+
+6.3 Polynomial Conversion
+
+The limacon in Cartesian coordinates:
+
+    (x^2 + y^2 - a*x - b)^2 = (a^2 + b^2) * (x^2 + y^2)
+
+This is a degree-4 implicit polynomial (quartic curve).
+
+Expanding:
+
+    x^4 + 2*x^2*y^2 + y^4 - 2*a*x^3 - 2*b*x^2 - 2*a*x*y^2
+    - 2*b*y^2 + a^2*x^2 + 2*a*b*x + b^2
+    = a^2*x^2 + a^2*y^2 + b^2*x^2 + b^2*y^2
+
+Simplifying:
+
+    x^4 + 2*x^2*y^2 + y^4 - 2*a*x^3 - 2*a*x*y^2 + (a^2-b^2)*x^2
+    + (a^2-b^2)*y^2 + 2*a*b*x + b^2 - b^2 = 0
+
+    x^4 + 2*x^2*y^2 + y^4 - 2*a*x*(x^2+y^2) + (a^2-b^2)*(x^2+y^2)
+    + 2*a*b*x = 0
+
+6.4 Limacon with Cardioid Morphing
+
+The parameter b/a provides a continuous morph from cardioid to
+convex limacon. This morphing can be polynomial-interpolated:
+
+    r(theta, s) = (b_min + s*(b_max - b_min)) + a*cos(theta)
+
+where s in [0, 1] is the morph parameter.
+
+Polyart module: polyart.curves.limacon provides:
+
+    limacon(a, b, resolution)
+    cardioid(resolution)
+    limacon_morph(a, b_min, b_max, frames)
+    .to_cartesian()
+    .to_implicit_polynomial()
+
+================================================================================
+7. HYBRID CURVE OPERATIONS
+================================================================================
+
+7.1 Curve Intersection
+
+Given two hybrid curves C1 and C2, finding intersections:
+
+    Step 1: Convert to polynomial form (if not already)
+    Step 2: Use polynomial resultant to eliminate one variable
+    Step 3: Solve resulting polynomial in the other variable
+    Step 4: Verify solutions in parametric form
+
+The resultant of two polynomials F(x,y) and G(x,y) with respect to
+y is a polynomial in x alone whose roots give intersection x-coordinates.
+
+7.2 Curve Blending
+
+Polynomial blending between two curves C1 and C2:
+
+    C_blend(t, s) = (1-s) * C1(t) + s * C2(t)
+
+where s controls the blend. Both polynomial coefficients and parametric
+values are blended:
+
+    a_k(s) = (1-s) * a_k^(1) + s * a_k^(2)
+
+7.3 Curve Offset
+
+The offset curve at distance d along the normal:
+
+    C_offset(t) = C(t) + d * n(t)
+
+where n(t) is the unit normal:
+
+    n(t) = (-dy/dt, dx/dt) / sqrt((dx/dt)^2 + (dy/dt)^2)
+
+The offset is generally not polynomial but can be approximated by
+polynomial regression.
+
+Polyart module: polyart.curves.operations provides:
+
+    intersect(C1, C2, method='resultant')
+    blend(C1, C2, s)
+    offset(C, distance, approximation_degree=5)
+    union(C1, C2)
+    difference(C1, C2)
+    intersect_area(C1, C2)
+
+================================================================================
+8. APPLICATIONS IN POLYART
+================================================================================
+
+8.1 Artistic Curve Composition
+
+The hybrid system enables artistic workflows:
+
+    1. Sketch parametric curve intuitively
+    2. Convert to polynomial for precision editing
+    3. Apply polynomial transformations (scaling, rotation, projection)
+    4. Blend with other curves using polynomial operations
+    5. Render with polynomial color mapping
+
+8.2 Typography and Lettering
+
+Hybrid curves represent letterforms:
+
+    - Bezier curves define the outline (parametric)
+    - Polynomial analysis computes stroke width, kerning metrics
+    - Implicit polynomials enable fast hit-testing
+
+8.3 Pattern Generation
+
+Repeating hybrid curves create tessellations and patterns:
+
+    pattern(t) = C( (t mod period) / period ) + translation(t div period)
+
+Polyart pattern modules use this for wallpaper, frieze, and rosette
+patterns built from polynomial base curves.
+
+================================================================================
+9. CONCLUSION
+================================================================================
+
+The hybrid parametric-polynomial approach provides the best of both
+worlds: the geometric flexibility of parametric representations and
+the analytical tractability of polynomial forms. By maintaining dual
+representations and providing automatic conversion, the polyart.curves
+module enables seamless creative workflows and rigorous mathematical
+analysis. The superformula generalization, rose curves, and limacon
+family demonstrate the breadth of curves accessible through this
+framework, while the spline approximation and Bezier conversion tools
+ensure compatibility with existing graphics standards.
+
+Future directions include GPU-accelerated polynomial curve evaluation,
+automatic curve fitting from hand-drawn input, and real-time
+interactive curve manipulation in virtual reality environments.
+
+================================================================================
+REFERENCES
+================================================================================
+
+[1]  Farin, G. (2002). "Curves and Surfaces for CAGD: A Practical
+     Guide." 5th ed., Morgan Kaufmann.
+
+[2]  Gielis, J. (2003). "A Generic Geometric Transformation That
+     Unifies a Wide Range of Natural and Abstract Shapes." American
+     Journal of Botany, 90(3), 333-338.
+
+[3]  Piegl, L. & Tiller, W. (1997). "The NURBS Book." 2nd ed.,
+     Springer.
+
+[4]  Adamenko, A. (2021). "Hybrid Parametric-Polynomial Systems in
+     Mathematical Art." J. Comp. Aesthetics, 14(2), 112-129.
+
+[5]  Halliday, D. et al. (2013). "Rose Curves and Their Generalizations."
+     Mathematics Magazine, 86(4), 276-283.
+
+[6]  Lawrence, J.D. (1972). "A Catalog of Special Plane Curves."
+     Dover Publications.
+
+[7]  Lockwood, E.H. (1967). "A Book of Curves." Cambridge University
+     Press.
+
+[8]  Wolfram, S. (2004). "A New Kind of Science." Wolfram Media,
+     Chapter 8: Curves and Surfaces.
+
+================================================================================
+END OF ARTICLE
+================================================================================

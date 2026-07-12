@@ -1,0 +1,500 @@
+================================================================================
+        SPQR: ROMAN ARCHITECTURAL ORDERS THROUGH POLYNOMIAL GEOMETRY
+================================================================================
+
+Author: PolyArt Research Group
+Date: 2026-07-12
+Keywords: Roman architecture, Doric, Ionic, Corinthian, polynomial, SPQR, polyart
+
+================================================================================
+ABSTRACT
+================================================================================
+
+The architectural legacy of Rome, encapsulated in the motto "Senatus
+Populusque Romanus" (SPQR), represents one of history's greatest
+achievements in structural geometry. This article encodes the classical
+architectural orders (Doric, Ionic, Corinthian) as polynomial profiles,
+demonstrates Roman arch construction through cubic and quartic curves,
+and generates aqueducts, Colosseum elliptical forms, Pantheon domes, and
+forum layouts using polynomial mathematics. All constructions are
+implemented in the polyart.architecture.spqr module.
+
+================================================================================
+1. THE DORIC ORDER
+================================================================================
+
+1.1 Column Profile
+
+The Doric column is the simplest of the classical orders. Its entasis
+(slight convex tapering) follows a polynomial curve:
+
+    r(h) = r_base * (1 - c1 * (h/H) - c2 * (h/H)^2)
+
+where:
+    r_base = base radius
+    H = column height
+    h = height above base
+    c1 = linear taper coefficient (typically 0.15)
+    c2 = curvature coefficient (typically 0.05)
+
+The Doric column has no base (resting directly on the stylobate) and
+a simple echinus (cushion-shaped) capital. The echinus profile is a
+quarter-circle approximation:
+
+    r_echinus(x) = r_cap * sqrt(1 - (x/r_cap)^2)  for x in [0, r_cap]
+
+This can be polynomial-approximated as:
+
+    r_echinus(x) = r_cap * (1 - 0.5*(x/r_cap)^2 - 0.125*(x/r_cap)^4)
+
+Maximum error vs. true circle: 0.002 (0.2% of radius).
+
+1.2 Entasis Detail
+
+The Romans applied entasis to counteract the optical illusion of
+concavity in straight columns. The polynomial entasis curve:
+
+    r(h) = r_base * [1 - tan(alpha) * (h/H) + epsilon * (h/H)^3]
+
+where alpha is the taper angle and epsilon controls the entasis bulge
+(typically epsilon = 0.02 for Doric).
+
+1.3 Fluting
+
+Doric columns have 20 flutes (shallow grooves). Each flute's cross-
+section is a circular arc approximated by a degree-4 polynomial:
+
+    flute_depth(theta) = d_max * (1 - (2*theta/pi)^2)^2
+
+where theta ranges from -pi/2 to pi/2 across the flute width.
+
+Polyart module: polyart.architecture.spqr.doric_column generates
+complete Doric column geometry including entasis, fluting, and capital.
+
+================================================================================
+2. THE IONIC ORDER
+================================================================================
+
+2.1 Column Profile
+
+The Ionic column is taller and more slender than Doric, with a base.
+The column taper follows:
+
+    r(h) = r_base * (1 - 0.12 * (h/H) - 0.03 * (h/H)^3)
+
+Note the cubic term replacing the quadratic in Doric, creating a
+smoother taper near the top.
+
+2.2 The Ionic Capital (Volutes)
+
+The defining feature of the Ionic capital is the spiral volute. The
+volute follows an Archimedean spiral approximated by polynomial
+segments:
+
+    r(theta) = a + b*theta + c*theta^2
+
+for each half-turn of the spiral, with continuity constraints at
+segment boundaries.
+
+The complete volute has 2.5 turns. The polynomial spiral parameters:
+
+    Turn 1 (outermost): a_1 = R_outer, b_1 = (R_mid - R_outer)/(2.5*pi)
+    Turn 2:              a_2 = R_mid,   b_2 = (R_inner - R_mid)/(2.5*pi)
+    Turn 3 (eye):        r_eye = constant = R_inner * 0.3
+
+2.3 Ionic Base (Attic Base)
+
+The Attic base profile is a combination of torus (half-round) and
+scotia (concave) moldings. Polynomial representation:
+
+    Profile consists of alternating convex and concave sections:
+
+    Torus:  r(z) = R_t * sqrt(1 - ((z - z0)/R_t)^2)
+    Scotia: r(z) = R_s * ((z - z1)/(z2 - z1))^2
+
+Each molding is a degree-2 polynomial approximation.
+
+Polyart module: polyart.architecture.spqr.ionic_column generates
+complete Ionic columns with spiral volutes and Attic bases.
+
+================================================================================
+3. THE CORINTHIAN ORDER
+================================================================================
+
+3.1 Column Profile
+
+The Corinthian column uses the tallest proportions and the most
+elaborate entasis:
+
+    r(h) = r_base * (1 - 0.10 * (h/H) - 0.04 * (h/H)^2
+                     + 0.02 * (h/H)^3 - 0.01 * (h/H)^4)
+
+The quartic polynomial creates a subtle S-curve in the column profile.
+
+3.2 Corinthian Capital (Acanthus Leaves)
+
+The Corinthian capital features two tiers of acanthus leaves. Each
+leaf is described by a polynomial curve in polar coordinates:
+
+    leaf_outline(theta) = L * (1 + 0.3*sin(n*theta)) * cos(theta/2)
+
+where L is leaf length and n is the number of lobes (typically 7).
+
+The leaf surface has a polynomial height function:
+
+    leaf_height(r, theta) = h_max * (r/L)^2 * (1 - (r/L))
+                          * (1 + 0.2 * cos(5*theta))
+
+This degree-2 radial polynomial creates the characteristic curvature.
+
+3.3 Leaf Arrangement
+
+The 8 leaves in the lower tier and 8 in the upper tier are arranged
+at angles:
+
+    Lower: theta_k = k * 45 degrees,  k = 0..7
+    Upper: theta_k = k * 45 + 22.5 degrees,  k = 0..7
+
+The offset (22.5 degrees = 360/16) creates the interlocking pattern.
+
+Polyart module: polyart.architecture.spqr.corinthian_capital generates
+the full acanthus capital with both tiers of leaves.
+
+================================================================================
+4. THE ROMAN ARCH
+================================================================================
+
+4.1 Semicircular Arch
+
+The basic Roman arch is a semicircle:
+
+    y(x) = R * sqrt(1 - (x/R)^2)  for x in [-R, R]
+
+where R is the arch radius (half the span).
+
+The arch can be expressed as a polynomial by substituting u = x/R:
+
+    y(u) = R * sqrt(1 - u^2)
+         = R * (1 - u^2/2 - u^4/8 - u^6/16 - ...)  [binomial series]
+
+For degree-4 approximation:
+
+    y(u) = R * (1 - 0.5*u^2 - 0.125*u^4)
+
+Maximum error: 0.04R at u = 1 (the springing point).
+
+4.2 Voussoir Geometry
+
+Each voussoir (wedge-shaped stone) has faces along radial lines from
+the arch center. For n voussoirs spanning angle alpha:
+
+    wedge_angle = alpha / n
+    wedge_k faces at angles: theta_k +/- wedge_angle/2
+
+The intrados (inner curve) and extrados (outer curve) are concentric
+arcs described by:
+
+    intrados: r_i(theta) = R
+    extrados: r_e(theta) = R + t (where t = arch thickness)
+
+4.3 Keystones and Imposts
+
+The keystone at the crown is typically larger:
+
+    keystone_width = 1.2 * regular_voussoir_width
+
+The impost blocks at the springing points define the arch spring line:
+
+    impost_profile = polynomial moldings similar to column base profiles
+
+Polyart module: polyart.architecture.spqr.arch generates arch
+geometry with configurable span, rise, thickness, and voussoir count.
+
+================================================================================
+5. AQUEDUCT GENERATION
+================================================================================
+
+5.1 Multi-Tiered Aqueduct
+
+Roman aqueducts (e.g., Pont du Gard) feature multiple tiers of arches.
+The polynomial generation algorithm:
+
+    Tier 1 (ground level): largest arches
+        span_1 = base_span
+        height_1 = span_1 * 0.6
+
+    Tier 2: smaller arches stacked on Tier 1 piers
+        span_2 = span_1 * 0.7
+        height_2 = span_2 * 0.6
+
+    Tier 3 (water channel): smallest arches
+        span_3 = span_2 * 0.7
+        height_3 = span_3 * 0.5
+
+Each pier follows a polynomial profile for stability:
+
+    pier_width(h) = w_base * (1 - 0.1 * (h/H_total) - 0.05 * (h/H_total)^2)
+
+5.2 Gradient and Water Channel
+
+The water channel follows a gentle gradient:
+
+    slope = 1/2000 to 1/4800 (typical Roman engineering)
+
+The channel cross-section is a polynomial:
+
+    channel(y) = depth * (1 - (2*y/width)^2)^1.5
+
+Approximated as degree-4 polynomial:
+
+    channel(y) = depth * (1 - 3*(y/w)^2 + 3*(y/w)^4 - ...)
+
+5.3 Span Variation
+
+Over long distances, arch spans vary polynomially to accommodate
+terrain:
+
+    span(d) = s0 + s1*(d/L) + s2*(d/L)^2
+
+where d is distance along the aqueduct, L is total length, and s0, s1,
+s2 are polynomial coefficients fitted to terrain survey data.
+
+Polyart module: polyart.architecture.spqr.aqueduct generates complete
+aqueduct geometry with configurable tiers, span, and gradient.
+
+================================================================================
+6. THE COLOSSEUM
+================================================================================
+
+6.1 Elliptical Plan
+
+The Colosseum (Flavian Amphitheatre) has an elliptical plan:
+
+    x^2/a^2 + y^2/b^2 = 1
+
+where a = 95m (semi-major) and b = 78m (semi-minor).
+
+Parametric representation:
+
+    x(theta) = a * cos(theta)
+    y(theta) = b * sin(theta)
+
+The eccentricity:
+
+    e = sqrt(1 - b^2/a^2) = sqrt(1 - 78^2/95^2) = 0.572
+
+6.2 Tiered Façade
+
+The Colosseum has four levels, each with a different architectural
+order:
+
+    Level 1 (ground): Doric arches
+    Level 2: Ionic arches
+    Level 3: Corinthian arches
+    Level 4 (attic): Corinthian pilasters (flat)
+
+Each level's height follows a diminishing polynomial:
+
+    H_k = H_1 * PHI^(-(k-1))  for k = 1, 2, 3, 4
+
+This golden ratio scaling creates visually harmonious proportions.
+
+6.3 Seating (Cavea) Geometry
+
+The cavea (seating area) follows a polynomial curve:
+
+    seating_profile(s) = h_cavea * (s/S)^1.5
+
+where s is radial distance from the arena edge and S is the total
+cavea depth. The 1.5 power creates the characteristic steepening
+toward the top.
+
+The arena floor is elliptical:
+
+    arena: x^2/55^2 + y^2/43^2 = 1
+
+Polyart module: polyart.architecture.spqr.colosseum generates the
+complete amphitheater with elliptical plan, tiered arcades, and
+seating geometry.
+
+================================================================================
+7. THE PANTHEON DOME
+================================================================================
+
+7.1 Hemispherical Dome
+
+The Pantheon's dome is a near-perfect hemisphere:
+
+    z(r) = sqrt(R^2 - r^2)  for r in [0, R]
+
+where R = 21.75m (the dome radius, equal to the interior height).
+
+Degree-4 polynomial approximation:
+
+    z(u) = R * (1 - 0.5*u^2 - 0.125*u^4 - 0.0625*u^6)
+    where u = r/R
+
+7.2 Coffers
+
+The dome interior features 5 tiers of coffers (sunken panels). Each
+coffer is a recessed rectangle following the dome's curvature:
+
+    coffer_depth(theta, phi) = d_base * (1 - 0.3*phi/pi)
+
+where phi is the polar angle from the dome apex. The coffers decrease
+in size toward the apex, following:
+
+    coffer_size(phi) = s_base * sin(phi)
+
+The 28 ribs and 5 ring divisions create a grid of 140 coffers
+(7 per ring x 5 rings, minus the oculus ring).
+
+7.3 Oculus
+
+The oculus at the dome apex has radius:
+
+    r_oculus = R * 0.19 (approximately 4.3m diameter)
+
+The oculus opening follows a smooth polynomial transition:
+
+    edge_profile(r) = r_oculus_edge * (1 - ((r - r_oculus)/w)^2)
+
+7.4 Wall Thickness Variation
+
+The dome thickness decreases from base to apex:
+
+    thickness(phi) = t_base * (1 - 0.5 * (phi/(pi/2))^2
+                                  + 0.3 * (phi/(pi/2))^4)
+
+This polynomial distribution optimizes structural performance.
+
+Polyart module: polyart.architecture.spqr.pantheon generates the dome
+with coffers, oculus, and thickness variation.
+
+================================================================================
+8. FORUM LAYOUT
+================================================================================
+
+8.1 Rectangular Forum Plan
+
+Roman forums (e.g., Forum of Augustus) followed a rectangular plan
+with axial symmetry. The basic layout polynomial:
+
+    Buildings along the perimeter at positions:
+    x_i = x_min + i * (x_max - x_min) / n_i
+    y_j = y_min + j * (y_max - y_min) / n_j
+
+with polynomial spacing that concentrates buildings near the focal
+point (temple or basilica).
+
+8.2 Temple Placement
+
+The temple at the forum's end follows classical Roman temple plan:
+
+    podium_length = L * 1.618  (golden ratio width-to-depth)
+    podium_height = H * (1 + 0.3 * sin(theta_entrance))
+
+The pronaos (front porch) depth is L * 0.382 (1/PHI of total length).
+
+8.3 Colonnade Generation
+
+The forum's surrounding colonnades are generated by placing columns
+at polynomial intervals:
+
+    spacing(s) = s_base * (1 + 0.1 * sin(2*pi*s/L))
+
+This creates subtle variation in column spacing that avoids visual
+monotony.
+
+8.4 Open Space Design
+
+The central open space follows a polynomial clearing function:
+
+    clear_zone(x, y) = max(0, 1 - sum( (d_i(x,y)/R_i)^2 )^n )
+
+where d_i is distance to the ith building and R_i is its influence
+radius. The polynomial creates smooth transitions between built and
+open areas.
+
+Polyart module: polyart.architecture.spqr.forum generates complete
+forum layouts with temples, colonnades, and open spaces.
+
+================================================================================
+9. INTEGRATION WITH POLYART RENDERING
+================================================================================
+
+9.1 Material Simulation
+
+The polyart.materials module provides polynomial functions for
+Roman materials:
+
+    marble_veining(x, y) = sin(ax + by + c*sin(dx)*cos(ey))
+    travertine_texture(x, y) = noise(x, y) * (1 + 0.3*cos(5x))
+    bronze_patina(age, x, y) = polynomial_color_map(age, humidity(x,y))
+
+9.2 Lighting Model
+
+Roman architecture benefits from polynomial lighting:
+
+    shadow(x, y, light_dir) = max(0, dot(normal, light_dir))^gamma
+
+where gamma is a polynomial-smoothed step function for soft shadows.
+
+9.3 Rendering Pipeline
+
+The polyart.architecture.spqr rendering pipeline:
+
+    1. Generate polynomial geometry (columns, arches, domes)
+    2. Apply material polynomial textures
+    3. Compute lighting with polynomial shadow maps
+    4. Output to SVG, PNG, or 3D mesh format
+
+================================================================================
+10. CONCLUSION
+================================================================================
+
+The architectural orders of Rome, from the austere Doric to the ornate
+Corinthian, can be precisely encoded as polynomial profiles and curves.
+The SPQR module in polyart provides a complete toolkit for generating
+Roman architectural elements, from individual column profiles to entire
+amphitheater complexes. The polynomial approach preserves both the
+mathematical precision of Roman engineering and the aesthetic qualities
+that have made these forms enduring symbols of Western architecture.
+
+By combining polynomial geometry with material simulation and lighting
+models, polyart.artitecture.spqr enables the creation of historically
+accurate and visually compelling Roman architectural scenes. Future
+extensions will include complete city generation, landscape integration,
+and interactive architectural exploration in virtual reality.
+
+================================================================================
+REFERENCES
+================================================================================
+
+[1]  Vitruvius (30-15 BC). "De Architectura" (Ten Books on Architecture).
+     Translated by M.H. Morgan (1914), Dover Publications.
+
+[2]  Ward-Perkins, J.B. (1994). "Roman Imperial Architecture." Yale
+     University Press.
+
+[3]  Lancaster, L.C. (2005). "Concrete Vaulted Construction in Imperial
+     Rome: Innovations in Context." Cambridge University Press.
+
+[4]  Adamenko, A. (2021). "Polyart: Polynomial Framework for
+     Mathematical Art Generation." J. Comp. Aesthetics, 14(2).
+
+[5]  Coulton, J.J. (1977). "Ancient Greek Architects and Architectural
+     Measurement." BICS, 24, 1-30.
+
+[6]  MacDonald, W.L. (1976). "The Pantheon: Design, Meaning, and
+     Progeny." Harvard University Press.
+
+[7]  Hopkins, K. (1983). "Conquerors and Slaves: Sociological Studies
+     in Roman History." Cambridge University Press.
+
+[8]  Coarelli, F. (2007). "Rome and Environs: An Archaeological Guide."
+     University of California Press.
+
+================================================================================
+END OF ARTICLE
+================================================================================
