@@ -16,7 +16,12 @@ polyart/
   polyart_biology.py      # Biology: GrowthCurves, Phyllotaxis, Biomechanics, TuringPatterns, Variants
   polyart_3d.py           # 3D: Wireframe3D, Surface3D, Scene3D, Rotations
   polyart_cv_test.py      # Computer Vision: art vs nature classification, rarity scoring
-  examples/               # 10 showcase demos (799 obj mandala, RPG mockup, etc.)
+  polyart_emotions.py     # Emotion Templates: 10 emotions + 4 physical states
+  polyart_animals.py      # Animal Templates: 9 animals in polynomial style
+  polyart_lang.py         # Meta-Language DSL: tokenizer, parser, interpreter (50+ commands)
+  polyart_curves.py       # Curves Library: body systems - skeletal, muscle, skin, veins, nerves, limbs, head, figure
+  polyart_flowers.py      # Botanical Art: flowers (rose, lily, daisy, tulip, sunflower, orchid, lotus), plants, compositions
+  examples/               # 13 showcase demos + 3 .polyart scripts
   articles/               # 12 technical articles
   CONTRIBUTORS.md         # 30+ team members
   CHANGELOG.md            # Version history
@@ -32,6 +37,11 @@ polyart/
 | `polyart_biology` | Mathematical biology | GrowthCurves, Phyllotaxis, Biomechanics, TuringPatterns, VariantGenerator |
 | `polyart_3d` | 3D wireframe & surfaces | Wireframe3D, Surface3D, Scene3D, Rotations |
 | `polyart_cv_test` | Computer vision classification | ImageFeatureExtractor, RarityScorer, PolyArtCVTest |
+| `polyart_emotions` | Emotion & state rendering | EmotionTemplates (10 emotions), StateTemplates (4 states) |
+| `polyart_animals` | Animal polynomial art | AnimalTemplates (lion, eagle, wolf, horse, snake, bear, dolphin, owl, dragon) |
+| `polyart_lang` | Meta-language DSL | Tokenizer, Parser, Interpreter - 50+ built-in commands |
+| `polyart_curves` | Body system curves | SkeletalCurves, MuscleCurves, SkinCurves, VeinCurves, NerveCurves, LimbCurves, HeadCurves, FigureCurves |
+| `polyart_flowers` | Botanical art | FlowerCurves, PlantCurves, CompositionCurves |
 
 ## Quick Start
 
@@ -89,6 +99,62 @@ print(f"Rarity: {result['rarity']}/100")
 print(f"Classification: {result['classification']}")
 ```
 
+### Emotions & States
+
+```python
+from polyart_emotions import EmotionTemplates, StateTemplates
+
+# Render emotions
+EmotionTemplates.joy("joy.png")
+EmotionTemplates.anger("anger.png")
+
+# Render physical states
+StateTemplates.sleeping("sleeping.png")
+StateTemplates.dancing("dancing.png")
+```
+
+### Animal Art
+
+```python
+from polyart_animals import AnimalTemplates
+
+AnimalTemplates.lion("lion.png", s=3.0)
+AnimalTemplates.dragon("dragon.png", s=4.0)
+```
+
+### Botanical / Floral Art
+
+```python
+from polyart_flowers import FlowerCurves, PlantCurves, CompositionCurves
+
+# Single flower
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots()
+FlowerCurves.sunflower(ax, 0, 0, s=2.0)
+FlowerCurves.rose(ax, -3, 0, s=1.5, petals=8)
+FlowerCurves.lotus(ax, 3, 0, s=1.5)
+plt.savefig("flowers.png")
+
+# Full composition
+CompositionCurves.garden_scene(ax, 0, 0, s=5.0)
+CompositionCurves.wreath(ax, 0, 0, s=3.0, n_flowers=12)
+```
+
+### Meta-Language DSL
+
+```
+# demo.polyart
+canvas 10 10 "#0d0a1a"
+color "#c8a040"
+repeat 6 {
+    rotate $i * 60 {
+        spiral 0 0 0.05 4 2.0
+    }
+}
+flower 2 2 0.5 6 "#d94a6e"
+save "output.png"
+```
+
 ## Showcase Examples
 
 | # | Name | Objects | Description |
@@ -103,6 +169,16 @@ print(f"Classification: {result['classification']}")
 | 08 | Greek Amphora Gallery | 121 | 5 lathe-rendered vessels |
 | 09 | Flower Variants | 78 | 8 parametric flower forms |
 | 10 | Biomechanical Atlas | 57 | Bones, joints, tendons, Wolff's law |
+
+### Generated Showcases
+
+| Image | CV Classification | Rarity |
+|-------|------------------|--------|
+| `emotions_showcase.png` | ART | 56/100 |
+| `states_showcase.png` | ART | 55/100 |
+| `animals_showcase.png` | ART | 63/100 |
+| `curves_library_showcase.png` | ART | 59/100 |
+| `flowers_showcase.png` | ART | 63/100 |
 
 ## Articles
 
