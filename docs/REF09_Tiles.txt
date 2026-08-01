@@ -1,0 +1,112 @@
+# PolyArt Reference 09: Game Tiles
+
+## polyart_tiles.py
+
+Round game components built on the polynomial Canvas: coasters, chips,
+spinners, fields. Everything uses the golden ratio — no PIL post-processing
+(round rendering is done by `Canvas.render(round=True)`).
+
+```python
+from polyart_api import Canvas
+from polyart_tiles import make_tile, sector, ring, render_round, render_spinner
+```
+
+### make_tile
+
+Constructor of a round tile: radial gradient background, golden-angle node
+web, golden spiral, optional content and ring.
+
+```python
+def content(c):
+    sector(c, 0, 0, 2.4, 0, 3.14, fill=True, fill_color="#db323e")
+
+tile = make_tile("#f2f6ff", "#9fb6d8", hue_offset=200,
+                 content_fn=content, seed=7, name="Coaster",
+                 radius=3.0, web=True, spiral=True, ring_color="#8ca8c8")
+render_round(tile, "coaster.png", dpi=300)
+```
+
+**Parameters (make_tile):**
+- `bg_top`, `bg_bottom` (str): Radial gradient colors (#hex)
+- `hue_offset` (float): Emotion hue shift (degrees) for web and spiral
+- `content_fn` (callable): `content_fn(canvas) -> None`
+- `seed` (int): Randomness seed
+- `name` (str): Canvas name
+- `radius` (float): Canvas radius in units
+- `web` (bool): Draw golden-angle node network
+- `spiral` (bool): Draw golden spiral
+- `ring_color` (str or None): Edge ring color (None = no ring)
+
+### golden_web
+
+Node network at the golden angle 137.5° (Fibonacci phyllotaxis). Each
+connection is a polynomial line (`PolyCoeffs.line`); line color = tangent
+angle + hue offset. Returns the list of node points.
+
+```python
+pts = golden_web(c, R=2.7, n=70, seed=0, hue_offset=200, max_len_frac=0.15)
+```
+
+### golden_spiral_lines
+
+Golden spiral as short polynomial segments colored by tangent angle,
+bounded by radius R.
+
+```python
+golden_spiral_lines(c, R=2.7, seed=0, hue_offset=200, turns=2.6)
+```
+
+### sector
+
+Circle sector (spinner wedge) as a closed polygon.
+
+```python
+sector(c, cx=0, cy=0, r=2.4, a0=0, a1=math.pi/2, n_points=60,
+       fill=True, fill_color="#db323e")
+```
+
+### ring
+
+Decorative polygonal ring (speckled tile border) with randomized shades.
+
+```python
+ring(c, cx=0, cy=0, r_out=2.9, r_in=2.6, n=36, color="#c8a040", seed=0)
+```
+
+### render_round
+
+Render a canvas with a circular mask: everything outside the inscribed
+circle becomes transparent.
+
+```python
+render_round(c, "tile.png", dpi=300)
+```
+
+### render_spinner
+
+Ready-made round spinner: colored sectors with gaps, polygonal ring,
+hub with star, and a pointer.
+
+```python
+colors = ["#db323e", "#29aae2", "#2eb44a", "#ff912c",
+          "#f1c40f", "#9646d6", "#d2dceb", "#ffd700"]
+render_spinner(colors, "spinner.png", dpi=300, seed=99)
+```
+
+**Parameters (render_spinner):**
+- `sector_colors` (list of str): Sector colors (#hex)
+- `path` (str): Output PNG path
+- `dpi` (int): Resolution (default 300)
+- `radius` (float): Canvas radius (default 3.0)
+- `gap_deg` (float): Gap between sectors in degrees
+- `bg` (str): Background color
+- `seed` (int): Randomness seed
+
+---
+
+### Notes
+
+- The module works with numpy + matplotlib only; round output uses the
+  `round=True` option added to `Canvas.render` in polyart_api.py v2.2.0.
+- For print layouts (A3 sheets of many tiles) use the game repository
+  ПолиЁлка (github.com/pop31-ai/polyyolka), which builds on this module.

@@ -1258,13 +1258,16 @@ class Canvas:
         c = cls()
         return c.load(filepath)
 
-    def render(self, save_to=None, dpi=200, figsize=None) -> "Canvas":
+    def render(self, save_to=None, dpi=200, figsize=None, round=False) -> "Canvas":
         """
         @brief Рендер в PNG/SVG/PDF через matplotlib.
 
         @param save_to Путь для сохранения (если None — только показать)
         @param dpi Разрешение
         @param figsize Размер фигуры (auto из canvas)
+        @param round Круглая маска: обрезать по вписанной окружности,
+                     фон прозрачный. Нужно для тайлов, коустеров, жетонов,
+                     фишек и круглых полей.
         """
         import matplotlib
         matplotlib.use('Agg')
@@ -1291,9 +1294,23 @@ class Canvas:
                     fontfamily='serif', color=f.get("color", "#8a6a4a"),
                     fontstyle='italic')
 
+        if round:
+            from matplotlib.patches import Circle as _ClipCircle
+            xlim = canvas.get("xlim", [-5, 5])
+            ylim = canvas.get("ylim", [-5, 5])
+            cx = (xlim[0] + xlim[1]) / 2
+            cy = (ylim[0] + ylim[1]) / 2
+            radius = min(xlim[1] - xlim[0], ylim[1] - ylim[0]) / 2
+            clip = _ClipCircle((cx, cy), radius, transform=ax.transData)
+            for artist in list(ax.lines) + list(ax.collections):
+                artist.set_clip_path(clip)
+            ax.patch.set_alpha(0)
+            fig.patch.set_alpha(0)
+
         if save_to:
             fig.savefig(save_to, dpi=dpi, bbox_inches='tight',
-                        facecolor=canvas.get("background", "#f5efe0"))
+                        facecolor='none' if round else canvas.get("background", "#f5efe0"),
+                        transparent=bool(round))
             print(f"[OK] Rendered: {save_to}")
         plt.close(fig)
         return self

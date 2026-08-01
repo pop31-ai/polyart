@@ -250,6 +250,23 @@
 
 ---
 
+### polyart_tiles.py — Game Tiles & Round Compositions
+- **Lines:** 275 | **Size:** 11,902 bytes
+- **Dependencies:** numpy, matplotlib
+- **Description:** Round game components: coasters, chips, spinners. Golden-angle node web (137.5°), golden spiral, sectors, decorative rings, round rendering with transparent background (no PIL).
+
+| Function | Description |
+|----------|-------------|
+| **`make_tile`** | Constructor of a round tile: radial gradient + web + spiral + content + ring |
+| **`golden_web`** | Node network at golden angle 137.5°, line color = tangent angle + hue offset |
+| **`golden_spiral_lines`** | Golden spiral as polynomial segments colored by tangent angle |
+| **`sector`** | Circle sector (spinner wedge) as a closed polygon |
+| **`ring`** | Decorative polygonal ring with randomized shades |
+| **`render_round`** | Round render via `Canvas.render(round=True)`, transparent outside the circle |
+| **`render_spinner`** | Ready-made round spinner: colored sectors + ring + pointer |
+
+---
+
 ### polyart_converter.py — Format Converter
 - **Lines:** 760 | **Size:** 34,745 bytes
 - **Dependencies:** numpy, matplotlib, PIL

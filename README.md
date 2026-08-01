@@ -22,6 +22,7 @@ polyart/
   polyart_curves.py       # Curves Library: body systems - skeletal, muscle, skin, veins, nerves, limbs, head, figure
   polyart_flowers.py      # Botanical Art: flowers (rose, lily, daisy, tulip, sunflower, orchid, lotus), plants, compositions
   polyart_spqr.py         # SPQR Roman Architecture: columns, arches, Piranesi impossible geometry, Roman forum, Colosseum
+  polyart_tiles.py        # Game tiles: round coasters, chips, spinners, golden-angle node web, golden spiral, ring, sectors
   examples/               # 13 showcase demos + 3 .polyart scripts
   articles/               # 32 technical articles
   CONTRIBUTORS.md         # 30+ team members
@@ -44,6 +45,7 @@ polyart/
 | `polyart_curves` | Body system curves | SkeletalCurves, MuscleCurves, SkinCurves, VeinCurves, NerveCurves, LimbCurves, HeadCurves, FigureCurves |
 | `polyart_flowers` | Botanical art | FlowerCurves, PlantCurves, CompositionCurves |
 | `polyart_spqr` | SPQR Roman architecture & Piranesi | RomanOrders, RomanArch, PiranesiArchitecture, SPQRForum, SPQRComposition |
+| `polyart_tiles` | Game tiles & round compositions | make_tile, golden_web, golden_spiral_lines, sector, ring, render_round, render_spinner |
 
 ## Quick Start
 

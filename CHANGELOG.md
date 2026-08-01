@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.2.0 (2026-08-01)
+- Added polyart_tiles.py: round game components — coasters, chips, spinners; golden-angle node web (137.5°), golden spiral, sectors, decorative rings
+- Canvas.render(round=True): circular clip with transparent background — round tiles without PIL post-processing
+- Added example 11_polyyolka.py: round tile with golden-proportion face + round spinner
+
 ## v2.1.0 (2026-07-12)
 - Added polyart_biology.py: Growth curves, phyllotaxis, biomechanics, Turing patterns, variant generator
 - Added polyart_sculpture.py: LatheBody, MuscleRelief, PiranesiArch, RomanSymbols, GameAssets
