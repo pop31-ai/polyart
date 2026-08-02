@@ -153,7 +153,7 @@
 | **Rotations** | `rotate_x`, `rotate_y`, `rotate_z`, `rotate_all` |
 | **Wireframe3D** | `sphere`, `cube`, `cylinder`, `torus`, `icosahedron`, `dodecahedron`, `heightfield`, `parametric_surface`, `moebius_strip`, `klein_bottle` |
 | **Surface3D** | (inherits wireframe rendering) |
-| **Scene3D** | `add_wireframe`, `add_surface`, `add_light`, `_compute_alpha`, `render_to_canvas` |
+| **Scene3D** | `add_wireframe`, `add_surface`, `add_light`, `_compute_alpha`, `render` |
 | **Demo3D** | `geometric_primitives`, `mathematical_surfaces`, `spqr_3d` |
 
 ---
@@ -558,12 +558,12 @@ All codec implementations are self-contained with zero external dependencies bey
 | `curves_library_showcase.png` | 292 KB | Body curves library showcase |
 | `demo_composition.png` | 140 KB | Composition demo |
 | `demo_emotions_lang.png` | 52 KB | Emotions via meta-language |
-| `demo_geometric_primitives.png` | 335 KB | 3D geometric primitives |
+| `demo_geometric_primitives.png` | 100 KB | 3D geometric primitives |
 | `demo_mandala_lang.png` | 397 KB | Mandala via meta-language |
-| `demo_mathematical_surfaces.png` | 148 KB | Mathematical surface rendering |
+| `demo_mathematical_surfaces.png` | 88 KB | Mathematical surface rendering |
 | `demo_mythology_lang.png` | 157 KB | Mythology via meta-language |
 | `demo_rose.png` | 224 KB | Rose polynomial render |
-| `demo_spqr_3d.png` | 355 KB | SPQR 3D architectural scene |
+| `demo_spqr_3d.png` | 95 KB | SPQR 3D architectural scene |
 | `emotions_showcase.png` | 94 KB | 10 emotion expressions showcase |
 | `emperor_mathematicus.png` | 1.1 MB | Roman emperor mathematical portrait |
 | `emperor_portrait.png` | 264 KB | Roman emperor polynomial portrait |

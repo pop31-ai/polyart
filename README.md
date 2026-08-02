@@ -69,13 +69,10 @@ c.render("my_art.png")
 
 ```python
 from polyart_3d import Wireframe3D, Scene3D
-from polyart_api import Canvas
 
 scene = Scene3D(background="#0a0a15")
 scene.add_wireframe(Wireframe3D.sphere(0, 0, 2), color="#c8a040")
 scene.add_wireframe(Wireframe3D.torus(3, 0, 1.5, 0.5), color="#4a90d9")
-canvas = Canvas(xlim=(-5, 5), ylim=(-5, 5))
-scene.render_to_canvas(canvas)
 scene.render("scene_3d.png")
 ```
 

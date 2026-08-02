@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
 
-sys.path.insert(0, r"C:\Users\e\Desktop\6756756756756756")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def load_img(path):
     img = plt.imread(path)
@@ -114,39 +114,43 @@ def compute_rarity(f):
     art_bonus = sym*0.3 + golden*0.3 + poly*0.2 + curvature*0.2
     return float(np.clip(weighted*60 + art_bonus*40, 0, 100))
 
-PNG_DIR = r"C:\Users\e\Desktop\6756756756756756"
-files = [f for f in sorted(os.listdir(PNG_DIR)) if f.endswith(".png")]
+def main():
+    PNG_DIR = sys.argv[1] if len(sys.argv) > 1 else BASE_DIR
+    files = [f for f in sorted(os.listdir(PNG_DIR)) if f.endswith(".png")]
 
-results = []
-for f in files:
-    path = os.path.join(PNG_DIR, f)
-    try:
-        img = load_img(path)
-        feat = {"edge_density":edge_density(img), "symmetry":symmetry_score(img),
-                "fractal_dim":fractal_dim(img), "texture":texture_score(img),
-                "color_diversity":color_diversity(img), "golden_ratio":golden_ratio_score(img),
-                "polynomial_smoothness":polynomial_smoothness(img), "curvature_energy":curvature_energy(img)}
-        rarity = compute_rarity(feat)
-        cls = classify(feat)
-        results.append({"file":f, "rarity":rarity, "classification":cls, "features":{k:round(v,3) for k,v in feat.items()}})
-        print(f"  [OK] {f:<40} {rarity:>4}/100  {cls}")
-    except Exception as e:
-        results.append({"file":f, "error":str(e)})
-        print(f"  [ERR] {f:<40} {str(e)[:40]}")
+    results = []
+    for f in files:
+        path = os.path.join(PNG_DIR, f)
+        try:
+            img = load_img(path)
+            feat = {"edge_density":edge_density(img), "symmetry":symmetry_score(img),
+                    "fractal_dim":fractal_dim(img), "texture":texture_score(img),
+                    "color_diversity":color_diversity(img), "golden_ratio":golden_ratio_score(img),
+                    "polynomial_smoothness":polynomial_smoothness(img), "curvature_energy":curvature_energy(img)}
+            rarity = compute_rarity(feat)
+            cls = classify(feat)
+            results.append({"file":f, "rarity":rarity, "classification":cls, "features":{k:round(v,3) for k,v in feat.items()}})
+            print(f"  [OK] {f:<40} {rarity:>4}/100  {cls}")
+        except Exception as e:
+            results.append({"file":f, "error":str(e)})
+            print(f"  [ERR] {f:<40} {str(e)[:40]}")
 
-art = sum(1 for r in results if r.get("classification")=="ART")
-living = sum(1 for r in results if r.get("classification")=="LIVING")
-border = sum(1 for r in results if r.get("classification")=="BORDERLINE")
-errs = sum(1 for r in results if "error" in r)
-valid = [r for r in results if "error" not in r]
-avg = sum(r["rarity"] for r in valid)/max(1,len(valid))
+    art = sum(1 for r in results if r.get("classification")=="ART")
+    living = sum(1 for r in results if r.get("classification")=="LIVING")
+    border = sum(1 for r in results if r.get("classification")=="BORDERLINE")
+    errs = sum(1 for r in results if "error" in r)
+    valid = [r for r in results if "error" not in r]
+    avg = sum(r["rarity"] for r in valid)/max(1,len(valid))
 
-print()
-print("="*60)
-print(f"  TOTAL: {len(results)} | ART: {art} | LIVING: {living} | BORDERLINE: {border} | ERR: {errs}")
-print(f"  Average rarity: {avg:.1f}/100")
-print("="*60)
+    print()
+    print("="*60)
+    print(f"  TOTAL: {len(results)} | ART: {art} | LIVING: {living} | BORDERLINE: {border} | ERR: {errs}")
+    print(f"  Average rarity: {avg:.1f}/100")
+    print("="*60)
 
-with open(os.path.join(PNG_DIR, "cv_verification_report.json"), "w") as fp:
-    json.dump(results, fp, indent=2, default=str)
-print("Report saved: cv_verification_report.json")
+    with open(os.path.join(PNG_DIR, "cv_verification_report.json"), "w") as fp:
+        json.dump(results, fp, indent=2, default=str)
+    print("Report saved: cv_verification_report.json")
+
+if __name__ == "__main__":
+    main()

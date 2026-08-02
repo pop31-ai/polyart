@@ -1,0 +1,210 @@
+[
+  {
+    "file": "oil_brush_twin_demo.png",
+    "filename": "oil_brush_twin_demo.png",
+    "rarity": 65.59059599447097,
+    "class": "art",
+    "features": {
+      "edge_density": 0.0085,
+      "symmetry": 0.972,
+      "fractal_dim": 1.9753,
+      "texture": 0.015,
+      "color_diversity": 0.5,
+      "golden_ratio": 0.6599,
+      "polynomial_smoothness": 0.2047,
+      "curvature_energy": 0.5783
+    }
+  },
+  {
+    "file": "paint_demo_sunset.png",
+    "filename": "paint_demo_sunset.png",
+    "rarity": 62.93959799723977,
+    "class": "art",
+    "features": {
+      "edge_density": 0.0033,
+      "symmetry": 0.985,
+      "fractal_dim": 1.8724,
+      "texture": 0.0053,
+      "color_diversity": 0.5833,
+      "golden_ratio": 0.6478,
+      "polynomial_smoothness": 0.1901,
+      "curvature_energy": 0.4622
+    }
+  },
+  {
+    "file": "paint_demo_forest.png",
+    "filename": "paint_demo_forest.png",
+    "rarity": 68.27472983487672,
+    "class": "art",
+    "features": {
+      "edge_density": 0.0035,
+      "symmetry": 0.9813,
+      "fractal_dim": 1.8722,
+      "texture": 0.0052,
+      "color_diversity": 0.125,
+      "golden_ratio": 0.6212,
+      "polynomial_smoothness": 0.1913,
+      "curvature_energy": 1.0
+    }
+  },
+  {
+    "file": "paint_demo_winter.png",
+    "filename": "paint_demo_winter.png",
+    "rarity": 58.66725898979531,
+    "class": "art",
+    "features": {
+      "edge_density": 0.0014,
+      "symmetry": 0.994,
+      "fractal_dim": 1.8728,
+      "texture": 0.0015,
+      "color_diversity": 0.125,
+      "golden_ratio": 0.595,
+      "polynomial_smoothness": 0.1981,
+      "curvature_energy": 0.4405
+    }
+  },
+  {
+    "file": "curves_library_showcase.png",
+    "filename": "curves_library_showcase.png",
+    "rarity": 59.42685423300843,
+    "class": "art",
+    "features": {
+      "edge_density": 0.0012,
+      "symmetry": 0.9864,
+      "fractal_dim": 1.1135,
+      "texture": 0.0019,
+      "color_diversity": 0.5417,
+      "golden_ratio": 0.7344,
+      "polynomial_smoothness": 0.1967,
+      "curvature_energy": 0.6629
+    }
+  },
+  {
+    "file": "flowers_showcase.png",
+    "filename": "flowers_showcase.png",
+    "rarity": 62.88028450453819,
+    "class": "art",
+    "features": {
+      "edge_density": 0.0018,
+      "symmetry": 0.9644,
+      "fractal_dim": 1.2787,
+      "texture": 0.0039,
+      "color_diversity": 1.0,
+      "golden_ratio": 0.7256,
+      "polynomial_smoothness": 0.1794,
+      "curvature_energy": 0.6144
+    }
+  },
+  {
+    "file": "emotions_showcase.png",
+    "filename": "emotions_showcase.png",
+    "rarity": 55.84892137481992,
+    "class": "art",
+    "features": {
+      "edge_density": 0.001,
+      "symmetry": 0.99,
+      "fractal_dim": 1.1789,
+      "texture": 0.0022,
+      "color_diversity": 0.4583,
+      "golden_ratio": 0.6427,
+      "polynomial_smoothness": 0.0974,
+      "curvature_energy": 0.6144
+    }
+  },
+  {
+    "file": "states_showcase.png",
+    "filename": "states_showcase.png",
+    "rarity": 54.62640788421959,
+    "class": "art",
+    "features": {
+      "edge_density": 0.0016,
+      "symmetry": 0.9779,
+      "fractal_dim": 1.2898,
+      "texture": 0.0035,
+      "color_diversity": 0.4583,
+      "golden_ratio": 0.4834,
+      "polynomial_smoothness": 0.1195,
+      "curvature_energy": 0.6247
+    }
+  },
+  {
+    "file": "animals_showcase.png",
+    "filename": "animals_showcase.png",
+    "rarity": 63.193560549740184,
+    "class": "art",
+    "features": {
+      "edge_density": 0.0009,
+      "symmetry": 0.984,
+      "fractal_dim": 1.2364,
+      "texture": 0.0016,
+      "color_diversity": 1.0,
+      "golden_ratio": 0.664,
+      "polynomial_smoothness": 0.1184,
+      "curvature_energy": 0.749
+    }
+  },
+  {
+    "file": "examples\\01_golden_mandala.png",
+    "filename": "01_golden_mandala.png",
+    "rarity": 61.975350006597644,
+    "class": "art",
+    "features": {
+      "edge_density": 0.0053,
+      "symmetry": 0.9766,
+      "fractal_dim": 1.116,
+      "texture": 0.0061,
+      "color_diversity": 0.4583,
+      "golden_ratio": 0.581,
+      "polynomial_smoothness": 0.4348,
+      "curvature_energy": 0.8139
+    }
+  },
+  {
+    "file": "examples\\05_procedural_forest.png",
+    "filename": "05_procedural_forest.png",
+    "rarity": 65.14568819926814,
+    "class": "art",
+    "features": {
+      "edge_density": 0.0139,
+      "symmetry": 0.9418,
+      "fractal_dim": 1.8767,
+      "texture": 0.0254,
+      "color_diversity": 0.875,
+      "golden_ratio": 0.6711,
+      "polynomial_smoothness": 0.3293,
+      "curvature_energy": 0.3755
+    }
+  },
+  {
+    "file": "examples\\07_game_rpg.png",
+    "filename": "07_game_rpg.png",
+    "rarity": 56.74157397052136,
+    "class": "art",
+    "features": {
+      "edge_density": 0.0093,
+      "symmetry": 0.9432,
+      "fractal_dim": 1.267,
+      "texture": 0.0143,
+      "color_diversity": 0.6667,
+      "golden_ratio": 0.7097,
+      "polynomial_smoothness": 0.2342,
+      "curvature_energy": 0.3968
+    }
+  },
+  {
+    "file": "examples\\12_polyart_lang.png",
+    "filename": "12_polyart_lang.png",
+    "rarity": 63.41259356513206,
+    "class": "art",
+    "features": {
+      "edge_density": 0.0027,
+      "symmetry": 0.9815,
+      "fractal_dim": 1.1553,
+      "texture": 0.0042,
+      "color_diversity": 0.75,
+      "golden_ratio": 0.7501,
+      "polynomial_smoothness": 0.4026,
+      "curvature_energy": 0.603
+    }
+  }
+]

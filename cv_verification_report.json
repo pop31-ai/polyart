@@ -1,7 +1,7 @@
 [
   {
     "file": "amphora_art.png",
-    "rarity": 59.247282330028604,
+    "rarity": 59.24728233002893,
     "classification": "ART",
     "features": {
       "edge_density": 0.004,
@@ -15,8 +15,23 @@
     }
   },
   {
+    "file": "animals_showcase.png",
+    "rarity": 54.7054704932115,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.001,
+      "symmetry": 0.984,
+      "fractal_dim": 1.914,
+      "texture": 0.036,
+      "color_diversity": 0.067,
+      "golden_ratio": 0.634,
+      "polynomial_smoothness": 0.399,
+      "curvature_energy": 0.001
+    }
+  },
+  {
     "file": "apollo_polyart_render.png",
-    "rarity": 55.33257156940468,
+    "rarity": 55.33257156940452,
     "classification": "ART",
     "features": {
       "edge_density": 0.005,
@@ -31,7 +46,7 @@
   },
   {
     "file": "apollonian_faces.png",
-    "rarity": 57.67225011944984,
+    "rarity": 57.67225011944983,
     "classification": "ART",
     "features": {
       "edge_density": 0.004,
@@ -46,7 +61,7 @@
   },
   {
     "file": "bio_biomech.png",
-    "rarity": 56.730567867188284,
+    "rarity": 56.73056786718833,
     "classification": "ART",
     "features": {
       "edge_density": 0.003,
@@ -61,7 +76,7 @@
   },
   {
     "file": "bio_growth.png",
-    "rarity": 62.646127876745695,
+    "rarity": 62.64612787674606,
     "classification": "ART",
     "features": {
       "edge_density": 0.004,
@@ -76,7 +91,7 @@
   },
   {
     "file": "bio_turing.png",
-    "rarity": 67.31731111754026,
+    "rarity": 67.31731111753966,
     "classification": "ART",
     "features": {
       "edge_density": 0.007,
@@ -91,7 +106,7 @@
   },
   {
     "file": "bio_variants.png",
-    "rarity": 61.89047263668961,
+    "rarity": 61.89047263668941,
     "classification": "ART",
     "features": {
       "edge_density": 0.005,
@@ -106,7 +121,7 @@
   },
   {
     "file": "caricature.png",
-    "rarity": 52.8119934053525,
+    "rarity": 52.81199340535276,
     "classification": "ART",
     "features": {
       "edge_density": 0.002,
@@ -120,8 +135,38 @@
     }
   },
   {
+    "file": "comparison.png",
+    "rarity": 46.45621013422982,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.008,
+      "symmetry": 0.996,
+      "fractal_dim": 1.907,
+      "texture": 0.051,
+      "color_diversity": 0.04,
+      "golden_ratio": 0.459,
+      "polynomial_smoothness": 0.0,
+      "curvature_energy": 0.018
+    }
+  },
+  {
+    "file": "curves_library_showcase.png",
+    "rarity": 53.67352066184927,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.001,
+      "symmetry": 0.986,
+      "fractal_dim": 1.897,
+      "texture": 0.032,
+      "color_diversity": 0.047,
+      "golden_ratio": 0.511,
+      "polynomial_smoothness": 0.494,
+      "curvature_energy": 0.001
+    }
+  },
+  {
     "file": "demo_composition.png",
-    "rarity": 60.96190041373837,
+    "rarity": 60.961900413738334,
     "classification": "ART",
     "features": {
       "edge_density": 0.002,
@@ -135,16 +180,83 @@
     }
   },
   {
+    "file": "demo_emotions_lang.png",
+    "rarity": 51.29888637611846,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.0,
+      "symmetry": 0.997,
+      "fractal_dim": 1.775,
+      "texture": 0.013,
+      "color_diversity": 0.019,
+      "golden_ratio": 0.792,
+      "polynomial_smoothness": 0.091,
+      "curvature_energy": 0.0
+    }
+  },
+  {
     "file": "demo_geometric_primitives.png",
-    "error": "not a PNG file"
+    "rarity": 46.85007844254478,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.004,
+      "symmetry": 0.977,
+      "fractal_dim": 1.597,
+      "texture": 0.063,
+      "color_diversity": 0.056,
+      "golden_ratio": 0.515,
+      "polynomial_smoothness": 0.226,
+      "curvature_energy": 0.006
+    }
+  },
+  {
+    "file": "demo_mandala_lang.png",
+    "rarity": 62.79846682505559,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.003,
+      "symmetry": 0.996,
+      "fractal_dim": 2.055,
+      "texture": 0.137,
+      "color_diversity": 0.042,
+      "golden_ratio": 0.551,
+      "polynomial_smoothness": 0.92,
+      "curvature_energy": 0.003
+    }
   },
   {
     "file": "demo_mathematical_surfaces.png",
-    "error": "not a PNG file"
+    "rarity": 56.495873618892226,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.0,
+      "symmetry": 0.994,
+      "fractal_dim": 1.989,
+      "texture": 0.043,
+      "color_diversity": 0.057,
+      "golden_ratio": 0.73,
+      "polynomial_smoothness": 0.343,
+      "curvature_energy": 0.0
+    }
+  },
+  {
+    "file": "demo_mythology_lang.png",
+    "rarity": 52.673140978887126,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.002,
+      "symmetry": 0.97,
+      "fractal_dim": 1.95,
+      "texture": 0.078,
+      "color_diversity": 0.072,
+      "golden_ratio": 0.459,
+      "polynomial_smoothness": 0.434,
+      "curvature_energy": 0.002
+    }
   },
   {
     "file": "demo_rose.png",
-    "rarity": 52.89912095158746,
+    "rarity": 52.89912095158724,
     "classification": "ART",
     "features": {
       "edge_density": 0.001,
@@ -159,11 +271,37 @@
   },
   {
     "file": "demo_spqr_3d.png",
-    "error": "not a PNG file"
+    "rarity": 53.702196398123704,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.003,
+      "symmetry": 0.99,
+      "fractal_dim": 1.595,
+      "texture": 0.04,
+      "color_diversity": 0.044,
+      "golden_ratio": 0.837,
+      "polynomial_smoothness": 0.329,
+      "curvature_energy": 0.004
+    }
+  },
+  {
+    "file": "emotions_showcase.png",
+    "rarity": 47.76157892026056,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.001,
+      "symmetry": 0.99,
+      "fractal_dim": 1.714,
+      "texture": 0.018,
+      "color_diversity": 0.027,
+      "golden_ratio": 0.698,
+      "polynomial_smoothness": 0.0,
+      "curvature_energy": 0.001
+    }
   },
   {
     "file": "emperor_mathematicus.png",
-    "rarity": 52.184909950710534,
+    "rarity": 52.18490995071076,
     "classification": "ART",
     "features": {
       "edge_density": 0.002,
@@ -178,7 +316,7 @@
   },
   {
     "file": "emperor_portrait.png",
-    "rarity": 48.21721040962353,
+    "rarity": 48.21721040962331,
     "classification": "BORDERLINE",
     "features": {
       "edge_density": 0.002,
@@ -189,6 +327,66 @@
       "golden_ratio": 0.384,
       "polynomial_smoothness": 0.103,
       "curvature_energy": 0.002
+    }
+  },
+  {
+    "file": "flowers_showcase.png",
+    "rarity": 53.261042601450015,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.002,
+      "symmetry": 0.964,
+      "fractal_dim": 1.89,
+      "texture": 0.063,
+      "color_diversity": 0.123,
+      "golden_ratio": 0.392,
+      "polynomial_smoothness": 0.591,
+      "curvature_energy": 0.002
+    }
+  },
+  {
+    "file": "flowers_v2_compositions.png",
+    "rarity": 54.87394927740623,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.001,
+      "symmetry": 0.983,
+      "fractal_dim": 1.898,
+      "texture": 0.041,
+      "color_diversity": 0.08,
+      "golden_ratio": 0.981,
+      "polynomial_smoothness": 0.0,
+      "curvature_energy": 0.001
+    }
+  },
+  {
+    "file": "flowers_v2_flowers.png",
+    "rarity": 45.33337741391691,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.001,
+      "symmetry": 0.981,
+      "fractal_dim": 1.845,
+      "texture": 0.034,
+      "color_diversity": 0.074,
+      "golden_ratio": 0.454,
+      "polynomial_smoothness": 0.0,
+      "curvature_energy": 0.001
+    }
+  },
+  {
+    "file": "flowers_v2_plants.png",
+    "rarity": 46.00409817511783,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.001,
+      "symmetry": 0.989,
+      "fractal_dim": 1.886,
+      "texture": 0.04,
+      "color_diversity": 0.081,
+      "golden_ratio": 0.454,
+      "polynomial_smoothness": 0.0,
+      "curvature_energy": 0.001
     }
   },
   {
@@ -207,8 +405,68 @@
     }
   },
   {
+    "file": "oil_brush_twin_demo.png",
+    "rarity": 59.44624033110729,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.009,
+      "symmetry": 0.972,
+      "fractal_dim": 2.017,
+      "texture": 0.173,
+      "color_diversity": 0.253,
+      "golden_ratio": 0.599,
+      "polynomial_smoothness": 0.555,
+      "curvature_energy": 0.011
+    }
+  },
+  {
+    "file": "paint_demo_forest.png",
+    "rarity": 53.93930085731861,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.004,
+      "symmetry": 0.981,
+      "fractal_dim": 2.0,
+      "texture": 0.109,
+      "color_diversity": 0.143,
+      "golden_ratio": 0.618,
+      "polynomial_smoothness": 0.23,
+      "curvature_energy": 0.002
+    }
+  },
+  {
+    "file": "paint_demo_sunset.png",
+    "rarity": 51.03564585160203,
+    "classification": "BORDERLINE",
+    "features": {
+      "edge_density": 0.003,
+      "symmetry": 0.985,
+      "fractal_dim": 2.0,
+      "texture": 0.108,
+      "color_diversity": 0.178,
+      "golden_ratio": 0.618,
+      "polynomial_smoothness": 0.0,
+      "curvature_energy": 0.002
+    }
+  },
+  {
+    "file": "paint_demo_winter.png",
+    "rarity": 58.085434227922896,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.001,
+      "symmetry": 0.994,
+      "fractal_dim": 2.0,
+      "texture": 0.089,
+      "color_diversity": 0.111,
+      "golden_ratio": 0.618,
+      "polynomial_smoothness": 0.535,
+      "curvature_energy": 0.001
+    }
+  },
+  {
     "file": "parthenon_art.png",
-    "rarity": 68.16417254241216,
+    "rarity": 68.16417254241252,
     "classification": "BORDERLINE",
     "features": {
       "edge_density": 0.01,
@@ -223,7 +481,7 @@
   },
   {
     "file": "porcelain_figurines.png",
-    "rarity": 58.679319125645016,
+    "rarity": 58.67931912564467,
     "classification": "ART",
     "features": {
       "edge_density": 0.002,
@@ -238,7 +496,7 @@
   },
   {
     "file": "scene_anatomy.png",
-    "rarity": 60.858034497684656,
+    "rarity": 60.85803449768558,
     "classification": "ART",
     "features": {
       "edge_density": 0.002,
@@ -268,7 +526,7 @@
   },
   {
     "file": "scene_piranesi.png",
-    "rarity": 59.974891429124824,
+    "rarity": 59.974891429124675,
     "classification": "ART",
     "features": {
       "edge_density": 0.021,
@@ -283,7 +541,7 @@
   },
   {
     "file": "scene_roman.png",
-    "rarity": 63.87670783349748,
+    "rarity": 63.87670783349719,
     "classification": "ART",
     "features": {
       "edge_density": 0.009,
@@ -297,8 +555,38 @@
     }
   },
   {
+    "file": "spqr_piranesi_showcase.png",
+    "rarity": 51.63162840488681,
+    "classification": "BORDERLINE",
+    "features": {
+      "edge_density": 0.004,
+      "symmetry": 0.963,
+      "fractal_dim": 1.919,
+      "texture": 0.198,
+      "color_diversity": 0.362,
+      "golden_ratio": 0.62,
+      "polynomial_smoothness": 0.0,
+      "curvature_energy": 0.002
+    }
+  },
+  {
+    "file": "states_showcase.png",
+    "rarity": 46.7845838264319,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.002,
+      "symmetry": 0.978,
+      "fractal_dim": 1.78,
+      "texture": 0.027,
+      "color_diversity": 0.027,
+      "golden_ratio": 0.032,
+      "polynomial_smoothness": 0.691,
+      "curvature_energy": 0.002
+    }
+  },
+  {
     "file": "vitruvian_da_vinci.png",
-    "rarity": 59.235104875707556,
+    "rarity": 59.235104875707634,
     "classification": "ART",
     "features": {
       "edge_density": 0.003,
@@ -313,7 +601,7 @@
   },
   {
     "file": "weary_emperor.png",
-    "rarity": 59.76290149045657,
+    "rarity": 59.76290149045648,
     "classification": "ART",
     "features": {
       "edge_density": 0.002,

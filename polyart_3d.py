@@ -1,11 +1,12 @@
 import sys
 import io
+import os
 import math
 import numpy as np
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-from polyart_api import Canvas, PolyObj, PHI, TWO_PI, SQRT2
+from polyart_api import TWO_PI
 
 
 class Rotations:
@@ -375,28 +376,47 @@ class Scene3D:
         depth = max(0.0, min(1.0, depth))
         return 0.3 + 0.7 * (1.0 - depth)
 
-    def render_to_canvas(self, canvas):
+    def render(self, path, figsize=(10, 8), dpi=200):
+        """@brief Рендер каркасов и поверхностей сцены в PNG.
+
+        @param path Путь для сохранения изображения (.png)
+        @param figsize Размер фигуры в дюймах
+        @param dpi Разрешение
+        """
+        import matplotlib
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots(1, 1, figsize=figsize, facecolor=self.background)
+        ax.set_facecolor(self.background)
+
         for obj in self.objects:
+            otype = obj.get("type")
+            color = obj.get("color", obj.get("fill_color", "#c8b898"))
+            alpha = obj.get("alpha", 1.0)
+            lw = obj.get("linewidth", 1.0)
             for item in obj["data"]:
                 px = item.get("poly_x", [])
                 py = item.get("poly_y", [])
                 if not px or not py:
                     continue
-                alpha = obj.get("alpha", 1.0)
-                color = obj.get("color", obj.get("fill_color", "#c8b898"))
-                lw = obj.get("linewidth", 1.0)
-                p = PolyObj(px, py)
-                p.color = color
-                p.linewidth = lw
-                p.alpha = alpha
-                canvas.add(p)
+                if otype == "surface" and obj.get("fill_color"):
+                    ax.fill(px, py, color=obj.get("fill_color"),
+                            alpha=alpha * 0.5, linewidth=0)
+                ax.plot(px, py, color=color, alpha=alpha, linewidth=lw)
+
+        ax.set_aspect('equal')
+        ax.axis('off')
+        ax.margins(0.05)
+        fig.savefig(path, dpi=dpi, bbox_inches="tight", facecolor=self.background)
+        plt.close(fig)
+        print(f"[OK] Saved: {path} ({os.path.getsize(path)} bytes)")
 
 
 class Demo3D:
     @staticmethod
     def geometric_primitives():
-        canvas = Canvas(900, 700, background="#0a0a15")
-        scene = Scene3D()
+        scene = Scene3D(background="#0a0a15")
         sphere_lines = Wireframe3D.sphere(200, 200, 80, rotation=(0.4, 0.6, 0))
         scene.add_wireframe(sphere_lines, color="#7799cc", linewidth=1.0)
         cube_lines = Wireframe3D.cube(500, 200, 100, rotation=(0.5, 0.7, 0.2))
@@ -405,14 +425,11 @@ class Demo3D:
         scene.add_wireframe(cyl_lines, color="#99cc77", linewidth=1.0)
         torus_lines = Wireframe3D.torus(500, 500, 60, 25, rotation=(0.6, 0.3, 0))
         scene.add_wireframe(torus_lines, color="#cc7799", linewidth=1.0)
-        scene.render_to_canvas(canvas)
-        canvas.save("demo_geometric_primitives.png")
-        print("[OK] Saved demo_geometric_primitives.png")
+        scene.render("demo_geometric_primitives.png")
 
     @staticmethod
     def mathematical_surfaces():
-        canvas = Canvas(900, 700, background="#0a0a15")
-        scene = Scene3D()
+        scene = Scene3D(background="#0a0a15")
         hfield = Surface3D.heightfield(
             250, 250, 200,
             lambda x, y: 30 * math.sin(x * 0.05) * math.cos(y * 0.05),
@@ -423,14 +440,11 @@ class Demo3D:
         scene.add_surface(mobius, fill_color="#aa6644", alpha=0.6)
         klein = Surface3D.klein_bottle(450, 550, 100, n_lines=20)
         scene.add_surface(klein, fill_color="#44aa66", alpha=0.6)
-        scene.render_to_canvas(canvas)
-        canvas.save("demo_mathematical_surfaces.png")
-        print("[OK] Saved demo_mathematical_surfaces.png")
+        scene.render("demo_mathematical_surfaces.png")
 
     @staticmethod
     def spqr_3d():
-        canvas = Canvas(900, 700, background="#0a0a15")
-        scene = Scene3D()
+        scene = Scene3D(background="#0a0a15")
         body_lines = Wireframe3D.sphere(450, 350, 120, n_rings=10, n_meridians=12, rotation=(0.3, 0.5, 0))
         scene.add_wireframe(body_lines, color="#c8b898", linewidth=1.2)
         shield_lines = Wireframe3D.dodecahedron(250, 350, 90, rotation=(0.4, 0.7, 0))
@@ -447,9 +461,7 @@ class Demo3D:
             n_lines=12, rotation=(0.6, 0.0, 0),
         )
         scene.add_surface(base, fill_color="#334455", alpha=0.4)
-        scene.render_to_canvas(canvas)
-        canvas.save("demo_spqr_3d.png")
-        print("[OK] Saved demo_spqr_3d.png")
+        scene.render("demo_spqr_3d.png")
 
 
 if __name__ == "__main__":
