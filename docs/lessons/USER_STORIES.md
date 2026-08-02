@@ -136,6 +136,66 @@ from polyart_brush_twin import wet_on_wet, impasto
 
 ---
 
+## История 7. Коля, мобильный разработчик
+
+**Роль:** разработчик казуальной игры о рыбалке.
+
+**Потребность:** фоны уровней, которые меняются с каждым сезоном,
+но не занимают место в APK.
+
+**Что сделал:**
+
+```python
+from polyart_painter import PainterCanvas
+
+def level_bg(theme, seed):
+    c = PainterCanvas(name=theme, xlim=(-6, 6), ylim=(-6, 6))
+    t = np.linspace(-6, 6, 160)
+    c1, c2 = {"dawn": ("#f0c020", "#d94a2a"),
+              "night": ("#2a4a8a", "#1a2a5a"),
+              "day": ("#4a90d9", "#a0c8e0")}[theme]
+    c.wet_on_wet(t, 3, c1=c1, c2=c2, width=2.2)
+    c.brush(size="flat", paint=c2, load=0.8, seed=seed)
+    c.stroke(t, -2 + 0.3*np.sin(t), pressure=0.6)
+    return c
+
+level_bg("dawn", 1).render("lv_dawn.png", dpi=100)
+```
+
+**Результат:** три сезона — три вызова, вес приложения не вырос.
+
+**Цитата:** «Фоны — это код, а не мегабайты текстур.»
+
+---
+
+## История 8. Лиза, NFT-художник
+
+**Роль:** автор генеративной коллекции «Закаты мира».
+
+**Потребность:** 1000 уникальных картин в одном стиле.
+
+**Что сделала:**
+
+```python
+from polyart_painter import PainterCanvas
+
+for seed in range(1000):
+    t = np.linspace(-6, 6, 200)
+    c = PainterCanvas(name=f"Закат #{seed}", xlim=(-6, 6), ylim=(-6, 6))
+    c.wet_on_wet(t, 3, c1="#f0c020", c2="#d94a2a", width=2.4)
+    c.brush(size="flat", paint="#d94a2a", load=0.8, seed=seed)
+    c.stroke(t, -2 + 0.4*np.sin(t*0.7 + seed), pressure=0.6)
+    c.save(f"collect/sunset_{seed:04d}.polyart")
+```
+
+**Результат:** коллекция из 1000 произведений с воспроизводимыми
+метаданными.
+
+**Цитата:** «Покупатели проверяют seed — каждая картина уникальна,
+но все в одном стиле.»
+
+---
+
 ## Шаблон новой истории
 
 Если у вас есть сценарий использования, добавьте его по шаблону:

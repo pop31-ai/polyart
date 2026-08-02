@@ -113,6 +113,82 @@ for i in range(25):
 
 ---
 
+## Кейс 8. Сцена на живописном холсте (PainterCanvas)
+
+Всё в одном объекте: полиарт-объекты + мазки кисти.
+
+```python
+from polyart_painter import PainterCanvas
+import numpy as np
+
+c = PainterCanvas(name="Пейзаж", xlim=(-6, 6), ylim=(-6, 6), background="#e8dcc0")
+t = np.linspace(-6, 6, 180)
+c.wet_on_wet(t, 3 - t*0.05, c1="#2a4a8a", c2="#c8a040", width=2.4)   # небо
+c.impasto(np.array([-5, -3, -1, 1, 3, 5]), np.array([-1, 1, 0, 1.5, 0, -1]),
+          color="#4a6a5a", thickness=0.4)                             # горы
+c.brush(size="liner", paint="#2a1a0a", load=0.9)
+c.stroke([0, 0], [-2, 2], pressure=0.7)                              # ствол
+c.circle(4, 2, 0.5, fill=True, fill_color="#c8a040", fill_alpha=0.6)  # солнце
+c.save("landscape.polyart")
+c.render("landscape.png", dpi=150)
+```
+
+---
+
+## Кейс 9. Анимированный фон (кадры)
+
+```python
+from polyart_painter import PainterCanvas
+
+t = np.linspace(-6, 6, 160)
+for frame in range(24):
+    k = frame / 23
+    c = PainterCanvas(name=f"Кадр {frame}", xlim=(-6, 6), ylim=(-6, 6),
+                      background="#1a2a3a")
+    c.wet_on_wet(t, 3 - t*0.05,
+                 c1=mix("#2a4a8a", "#f0c020", k),
+                 c2=mix("#8a2a5a", "#d94a2a", k),
+                 width=2.4, alpha=0.8)
+    c.render(f"frames/anim_{frame:02d}.png", dpi=100)
+```
+
+Склейте кадры в GIF (см. Урок 09).
+
+---
+
+## Кейс 10. Серия для коллекции (seed)
+
+```python
+from polyart_painter import PainterCanvas
+
+def collectible(seed):
+    t = np.linspace(-6, 6, 200)
+    c = PainterCanvas(name=f"Закат #{seed}", xlim=(-6, 6), ylim=(-6, 6))
+    c.wet_on_wet(t, 3, c1="#f0c020", c2="#d94a2a", width=2.4)
+    c.brush(size="flat", paint="#d94a2a", load=0.8, seed=seed)
+    c.stroke(t, -2 + 0.4*np.sin(t*0.7 + seed), pressure=0.6)
+    return c
+
+for seed in range(20):
+    collectible(seed).render(f"collect/sunset_{seed:03d}.png", dpi=200)
+```
+
+---
+
+## Кейс 11. Готовые сцены (PaintTemplates)
+
+```python
+from polyart_painter import PaintTemplates
+
+PaintTemplates.sunset_sea().render("sunset.png", dpi=150)
+PaintTemplates.autumn_forest().render("forest.png", dpi=150)
+PaintTemplates.winter_sunset().render("winter.png", dpi=150)
+```
+
+Три темы за три вызова.
+
+---
+
 ## Сводка
 
 | Кейс | Техники | Сложность |
@@ -124,3 +200,7 @@ for i in range(25):
 | Сияние | fan_out | низкая |
 | Портрет | curves + glaze + fan | высокая |
 | Стена | impasto, dry_brush | средняя |
+| PainterCanvas | все + Canvas API | средняя |
+| Анимация | кадры, mix() | средняя |
+| Коллекция | seed, серии | низкая |
+| Templates | готовые сцены | готовая |
