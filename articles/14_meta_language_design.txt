@@ -187,9 +187,17 @@ converges on the same architecture:
       line, rect, polygon, spiral, bezier, sine, cosine, greek_meander,
       greek_volute, roman_arch, golden_rect, golden_spiral, grid, rays,
       phyllotaxis, turing_spots, emotion, state, animal, text, render,
-      show, print, and math helpers (sin, cos, sqrt, pow, abs, rand, len,
-      int, float).
+      save_polyart, show, print, and math helpers (sin, cos, sqrt, pow,
+      abs, rand, len, int, float).
     - Loop variable `$i`; script extension `.plang`.
+    - Bridge to the data format: `save_polyart(path)` exports the
+      current canvas to canonical `.polyart` JSON (v2.0.0). Each drawn
+      artist (line, patch, collection, fill) is approximated by a
+      parametric polynomial (degree <= 8 fit, coefficients in ascending
+      order), polygons with few vertices are emitted as exact linear
+      segments, and text is exported to the `formulas` list. The
+      exported file re-renders through `polyart_format.render_polyart`
+      and `polyart_api` (verified: same composition, CV class ART).
 
   Not yet implemented (design targets)
     - Power operator `^`, keyword `on` (transform composition),

@@ -40,4 +40,7 @@ circle(pi, 0, 0.3, false, "#ffffff", 0.5);
 text(0, -4, "PolyArt Lang", 14, "#c8a040", 0.9, "bold");
 
 render("examples/12_polyart_lang.png", 150);
+
+# export the same canvas to canonical .polyart (bridge meta-language -> data format)
+save_polyart("examples/12_polyart_lang.polyart");
 print("done");

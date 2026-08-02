@@ -27,11 +27,14 @@ Notes:
   - 'pi' and 'phi' are pre-seeded constants (call form pi() also works).
   - The '..' operator builds a list of 10 steps per unit from left to right.
   - Script extension is '.plang' ('.polyart' is the JSON data format).
+  - 'save_polyart(path)' exports the current canvas to canonical .polyart
+    JSON (v2.0.0) via polynomial fit, bridging meta-language and data format.
 """
 
 import re
 import sys
 import math
+import json
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -400,6 +403,118 @@ class Interpreter:
         self.ax.set_ylim(*self._ylim)
         self.ax.set_aspect("equal")
         self.ax.axis("off")
+
+    @staticmethod
+    def _to_hex(c):
+        if isinstance(c, str):
+            return c
+        try:
+            return "#{:02x}{:02x}{:02x}".format(
+                int(round(c[0] * 255)), int(round(c[1] * 255)), int(round(c[2] * 255)))
+        except Exception:
+            return "#c8a040"
+
+    def _fit_curve(self, xs, ys, color, lw, alpha, fill=False, fc=None):
+        """Аппроксимация набора точек параметрическим полиномом (.polyart)."""
+        xs = np.asarray(xs, dtype=float)
+        ys = np.asarray(ys, dtype=float)
+        mask = np.isfinite(xs) & np.isfinite(ys)
+        xs, ys = xs[mask], ys[mask]
+        if len(xs) < 2:
+            return None
+        t = np.linspace(0, 1, len(xs))
+        deg = min(8, len(xs) - 1)
+        try:
+            cx = np.polyfit(t, xs, deg)
+            cy = np.polyfit(t, ys, deg)
+        except (np.linalg.LinAlgError, ValueError):
+            return None
+        return {
+            "type": "parametric_fill" if fill else "parametric",
+            "poly_x": [float(c) for c in reversed(cx)],
+            "poly_y": [float(c) for c in reversed(cy)],
+            "t_range": [0.0, 1.0],
+            "n_points": len(xs),
+            "color": self._to_hex(color) if not fill else self._to_hex(fc),
+            "alpha": float(alpha) if alpha is not None else 1.0,
+            "linewidth": float(lw) if lw else 0.5,
+            "fill": bool(fill),
+            "fill_alpha": 0.5,
+            "fill_color": self._to_hex(fc) if fc is not None else (self._to_hex(color) if not fill else "#c8a040"),
+            "style": "solid",
+        }
+
+    def _fit_poly(self, xs, ys, color, lw, alpha, fill=False, fc=None):
+        """Многоугольник: рёбра — точные отрезки; сложный контур — полином."""
+        xs = np.asarray(xs, dtype=float)
+        ys = np.asarray(ys, dtype=float)
+        mask = np.isfinite(xs) & np.isfinite(ys)
+        xs, ys = xs[mask], ys[mask]
+        if len(xs) < 2:
+            return []
+        if not fill and len(xs) <= 9:
+            objs = []
+            for i in range(len(xs) - 1):
+                o = self._fit_curve([xs[i], xs[i + 1]], [ys[i], ys[i + 1]], color, lw, alpha)
+                if o:
+                    objs.append(o)
+            return objs
+        o = self._fit_curve(xs, ys, color, lw, alpha, fill=fill, fc=fc)
+        return [o] if o else []
+
+    def _save_polyart(self, path):
+        """Экспорт текущего холста в канонический .polyart (v2.0.0)."""
+        objects = []
+
+        for ln in self.ax.lines:
+            objects += self._fit_poly(ln.get_xdata(), ln.get_ydata(),
+                                      ln.get_color(), ln.get_linewidth(), ln.get_alpha())
+
+        for pa in self.ax.patches:
+            fc = pa.get_facecolor()
+            alpha = pa.get_alpha()
+            fill = bool(len(fc) >= 4 and fc[3] > 0.01)
+            for poly in pa.get_path().to_polygons():
+                xs, ys = poly[:, 0], poly[:, 1]
+                objects += self._fit_poly(xs, ys,
+                                          pa.get_edgecolor(), pa.get_linewidth(), alpha,
+                                          fill=fill, fc=fc if fill else None)
+
+        for col in self.ax.collections:
+            fcs = col.get_facecolor()
+            ecs = col.get_edgecolor()
+            alpha = col.get_alpha()
+            fc0 = fcs[0] if len(fcs) else [0, 0, 0, 1]
+            ec0 = ecs[0] if len(ecs) else [0, 0, 0, 1]
+            fill = bool(len(fc0) >= 4 and fc0[3] > 0.01)
+            for path in col.get_paths():
+                for poly in path.to_polygons():
+                    xs, ys = poly[:, 0], poly[:, 1]
+                    objects += self._fit_poly(xs, ys, ec0, col.get_linewidth(), alpha,
+                                              fill=fill, fc=fc0 if fill else None)
+
+        formulas = [{"expr": t.get_text(),
+                     "x": float(t.get_position()[0]),
+                     "y": float(t.get_position()[1]),
+                     "fontsize": float(t.get_fontsize()),
+                     "color": t.get_color()}
+                    for t in self.ax.texts if t.get_text()]
+
+        data = {
+            "format": "polyart",
+            "version": "2.0.0",
+            "meta": {"name": path, "author": "polyart meta-language",
+                     "description": "Exported via save_polyart()",
+                     "phi": (1 + math.sqrt(5)) / 2},
+            "canvas": {"width": self._width, "height": self._height,
+                       "background": self._bg,
+                       "xlim": list(self._xlim), "ylim": list(self._ylim)},
+            "layers": [{"name": "Слой 1", "objects": objects}],
+            "formulas": formulas,
+        }
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        print(f"[OK] Saved: {path} (objects={len(objects)}, formulas={len(formulas)})")
 
     def run(self, nodes):
         for node in nodes:
@@ -779,6 +894,11 @@ class Interpreter:
             print(f"[OK] Saved: {path}")
             return
 
+        if name == "save_polyart":
+            path = str(a[0]) if a else self._output_path.replace(".png", ".polyart")
+            self._save_polyart(path)
+            return
+
         if name == "show":
             plt.show()
             return
@@ -1069,3 +1189,4 @@ if __name__ == "__main__":
         print('  emotion("joy", 0, 0, 0.8);')
         print('  animal("lion", 2, 0, 0.5);')
         print('  render("output.png", 200);')
+        print('  save_polyart("output.polyart");')

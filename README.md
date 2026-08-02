@@ -4,6 +4,29 @@
 
 A complete ecosystem for creating mathematical art using polynomials, golden ratio, biological laws, and classical art traditions. From Ancient Greek geometry to impossible Piranesi architecture, from Turing biological patterns to 3D wireframe rendering.
 
+## Concept (educational & scientific)
+
+PolyArt is an open **educational-scientific concept**: every visual form is a
+*sensory manifestation of a body* — a compact parametric-polynomial description
+(reference + coordinates) rather than a bulky raster. This makes modeling and
+*communication economy* natural: to transmit or reconstruct an artwork, a
+"mention with coordinates" (`circle(0, 0, 2)`, `column(450, 580, 250)`,
+`save_polyart("scene.polyart")`) is enough, and rendering is a derived step.
+
+The project is designed to be **forked and adapted**: pick a domain (art,
+architecture, biology, games, heritage, education, VR/AR), take the core
+engine + meta-language, and specialize the body library to your own needs.
+
+```text
+  тело / body (parametric description)
+      │  mention with coordinates
+      ▼
+  .plang script  ──run──►  PNG  (sensory manifestation)
+      │ save_polyart()
+      ▼
+  .polyart JSON  ──render─► PNG/SVG  (any codec, viewer, editor)
+```
+
 ## Project Structure
 
 ```
@@ -18,7 +41,7 @@ polyart/
   polyart_cv_test.py      # Computer Vision: art vs nature classification, rarity scoring
   polyart_emotions.py     # Emotion Templates: 10 emotions + 4 physical states
   polyart_animals.py      # Animal Templates: 9 animals in polynomial style
-  polyart_lang.py         # Meta-Language DSL: tokenizer, parser, interpreter (50+ commands)
+  polyart_lang.py         # Meta-Language DSL: tokenizer, parser, interpreter (50+ commands), save_polyart bridge
   polyart_curves.py       # Curves Library: body systems - skeletal, muscle, skin, veins, nerves, limbs, head, figure
   polyart_flowers.py      # Botanical Art: flowers (rose, lily, daisy, tulip, sunflower, orchid, lotus), plants, compositions
   polyart_spqr.py         # SPQR Roman Architecture: columns, arches, Piranesi impossible geometry, Roman forum, Colosseum

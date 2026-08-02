@@ -193,7 +193,7 @@
 | **FuncCallNode** | (AST: function call) |
 | **ListNode** | (AST: list literal) |
 | **Parser** | `peek`, `advance`, `expect`, `parse`, `parse_statement`, `parse_loop`, `parse_if`, `parse_func_def`, `parse_assign`, `parse_command`, `parse_condition`, `parse_expr`, `parse_additive`, `parse_multiplicative`, `parse_unary`, `parse_primary` |
-| **Interpreter** | `run`, `exec_node`, `exec_node_list`, `eval_expr`, `eval_condition`, `call_func`, `exec_command`, `builtin`, `_draw_emotion`, `_emotion_joy`, `_emotion_sorrow`, `_emotion_anger`, `_emotion_fear`, `_emotion_love`, `_emotion_surprise`, `_emotion_calm`, `_emotion_pride`, `_draw_animal`, `_animal_lion`, `_animal_eagle`, `_animal_wolf`, `_animal_horse`, `_animal_snake`, `_animal_bear`, `_animal_dolphin`, `_animal_owl`, `_animal_dragon`, `_draw_state` |
+| **Interpreter** | `run`, `exec_node`, `exec_node_list`, `eval_expr`, `eval_condition`, `call_func`, `exec_command`, `builtin`, `_save_polyart`, `_fit_curve`, `_fit_poly`, `_to_hex`, `_draw_emotion`, `_emotion_joy`, `_emotion_sorrow`, `_emotion_anger`, `_emotion_fear`, `_emotion_love`, `_emotion_surprise`, `_emotion_calm`, `_emotion_pride`, `_draw_animal`, `_animal_lion`, `_animal_eagle`, `_animal_wolf`, `_animal_horse`, `_animal_snake`, `_animal_bear`, `_animal_dolphin`, `_animal_owl`, `_animal_dragon`, `_draw_state` |
 
 | Standalone | Purpose |
 |------------|---------|
