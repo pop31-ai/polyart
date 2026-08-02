@@ -267,8 +267,40 @@
 
 ---
 
-### polyart_converter.py — Format Converter
-- **Lines:** 760 | **Size:** 34,745 bytes
+### polyart_metadesc.py — Image to Meta-Text Description
+- **Lines:** ~300 | **Size:** ~13 KB
+- **Dependencies:** numpy, matplotlib, opencv-python (cv2)
+- **Description:** Reverse bridge "raster -> meta-language": posterization (k-means in LAB), contour extraction (cv2.findContours), Douglas-Peucker simplification, shape classification (circle/polygon/curve), emission of `.plang` with `polygon({...})` regions + analysis comments.
+
+| Function | Purpose |
+|----------|---------|
+| `load_rgb` | Read RGB image (handles float, alpha compositing) |
+| `extract_regions` | K-means posterization in LAB + findContours -> regions {pts, color, area} |
+| `douglas_peucker` | Ramer–Douglas–Peucker polyline simplification |
+| `fit_circle` | Least-squares circle fit + residual |
+| `classify_shape` | Shape label for analysis comments |
+| `contours_to_plang` | Emit `.plang` script (canvas, polygon commands, render, save_polyart) |
+
+---
+
+### polyart_relief.py — Laser-Scan to Landscape
+- **Lines:** ~220 | **Size:** ~9 KB
+- **Dependencies:** numpy, scipy, matplotlib
+- **Description:** Reads an oil painting as a laser-scanned relief (impasto energy): mountains (texture peaks by prominence), lakes (smooth dark zones), plains; emits a runnable `.plang` landscape + terrain topomap.
+
+| Function | Purpose |
+|----------|---------|
+| `load_gray` | Grayscale luminance of the painting |
+| `simulate_scan` | Stroke-energy relief from gradient magnitude |
+| `_detect_extrema` | Peaks by prominence (ring median), frame border excluded |
+| `_support_radius` | Extent of a peak |
+| `analyze_terrain` | Mountains / lakes / plains features |
+| `features_to_plang` | Emit `.plang` (plain oval, lake ovals, mountain ring circles) |
+| `render_topomap` | Terrain-style topomap PNG |
+
+---
+
+### polyart_converter.py — Format Converter- **Lines:** 760 | **Size:** 34,745 bytes
 - **Dependencies:** numpy, matplotlib, PIL
 - **Description:** Bidirectional converter: images ↔ .polyart, videos ↔ .polyvid.
 
@@ -464,6 +496,7 @@ All codec implementations are self-contained with zero external dependencies bey
 | 30 | `30_medieval_manuscript_polyart.txt` | Medieval manuscript illumination | 2,083 |
 | 31 | `31_kinetic_mathematical_art.txt` | Kinetic mathematical art | 2,022 |
 | 32 | `32_future_polyart.txt` | The future of polynomial art | 2,314 |
+| 33 | `33_image_to_meta_text.txt` | Image to meta-text: reverse bridge for analysis | ~1,100 |
 
 ### Codec Articles (articles/)
 
@@ -582,6 +615,10 @@ All codec implementations are self-contained with zero external dependencies bey
 | `states_showcase.png` | 78 KB | Physical states showcase |
 | `vitruvian_da_vinci.png` | 491 KB | Vitruvian Man polynomial recreation |
 | `weary_emperor.png` | 281 KB | Weary Roman emperor portrait |
+| `oil_brush_twin_demo.png` | 157 KB | Oil brush twin demo (source for MetaDesk/Relief) |
+| `oil_meta.plang` | 21 KB | Meta-text description of the oil painting (17 regions) |
+| `oil_terrain.plang` | — | Landscape from laser-scan of the oil painting |
+| `oil_terrain_topomap.png` | — | Terrain topomap of the relief |
 
 ### Example PNGs (examples/)
 
@@ -613,6 +650,10 @@ All codec implementations are self-contained with zero external dependencies bey
 | `animals_showcase.png` | ART | 63/100 |
 | `curves_library_showcase.png` | ART | 59/100 |
 | `flowers_showcase.png` | ART | 63/100 |
+| `oil_meta.png` | ART | 55/100 |
+| `geom_meta.png` | ART | 54/100 |
+| `oil_terrain.png` | ART | 60/100 |
+| `oil_terrain_topomap.png` | ART | 61/100 |
 
 ---
 

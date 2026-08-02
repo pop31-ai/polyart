@@ -1,0 +1,135 @@
+================================================================================
+    IMAGE TO META-TEXT: THE REVERSE BRIDGE FOR ANALYSIS
+================================================================================
+
+Author: PolyArt Research Group
+Date: 2026-08-02
+Keywords: meta-language, image description, raster-to-vector, communication
+economy, analysis, .plang, laser scanning, landscape
+
+================================================================================
+ABSTRACT
+================================================================================
+
+PolyArt builds art as a "sensory manifestation of a body": a compact
+parametric description that can be transmitted as a mention with coordinates
+and rendered on demand. The reverse direction is equally important: given a
+raster image (a photograph, a scan of a painting), produce a meta-textual
+description of it — a runnable `.plang` script — that is compact, structured,
+analyzable, and reversible. This article describes the two reverse-bridge
+modules of PolyArt: MetaDesk (`polyart_metadesc.py`), which turns any image
+into a list of `polygon({...})` regions with shape classification comments,
+and Relief (`polyart_relief.py`), which reads an oil painting as a laser-scanned
+landscape of mountains, lakes, and plains.
+
+================================================================================
+1. THE MOTIVATION: TEXT AS THE ANALYZABLE FORM
+================================================================================
+
+A raster is not a description; it is an observation. To analyze an artwork —
+to search, index, classify, compare, or reason about it — a textual form is
+far more practical. The philosophy of PolyArt ("enough to mention the body
+with coordinates") extends naturally: the meta-text is that mention. A
+21-kilobyte `.plang` script describes a 157-kilobyte painting with enough
+structure for an analyst (human or machine) to see the composition without
+opening the image. The description is not lossy by design: it is a structured
+abstraction — the same abstraction a painter keeps in memory when deciding
+what to paint next.
+
+The pipeline is symmetrical with the forward one:
+
+```
+  raster image (PNG)                    .plang script (meta-text)
+        │  MetaDesk: posterize +            │  render
+        │  findContours + DP simplify       ▼
+        ▼                              PNG (reconstructed)
+   .plang polygon({x0,y0,...}) ──►    + .polyart JSON (canonical export)
+```
+
+================================================================================
+2. METADESK: IMAGE TO META-TEXT
+================================================================================
+
+The algorithm of `polyart_metadesc.py`:
+
+1. **Load and posterize.** The image is downscaled and k-means-clustered in
+   the CIE-Lab color space (k default 12). Lab separates perceptual colors
+   better than RGB and keeps the palette of the painting honest.
+2. **Region extraction.** Each cluster mask is converted to closed contours
+   with `cv2.findContours` (RETR_LIST + CHAIN_APPROX_SIMPLE). This yields real
+   boundaries of color regions — not the snake-traces of a pixel walker.
+3. **Simplification.** Ramer–Douglas–Peucker reduces each contour to its
+   essential vertices. A correct implementation matters: dropping the endpoint
+   in the base case collapses every polyline to a single point (see log M02).
+4. **Shape classification.** Every contour is labeled for the analysis
+   comments: `circle(cx, cy, r)` (least-squares circle fit with residual
+   bound), `polygon(vertices=N)` (few DP vertices), or `curve(points=N)`.
+5. **Emission.** Each region becomes a `polygon({...})` command in the `.plang`
+   script with its region color; the background is a `canvas` command; the
+   script ends with `render(...)` and `save_polyart(...)`.
+
+The resulting file is a first-class PolyArt artifact: it is read by
+`polyart_lang.py`, renders to a PNG, and exports to canonical `.polyart` JSON.
+On the demo painting the text is about 7.5× smaller than the source raster.
+
+================================================================================
+3. LASER-SCAN RELIEF: PAINTING AS LANDSCAPE
+================================================================================
+
+`polyart_relief.py` applies a different metaphor: an oil painting is a relief
+of dried paste (impasto). The "laser scan" measures the gradient magnitude of
+brightness — the energy of the brushwork:
+
+- **Mountains** are local peaks of stroke energy, found by non-maximum
+  suppression, then ranked by *prominence* (how much a peak rises above the
+  median of its ring) rather than by raw height. Prominence ranking prevents a
+  ridge — a thin horizontal line of texture — from "winning" all peaks and
+  crowding the mountains along an edge; the frame border is excluded.
+- **Lakes** are smooth dark zones (glazes): pixels darker than the 60th
+  brightness percentile and smoother than the 65th energy percentile, grown
+  into connected components with a size cap so no single lake swallows the
+  canvas.
+- **Plains** are everything else — the base oval in the rendered scene.
+
+The output is a `.plang` with contour circles for mountains, oval lakes, and a
+plain base, plus a terrain-style topomap (`_topomap.png`). Both the landscape
+and the topomap classify as ART under the PolyArt CV scorer.
+
+================================================================================
+4. WHY THIS MATTERS FOR ANALYSIS
+================================================================================
+
+The meta-text description has three properties that make it suitable for
+analysis:
+
+1. **Structured.** Regions, coordinates, colors, and shape labels are explicit
+   and machine-readable — the description can be parsed, queried, and
+   aggregated without computer vision.
+2. **Compact.** Coordinates dominate; a smooth pastel painting compresses
+   roughly an order of magnitude. This is the "economy of communication"
+   promised by the concept, applied in the reverse direction.
+3. **Reversible.** The description is runnable. The `.plang` re-renders the
+   image and exports `.polyart`, closing the loop: raster → meta-text →
+   render → raster, with the text as the exchange format.
+
+Together with the forward bridge (`save_polyart`), PolyArt now supports the
+full cycle in both directions: parametric body → manifestation → analysis text
+→ (re)constructed manifestation.
+
+================================================================================
+5. LIMITATIONS AND NEXT STEPS
+================================================================================
+
+- Posterization flattens smooth gradients into a small palette; the
+  description is an abstraction, not a reproduction.
+- Shape classification is deliberately simple (circle / polygon / curve);
+  ellipses, rectangles, and composite figures are future labels.
+- The landscape metaphor is one reading of a painting; the same relief can be
+  mapped to other "bodies" (constellations, reliefs, hatching).
+- A planned extension is a *searchable index*: comparing two artworks via
+  their meta-text (shape distributions, palette histograms) instead of pixels.
+
+The reverse bridge turns images into analyzable texts without leaving the
+PolyArt ecosystem — one more step toward treating art as data, and data as art.
+
+================================================================================

@@ -420,6 +420,66 @@
     }
   },
   {
+    "file": "oil_meta.png",
+    "rarity": 63.084018567376276,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.002,
+      "symmetry": 0.997,
+      "fractal_dim": 1.98,
+      "texture": 0.028,
+      "color_diversity": 0.013,
+      "golden_ratio": 0.599,
+      "polynomial_smoothness": 1.0,
+      "curvature_energy": 0.003
+    }
+  },
+  {
+    "file": "oil_terrain.png",
+    "rarity": 54.71131502977532,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.001,
+      "symmetry": 0.989,
+      "fractal_dim": 1.997,
+      "texture": 0.062,
+      "color_diversity": 0.073,
+      "golden_ratio": 0.599,
+      "polynomial_smoothness": 0.356,
+      "curvature_energy": 0.001
+    }
+  },
+  {
+    "file": "oil_terrain_rt.png",
+    "rarity": 63.444806399066195,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.001,
+      "symmetry": 0.991,
+      "fractal_dim": 1.996,
+      "texture": 0.098,
+      "color_diversity": 0.141,
+      "golden_ratio": 0.599,
+      "polynomial_smoothness": 0.928,
+      "curvature_energy": 0.0
+    }
+  },
+  {
+    "file": "oil_terrain_topomap.png",
+    "rarity": 59.476165362263465,
+    "classification": "ART",
+    "features": {
+      "edge_density": 0.007,
+      "symmetry": 0.976,
+      "fractal_dim": 1.986,
+      "texture": 0.249,
+      "color_diversity": 0.371,
+      "golden_ratio": 0.599,
+      "polynomial_smoothness": 0.49,
+      "curvature_energy": 0.004
+    }
+  },
+  {
     "file": "paint_demo_forest.png",
     "rarity": 53.93930085731861,
     "classification": "ART",

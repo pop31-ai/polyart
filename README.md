@@ -46,6 +46,8 @@ polyart/
   polyart_flowers.py      # Botanical Art: flowers (rose, lily, daisy, tulip, sunflower, orchid, lotus), plants, compositions
   polyart_spqr.py         # SPQR Roman Architecture: columns, arches, Piranesi impossible geometry, Roman forum, Colosseum
   polyart_tiles.py        # Game tiles: round coasters, chips, spinners, golden-angle node web, golden spiral, ring, sectors
+  polyart_relief.py       # Laser-scan -> landscape: oil painting -> terrain .plang (mountains, lakes, plains) + topomap
+  polyart_metadesc.py     # MetaDesk: image -> meta-text description (.plang polygons) for analysis
   examples/               # 13 showcase demos + 3 .polyart scripts
   articles/               # 32 technical articles
   CONTRIBUTORS.md         # 30+ team members
@@ -69,6 +71,8 @@ polyart/
 | `polyart_flowers` | Botanical art | FlowerCurves, PlantCurves, CompositionCurves |
 | `polyart_spqr` | SPQR Roman architecture & Piranesi | RomanOrders, RomanArch, PiranesiArchitecture, SPQRForum, SPQRComposition |
 | `polyart_tiles` | Game tiles & round compositions | make_tile, golden_web, golden_spiral_lines, sector, ring, render_round, render_spinner |
+| `polyart_relief` | Laser-scan -> landscape | simulate_scan, analyze_terrain, features_to_plang, render_topomap |
+| `polyart_metadesc` | Image -> meta-text description | extract_regions, douglas_peucker, fit_circle, classify_shape, contours_to_plang |
 
 ## Quick Start
 
@@ -177,6 +181,28 @@ repeat 6 {
 }
 flower 2 2 0.5 6 "#d94a6e"
 save "output.png"
+```
+
+### Image -> Meta-Text Description (MetaDesk)
+
+An image becomes a compact *meta-textual description*: regions are turned into
+`polygon({x0, y0, x1, y1, ...})` — a "mention with coordinates" — plus shape
+classification comments (`circle`, `polygon`, `curve`) for analysis. Rendering
+is a derived step; `.polyart` export works on the result.
+
+```
+python polyart_metadesc.py oil_brush_twin_demo.png oil_meta --k 12 --max-regions 40
+python polyart_lang.py oil_meta.plang        # -> oil_meta.png, oil_meta.polyart
+```
+
+### Laser-Scan -> Landscape
+
+An oil painting is read as a relief (impasto texture): mountains (textured
+peaks), lakes (smooth dark zones), plains. Output is a runnable `.plang`.
+
+```
+python polyart_relief.py oil_brush_twin_demo.png oil_terrain   # -> oil_terrain.plang + _topomap.png
+python polyart_lang.py oil_terrain.plang                       # -> oil_terrain.png, .polyart
 ```
 
 ## Showcase Examples
