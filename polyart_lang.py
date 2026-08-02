@@ -2,21 +2,31 @@
 PolyArt Meta-Language v1.0
 A declarative DSL for generating polynomial art.
 
-Grammar:
-  program     := statement*
-  statement   := command | assignment | loop | if | function_def | comment
-  command     := IDENTIFIER '(' args? ')' ';'
-  assignment  := IDENTIFIER '=' expression ';'
-  loop        := 'repeat' NUMBER '{' program '}'
-  if          := 'if' condition '{' program '}'
-  function_def:= 'def' IDENTIFIER '(' params? ')' '{' program '}'
-  comment     := '#' ... '\n'
+Grammar (implemented):
+  program       := statement*
+  statement     := command | assignment | loop | if | function_def | comment
+  command       := IDENTIFIER '(' args? ')' ';'
+  assignment    := IDENTIFIER '=' expression ';'
+  loop          := 'repeat' expression '{' program '}'
+  if            := 'if' condition '{' program '}'
+  function_def  := 'def' IDENTIFIER '(' params? ')' '{' program '}'
+  comment       := '#' ... '\n'
+  list_literal  := '{' expression (',' expression)* '}'
+  indexing      := expression '[' expression ']'
 
-  expression  := NUMBER | STRING | IDENTIFIER | expression OP expression | '(' expression ')'
-  args        := expression (',' expression)*
-  condition   := expression COMP_OP expression
-  OP          := '+' | '-' | '*' | '/' | '%' | '..'
-  COMP_OP     := '==' | '!=' | '<' | '>' | '<=' | '>='
+  expression    := NUMBER | STRING | 'true' | 'false' | IDENTIFIER
+                 | list_literal | function_call | indexing
+                 | '(' expression ')' | expression OP expression
+  args          := expression (',' expression)*
+  condition     := expression COMP_OP expression
+  OP            := '+' | '-' | '*' | '/' | '%' | '..'
+  COMP_OP       := '==' | '!=' | '<' | '>' | '<=' | '>='
+
+Notes:
+  - Loop variable is '$i' (0-based) while a loop runs.
+  - 'pi' and 'phi' are pre-seeded constants (call form pi() also works).
+  - The '..' operator builds a list of 10 steps per unit from left to right.
+  - Script extension is '.plang' ('.polyart' is the JSON data format).
 """
 
 import re
@@ -27,6 +37,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.path as mpath
+import matplotlib.patches as mpatches
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -36,7 +47,7 @@ warnings.filterwarnings("ignore")
 # ============================================================
 
 TOKEN_SPEC = [
-    ("NUMBER",    r"\d+\.?\d*"),
+    ("NUMBER",    r"\d+(\.\d+)?"),
     ("STRING",    r'"[^"]*"'),
     ("IDENT",     r"\$[A-Za-z_][A-Za-z0-9_]*|[A-Za-z_][A-Za-z0-9_]*"),
     ("OP",        r"\.\.|\+|\-|\*|\/|%"),
@@ -46,6 +57,8 @@ TOKEN_SPEC = [
     ("RPAREN",    r"\)"),
     ("LBRACE",    r"\{"),
     ("RBRACE",    r"\}"),
+    ("LBRACKET",  r"\["),
+    ("RBRACKET",  r"\]"),
     ("SEMI",      r";"),
     ("COMMA",     r","),
     ("DOT",       r"\."),
@@ -150,6 +163,11 @@ class FuncCallNode(ASTNode):
 class ListNode(ASTNode):
     def __init__(self, elements):
         self.elements = elements
+
+class IndexNode(ASTNode):
+    def __init__(self, base, index):
+        self.base = base
+        self.index = index
 
 
 # ============================================================
@@ -294,15 +312,34 @@ class Parser:
 
     def parse_primary(self):
         tok = self.peek()
+        node = None
         if tok.type == "NUMBER":
             self.advance()
-            return NumberNode(tok.value)
-        if tok.type == "STRING":
+            node = NumberNode(tok.value)
+        elif tok.type == "STRING":
             self.advance()
-            return StringNode(tok.value)
-        if tok.type == "IDENT":
+            node = StringNode(tok.value)
+        elif tok.type == "LBRACE":
+            self.advance()
+            elems = []
+            if self.peek().type != "RBRACE":
+                elems.append(self.parse_expr())
+                while self.peek().type == "COMMA":
+                    self.advance()
+                    elems.append(self.parse_expr())
+            self.expect("RBRACE")
+            node = ListNode(elems)
+        elif tok.type == "LPAREN":
+            self.advance()
+            node = self.parse_expr()
+            self.expect("RPAREN")
+        elif tok.type == "IDENT":
             name = self.advance().value
-            if self.peek().type == "LPAREN":
+            if name == "true":
+                node = NumberNode(1)
+            elif name == "false":
+                node = NumberNode(0)
+            elif self.peek().type == "LPAREN":
                 self.advance()
                 args = []
                 if self.peek().type != "RPAREN":
@@ -311,8 +348,8 @@ class Parser:
                         self.advance()
                         args.append(self.parse_expr())
                 self.expect("RPAREN")
-                return FuncCallNode(name, args)
-            if self.peek().type == "LBRACE":
+                node = FuncCallNode(name, args)
+            elif self.peek().type == "LBRACE":
                 self.advance()
                 elems = []
                 if self.peek().type != "RBRACE":
@@ -321,14 +358,17 @@ class Parser:
                         self.advance()
                         elems.append(self.parse_expr())
                 self.expect("RBRACE")
-                return ListNode(elems)
-            return VarNode(name)
-        if tok.type == "LPAREN":
+                node = ListNode(elems)
+            else:
+                node = VarNode(name)
+        else:
+            raise SyntaxError(f"Unexpected token {tok.type} ({tok.value!r}) at line {tok.line}")
+        while self.peek().type == "LBRACKET":
             self.advance()
-            expr = self.parse_expr()
-            self.expect("RPAREN")
-            return expr
-        raise SyntaxError(f"Unexpected token {tok.type} ({tok.value!r}) at line {tok.line}")
+            idx = self.parse_expr()
+            self.expect("RBRACKET")
+            node = IndexNode(node, idx)
+        return node
 
 
 # ============================================================
@@ -337,7 +377,7 @@ class Parser:
 
 class Interpreter:
     def __init__(self):
-        self.vars = {}
+        self.vars = {"pi": math.pi, "phi": (1 + math.sqrt(5)) / 2}
         self.funcs = {}
         self.fig = None
         self.ax = None
@@ -403,7 +443,12 @@ class Interpreter:
             if node.op == "/": return l / r if r != 0 else 0
             if node.op == "%": return l % r if r != 0 else 0
             if node.op == "..":
-                return [float(l + (r - l) * i / max(1, int(r - l) * 10)) for i in range(int(abs(r - l) * 10 + 1))]
+                lo = float(l)
+                hi = float(r)
+                n = int(abs(hi - lo) * 10 + 1)
+                if n < 2:
+                    n = 2
+                return [lo + (hi - lo) * i / (n - 1) for i in range(n)]
         if isinstance(node, UnaryOpNode):
             val = self.eval_expr(node.operand)
             if node.op == "-": return -val
@@ -412,6 +457,12 @@ class Interpreter:
             return self.call_func(node.name, [self.eval_expr(a) for a in node.args])
         if isinstance(node, ListNode):
             return [self.eval_expr(e) for e in node.elements]
+        if isinstance(node, IndexNode):
+            base = self.eval_expr(node.base)
+            idx = int(self.eval_expr(node.index))
+            if isinstance(base, (list, tuple, str)) and 0 <= idx < len(base):
+                return base[idx]
+            return 0
         return 0
 
     def eval_condition(self, node):
@@ -560,7 +611,7 @@ class Interpreter:
                 verts.append(pts[i])
                 codes.append(Path.CURVE3 if i % 2 == 1 else Path.CURVE3)
             path = Path(verts, codes)
-            patch = mpath.PathPatch(path, facecolor="none", edgecolor=c, linewidth=lw)
+            patch = mpatches.PathPatch(path, facecolor="none", edgecolor=c, linewidth=lw)
             self.ax.add_patch(patch)
             return
 
@@ -1006,7 +1057,10 @@ if __name__ == "__main__":
         print("[DONE]")
     else:
         print("PolyArt Meta-Language v1.0")
-        print("Usage: python polyart_lang.py <script.polyart>")
+        print("Usage: python polyart_lang.py <script.plang>")
+        print()
+        print("Note: .plang is the meta-language script format;")
+        print("      .polyart is the JSON data format (see polyart_format.py).")
         print()
         print("Example script:")
         print('  canvas(10, 10, "#0d0a1a");')

@@ -1,0 +1,43 @@
+# PolyArt Meta-Language example
+# Run: python polyart_lang.py examples/12_polyart_lang.plang
+
+canvas(10, 10, "#0d0a1a");
+xlim(-5, 5);
+ylim(-5, 5);
+
+# golden spiral in the center
+golden_spiral(0, 0, 0.05, 4, "#c8a040", 0.5);
+
+# translucent circle (fill via `true`)
+circle(0, 0, 2, true, "#4a90d9", 0.3, "#c8a040", 0.3);
+
+# sine wave
+sine(-5, 5, 1.5, 2, 0, "#e06040", 0.7);
+
+# polygon from a list literal
+polygon({-3, -3, -1, -3, -2, -2, -3, -3}, "#8a2a5a", "#c8a040");
+
+# range operator into a variable, then indexing
+xs = -4..4;
+line(xs[0], -4, 4, -4, "#3a6a8a", 0.4);
+
+# bezier from control-point pairs
+bezier({{-4, -3}, {0, -1}, {4, -3}}, "#d0a050", 0.8);
+
+# repeat loop with loop variable $i
+repeat 5 {
+  circle($i - 2, 4, 0.2, true, "#d94a6e", 0.6, "#d94a6e", 0.2);
+}
+
+# high-level emoticon and animal
+emotion("joy", -3, 3, 0.5);
+animal("lion", 3, 3, 0.3);
+
+# pi / phi are pre-seeded constants
+circle(pi, 0, 0.3, false, "#ffffff", 0.5);
+
+# text label
+text(0, -4, "PolyArt Lang", 14, "#c8a040", 0.9, "bold");
+
+render("examples/12_polyart_lang.png", 150);
+print("done");

@@ -260,63 +260,49 @@ class PolyartToImage:
 # =============================================================================
 
 class VideoToPolyvid:
-    def load_video_frames(self, path):
-        try:
-            anim = animation.FuncAnimation
-        except Exception:
-            pass
+    def load_video_frames(self, path, max_frames=300):
         ext = os.path.splitext(path)[1].lower()
         frames = []
         fps = 24
         if ext == ".gif":
-            fig_tmp, ax_tmp = plt.subplots()
-            patch = ax_tmp.imshow(plt.imread(path))
-            n_frames = 100
             try:
                 from PIL import Image as PILImage
                 gif = PILImage.open(path)
-                n_frames = gif.n_frames
                 try:
                     fps = 1000.0 / gif.info.get("duration", 100)
                 except Exception:
                     fps = 24
+                for fidx in range(min(gif.n_frames, max_frames)):
+                    gif.seek(fidx)
+                    frame = np.array(gif.convert("RGB"))
+                    frames.append(frame)
             except ImportError:
-                pass
-            fig, ax = plt.subplots()
-
-            def update(frame_idx):
-                try:
-                    data = plt.imread(path)
-                    patch.set_data(data)
-                except Exception:
-                    pass
-                return [patch]
-
-            ani = animation.FuncAnimation(fig, update, frames=min(n_frames, 300), interval=1000 / fps)
-            buf = BytesIO()
-            try:
-                ani.save(buf, writer="pillow", fps=fps)
-                buf.seek(0)
-                gif_img = plt.imread(buf)
-                if gif_img.ndim == 3 and gif_img.shape[2] == 4:
-                    gif_img = gif_img[:, :, :3]
-                frames.append(gif_img)
-            except Exception:
                 img = plt.imread(path)
-                if img.ndim == 3:
-                    if img.shape[2] == 4:
-                        img = img[:, :, :3]
-                    frames.append(img)
-            plt.close(fig)
-            plt.close(fig_tmp)
+                if img.ndim == 3 and img.shape[2] == 4:
+                    img = img[:, :, :3]
+                frames.append(img)
         else:
             try:
-                img = plt.imread(path)
-                if img.ndim == 3:
-                    if img.shape[2] == 4:
-                        img = img[:, :, :3]
-                    frames.append(img)
-            except Exception:
+                import imageio.v2 as iio
+                reader = iio.get_reader(path)
+                try:
+                    fps = float(reader.get_meta_data().get("fps", 24)) or 24
+                except Exception:
+                    fps = 24
+                for idx, fr in enumerate(reader):
+                    if idx >= max_frames:
+                        break
+                    arr = np.asarray(fr)
+                    if arr.ndim == 3 and arr.shape[2] == 4:
+                        arr = arr[:, :, :3]
+                    frames.append(arr)
+                reader.close()
+            except ImportError:
+                print("[WARN] imageio not installed; cannot decode video {}. "
+                      "Install with: pip install imageio".format(os.path.basename(path)))
+            except Exception as e:
+                print("[WARN] Failed to decode video {}: {}".format(os.path.basename(path), str(e)))
+            if not frames:
                 img = np.zeros((240, 320, 3), dtype=np.uint8)
                 frames.append(img)
         return frames, fps
@@ -425,7 +411,7 @@ class PolyvidToVideo:
             from PIL import Image as PILImage
             pil_frames = []
             for f in frames:
-                arr = (f.astype(np.float64) / 255.0 * 255).astype(np.uint8) if f.max() <= 1.0 else f.astype(np.uint8)
+                arr = (f * 255).astype(np.uint8) if f.max() <= 1.0 else f.astype(np.uint8)
                 pil_frames.append(PILImage.fromarray(arr))
             pil_frames[0].save(
                 output_path,
@@ -529,8 +515,6 @@ class FormatConverter:
             plt.imsave(output_path, img.astype(np.uint8) if img.max() > 1.0 else img)
             print("[INFO] Direct image copy saved.")
             return output_path
-        elif in_fmt in self.POLYART_IN and out_fmt in self.IMAGE_OUT:
-            return self.polyart_to_image.convert(input_path, output_path)
         else:
             print("[ERROR] Unsupported conversion: {} -> {}".format(in_fmt, out_fmt))
             return None

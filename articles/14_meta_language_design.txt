@@ -168,9 +168,41 @@ tree-walking interpretation, and bytecode compilation can coexist
 in a practical system. The extensibility mechanisms ensure the
 language can grow with its community of users.
 
-Future directions include visual programming interfaces, live
-collaboration support, and integration with GPU shader compilation
-for real-time rendering of mathematical art.
+11. Implementation Status (polyart_lang.py)
+--------------------------------------------
+The design above describes the full intended language. The current
+implementation in `polyart_lang.py` covers a practical subset that
+converges on the same architecture:
+
+  Implemented
+    - Tokenizer (regex-based, TOKEN_SPEC), recursive-descent parser,
+      AST nodes, tree-walking interpreter.
+    - Statements: command, assignment, `repeat` loop, `if`, `def`
+      function, `#` comments.
+    - Expressions: numbers, strings, booleans (`true`/`false`),
+      identifiers, list literals `{...}`, function calls, indexing
+      `x[i]`, arithmetic (`+ - * / %`) and the range operator `..`.
+    - Pre-seeded constants `pi` and `phi`.
+    - Built-in commands: canvas, xlim/ylim/dpi/output, circle, oval,
+      line, rect, polygon, spiral, bezier, sine, cosine, greek_meander,
+      greek_volute, roman_arch, golden_rect, golden_spiral, grid, rays,
+      phyllotaxis, turing_spots, emotion, state, animal, text, render,
+      show, print, and math helpers (sin, cos, sqrt, pow, abs, rand, len,
+      int, float).
+    - Loop variable `$i`; script extension `.plang`.
+
+  Not yet implemented (design targets)
+    - Power operator `^`, keyword `on` (transform composition),
+      `rotate/scale` transforms, curve literals `curve {...}`.
+    - `let`, `for`, `return`, `import`, `//` and `/* */` comments.
+    - REPL mode, bytecode compilation (15x target), plugin API,
+      macro expansion, constant folding, lazy curve evaluation.
+    - Scientific-notation literals (`1e-3`).
+
+The divergences in tokenizer/UML sketches (nextToken/peek/hasMore,
+Context stack, Visitor) are design blueprints; the implementation uses
+a single-pass token list and a scoped variable dictionary. Both follow
+the same conceptual pipeline: tokenize -> parse -> evaluate -> render.
 
 References
 ----------
