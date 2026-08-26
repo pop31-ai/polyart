@@ -1,0 +1,247 @@
+Структура кода: модульность в одном HTML-файле
+
+Введение
+
+Наш проект «Пирожки с нуля» — это анимированный мультик, который целиком помещается в один HTML-файл. Нет сборщиков, нет bundler, нет отдельных модулей. И при этом код читаемый, поддерживаемый и масштабируемый. Как? Ответ — грамотная структура: чёткое разделение на блоки, именованные функции-помощники, объекты-рендереры и константы данных.
+
+В этой статье разберём, как организовать код так, чтобы один HTML-файл не превратился в spaghetti, а был modular и понятным.
+
+1. Разделение на блоки: CSS, HTML, JS
+
+Каждый HTML-файл структурируется по классической схеме:
+
+<!DOCTYPE html>
+<html>
+<head>
+  <style>/* 1. CSS — стили */</style>
+</head>
+<body>
+  <!-- 2. HTML — разметка -->
+  <canvas id="stage"></canvas>
+  <div id="ui">...</div>
+  
+  <script>
+  // 3. JavaScript — логика
+  </script>
+</body>
+</html>
+
+Внутри <script> код тоже делится на секции, разделённые комментариями-разделителями:
+
+// ========================
+// SECTION 1: CONSTANTS & DATA
+// ========================
+
+// ========================
+// SECTION 2: HELPER FUNCTIONS
+// ========================
+
+// ======================== 
+// SECTION 3: CLASSES
+// ========================
+
+// ========================
+// SECTION 4: SCENE RENDERERS
+// ========================
+
+// ========================
+// SECTION 5: MAIN LOOP
+// ========================
+
+Такая структура позволяет быстро находить нужный блок и понимать, за что отвечает каждая часть кода.
+
+2. Функции-помощники: drawBowl, drawTable, drawSteam
+
+Вместо того чтобы рисовать каждую деталь прямо в основном цикле, мы выносим отрисовку в именованные функции:
+
+function drawBowl(ctx, x, y, radius) {
+  // рисуем миску: эллипс с градиентом
+  const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
+  grad.addColorStop(0, '#F5E6CA');
+  grad.addColorStop(1, '#D4A574');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.ellipse(x, y, radius, radius * 0.6, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawTable(ctx) {
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+}
+
+function drawSteam(ctx, particles) {
+  particles.forEach(p => {
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y, p.radius, p.radius * 0.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+Приёмы:
+— Каждая функция рисует один объект или систему объектов.
+— Функции чистые: не меняют внешнее состояние (кроме ctx).
+— Имена функций отражают суть: drawBowl, drawSteam, drawChef.
+
+В основном цикле drawScene читается легко:
+
+function drawScene(timestamp) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawTable(ctx);
+  drawBowl(ctx, 320, 300, 100);
+  drawSteam(ctx, steamParticles);
+  drawSubtitles(ctx, currentSub);
+}
+
+3. Классы: Particles
+
+Для систем частиц (пар, пузырьки, искры) используем класс:
+
+class Particle {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.vx = (Math.random() - 0.5) * 2;
+    this.vy = -Math.random() * 3 - 1;
+    this.radius = Math.random() * 4 + 2;
+    this.alpha = 1;
+    this.life = 1;
+  }
+  
+  update(dt) {
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+    this.life -= 0.01;
+    this.alpha = this.life;
+  }
+  
+  isDead() {
+    return this.life <= 0;
+  }
+}
+
+Класс инкапсулирует данные и поведение одной частицы. Мы создаём экземпляры через new Particle(x, y), обновляем через update(), проверяем через isDead().
+
+Для управления массивом частиц — вспомогательный класс или модуль:
+
+class ParticleSystem {
+  constructor(maxCount) {
+    this.particles = [];
+    this.maxCount = maxCount;
+  }
+  
+  add(p) {
+    if (this.particles.length < this.maxCount) {
+      this.particles.push(p);
+    }
+  }
+  
+  update(dt) {
+    this.particles.forEach(p => p.update(dt));
+    this.particles = this.particles.filter(p => !p.isDead());
+  }
+  
+  draw(ctx) {
+    this.particles.forEach(p => p.draw(ctx));
+  }
+}
+
+4. Объект SC: рендереры сцен
+
+Ключевая структура — объект SC (scenes), который содержит функции-рендереры для каждой сцены мультика:
+
+const SC = {
+  intro: (ctx, t) => {
+    // рисуем интро: фон, шеф, кнопка «Смотреть»
+    drawGradientBackground(ctx);
+    drawChef(ctx, t);
+    drawButton(ctx, 'Смотреть');
+  },
+  
+  boil: (ctx, t) => {
+    drawTable(ctx);
+    drawBowl(ctx, 320, 300, 100);
+    drawWater(ctx, t);
+    drawSteam(ctx, steamParticles);
+  },
+  
+  form: (ctx, t) => {
+    drawTable(ctx);
+    drawDough(ctx, t);
+    drawChefHands(ctx, t);
+  },
+  
+  bake: (ctx, t) => {
+    drawOven(ctx, t);
+    drawPirozhkiInside(ctx, t);
+  },
+  
+  finale: (ctx, t) => {
+    drawFinaleGradient(ctx);
+    drawRecipeCard(ctx);
+    drawTimingCard(ctx);
+  }
+};
+
+Каждый рендерер — чистая функция, которая принимает ctx и timestamp. Основной цикл просто вызывает нужный рендерер:
+
+function animate(timestamp) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  SC[currentScene](ctx, timestamp);
+  requestAnimationFrame(animate);
+}
+
+5. Данные: SUBS, SCENES, CAMS
+
+Данные выносятся в отдельные объекты/массивы в верхней части файла:
+
+const SUBS = [
+  { id: 'welcome', text: 'Добро пожаловать!', start: 0, end: 3 },
+  { id: 'ingredients', text: 'Мука, вода, дрожжи...', start: 3, end: 8 },
+  { id: 'mix', text: 'Замешиваем тесто!', start: 8, end: 13 },
+  // ...
+];
+
+const SCENES = [
+  { id: 'intro', start: 0, end: 5, renderer: 'intro' },
+  { id: 'boil', start: 5, end: 20, renderer: 'boil' },
+  { id: 'form', start: 20, end: 40, renderer: 'form' },
+  // ...
+];
+
+const CAMS = {
+  intro: { x: 0, y: 0, scale: 1 },
+  boil: { x: -50, y: 0, scale: 1.2 },
+  closeUp: { x: 0, y: -100, scale: 2 },
+};
+
+Данные отделены от логики. SUBS — это субтитры (текст и тайминги), SCENES — описание сцен (что рисовать и когда), CAMS — параметры «камеры» (смещение и зум).
+
+6. Порядок объявления
+
+В JavaScript hoisting работает для function declarations, но не для const/let и классов. Поэтому порядок важен:
+
+1. Константы и данные (SUBS, SCENES, CAMS)
+2. Утилиты (vec2, lerp, randomRange)
+3. Классы (Particle, ParticleSystem)
+4. Функции-помощники (drawBowl, drawTable, drawSteam)
+5. Рендереры сцен (SC)
+6. Основной цикл и обработчики событий
+
+Такой порядок гарантирует, что каждая часть кода может обратиться к предыдущим.
+
+7. Читаемость без сборщиков
+
+Преимущества подхода «один файл без сборщиков»:
+— Нулевая настройка: открыл HTML → работает.
+— Простота деплоя: один файл → загрузил на сервер.
+— Прозрачность: весь код виден сразу, не нужно искать по модулям.
+
+Недостатки — очевидны: файл растёт, правки требуют осторожности. Но при дисциплине (разделители, именование, компактность) даже 1000+ строк в одном файле остаются читаемыми.
+
+Заключение
+
+Модульность в одном HTML-файле — это не oxymoron, а осознанный выбор. Разделение на CSS/HTML/JS, функции-помощники (drawBowl, drawSteam), класс Particle, объект SC с рендерерами, константы данных (SUBS, SCENES) — всё это делает проект «Пирожки с нуля» структурированным и понятным. Главное — дисциплина и последовательность в организации кода.

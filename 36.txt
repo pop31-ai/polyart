@@ -1,0 +1,212 @@
+Градиенты и тени: объём без 3D на Canvas
+
+Введение
+
+Canvas 2D — это плоскость. Но с помощью градиентов и теней мы можем создавать иллюзию объёма, глубины и трёхмерности. В нашем проекте «Пирожки с нуля» стол, миска, духовка, шеф-повар — всё отрисовано на плоском canvas, а выглядит volumetric благодаря грамотному использованию радиальных и линейных градиентов, теней и полупрозрачных наложений.
+
+В этой статье разберём, как создавать объёмные объекты без WebGL и 3D-библиотек.
+
+1. Linear Gradient: от точки к точке
+
+Линейный градиент создаёт плавный переход цвета вдоль прямой:
+
+const grad = ctx.createLinearGradient(x0, y0, x1, y1);
+grad.addColorStop(0, '#F5E6CA');
+grad.addColorStop(1, '#D4A574');
+ctx.fillStyle = grad;
+ctx.fillRect(0, 0, 200, 100);
+
+Координаты (x0,y0) — (x1,y1) задают направление градиента. Цветовые остановки (color stops) определяют, какие цвета и где.
+
+Пример: деревянный стол в «Пирожках»
+
+function drawTable(ctx, w, h) {
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#A0522D');
+  grad.addColorStop(0.3, '#8B4513');
+  grad.addColorStop(0.7, '#6B3410');
+  grad.addColorStop(1, '#4A2008');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+}
+
+Градиент идёт сверху вниз: светлый край → тёмный низ. Это создаёт ощущение, что стол наклонён к зрителю и освещён сверху.
+
+2. Radial Gradient: от центра
+
+Радиальный градиент — круговой переход от центра к краям:
+
+const grad = ctx.createRadialGradient(cx, cy, r0, cx, cy, r1);
+grad.addColorStop(0, '#FFF8DC');
+grad.addColorStop(0.5, '#F5E6CA');
+grad.addColorStop(1, '#D4A574');
+
+r0 — внутренний радиус (яркая область), r1 — внешний (тёмная область).
+
+Пример: миска с тестом
+
+function drawBowl(ctx, x, y, w, h) {
+  // Тень под миской
+  ctx.save();
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+  ctx.shadowBlur = 15;
+  ctx.shadowOffsetY = 5;
+  
+  const grad = ctx.createRadialGradient(x, y, 0, x, y, w);
+  grad.addColorStop(0, '#F5E6CA');
+  grad.addColorStop(0.7, '#E8D5B7');
+  grad.addColorStop(1, '#C4A882');
+  
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+Радиальный градиент создаёт ощущение выпуклости: центр миски светлее, края темнее — как будто она полукруглая.
+
+3. Cone Gradient: кастомная реализация
+
+Конический градиент (конус) не встроен в Canvas 2D API. Но его можно реализовать вручную, рисуя узкие сегменты:
+
+function drawConeGradient(ctx, cx, cy, r, colors) {
+  const sliceAngle = (Math.PI * 2) / colors.length;
+  colors.forEach((color, i) => {
+    const startAngle = i * sliceAngle;
+    const endAngle = (i + 1) * sliceAngle;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startAngle, endAngle);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+  });
+}
+
+Или более плавная версия с линейной интерполяцией:
+
+function drawSmoothCone(ctx, cx, cy, r, colorStops) {
+  for (let angle = 0; angle < Math.PI * 2; angle += 0.01) {
+    const t = angle / (Math.PI * 2);
+    const color = interpolateColors(colorStops, t);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, angle, angle + 0.015);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+}
+
+Конический градиент полезен для имитации бликов на металлических поверхностях (кастрюля, духовка) и поворотных элементов.
+
+4. Тени: shadowBlur, shadowOffset
+
+Тени — самый простой способ добавить глубину:
+
+ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+ctx.shadowBlur = 10;
+ctx.shadowOffsetX = 3;
+ctx.shadowOffsetY = 5;
+
+Параметры:
+— shadowColor: цвет тени (обычно полупрозрачный чёрный).
+— shadowBlur: размытие (чем больше, тем мягче тень).
+— shadowOffsetX/Y: смещение (имитирует направление света).
+
+Пример: духовка в «Пирожках»
+
+function drawOven(ctx, x, y, w, h) {
+  ctx.save();
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetX = 10;
+  ctx.shadowOffsetY = 10;
+  
+  ctx.fillStyle = '#2C2C2C';
+  ctx.fillRect(x, y, w, h);
+  ctx.restore();
+  
+  // Внутреннее свечение духовки
+  const glow = ctx.createRadialGradient(
+    x + w/2, y + h/2, 0,
+    x + w/2, y + h/2, w/2
+  );
+  glow.addColorStop(0, 'rgba(255, 140, 0, 0.6)');
+  glow.addColorStop(0.5, 'rgba(255, 100, 0, 0.3)');
+  glow.addColorStop(1, 'rgba(255, 50, 0, 0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(x, y, w, h);
+}
+
+Тень снаружи + радиальный градиент внутри = объёмная духовка с тёплым свечением.
+
+5. Временные тени: эллипс с alpha
+
+Для динамических теней (например, тень от движущейся миски) можно рисовать полупрозрачный эллипс под объектом:
+
+function drawDynamicShadow(ctx, x, y, w, h, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.beginPath();
+  ctx.ellipse(x, y + 10, w, h, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+Чем ближе объект к «земле», тем меньше и темнее тень. Чем выше — тем больше и светлее. Это создаёт эффект парения или приседания.
+
+Пример: шеф-повар подпрыгивает — тень под ним уменьшается и бледнеет:
+
+const jumpOffset = Math.sin(time) * 20;
+const shadowAlpha = 1 - jumpOffset / 40;
+drawDynamicShadow(ctx, chefX, tableY + 10, 40, 10, shadowAlpha);
+
+6. Комбинация: объёмные объекты
+
+Реальный пример из «Пирожков» — объёмная миска с тестом:
+
+function drawVolumetricBowl(ctx, x, y, r) {
+  // 1. Тень под миской
+  ctx.save();
+  ctx.globalAlpha = 0.3;
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.ellipse(x, y + r * 0.3, r * 1.1, r * 0.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  
+  // 2. Стенки миски (линейный градиент)
+  const wallGrad = ctx.createLinearGradient(x - r, y - r * 0.5, x + r, y + r * 0.5);
+  wallGrad.addColorStop(0, '#E8D5B7');
+  wallGrad.addColorStop(0.5, '#F5E6CA');
+  wallGrad.addColorStop(1, '#C4A882');
+  
+  ctx.fillStyle = wallGrad;
+  ctx.beginPath();
+  ctx.ellipse(x, y, r, r * 0.6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // 3. Внутренняя часть (радиальный градиент)
+  const innerGrad = ctx.createRadialGradient(x, y, 0, x, y, r * 0.8);
+  innerGrad.addColorStop(0, '#FFF8DC');
+  innerGrad.addColorStop(1, '#F5E6CA');
+  ctx.fillStyle = innerGrad;
+  ctx.beginPath();
+  ctx.ellipse(x, y, r * 0.85, r * 0.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // 4. Блик (маленький белый эллипс)
+  ctx.globalAlpha = 0.4;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.ellipse(x - r * 0.3, y - r * 0.2, r * 0.15, r * 0.08, -0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+Заключение
+
+Градиенты и тени — это инструменты иллюзии. Линейный градиент создаёт направление света, радиальный — выпуклость, тени — глубину. В «Пирожках с нуля» каждый объект — стол, миска, духовка — объёмный именно благодаря этим приёмам. Не нужен 3D, не нужен WebGL — достаточно понимания света, тени и цвета.

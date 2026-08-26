@@ -1,0 +1,212 @@
+Анимация жидкости (вода, масло, дрожжи) на Canvas
+
+Введение
+
+Жидкости — одна из самых сложных задач для 2D-анимации. Вода, масло, дрожжи, пена — у каждой своя физика: вода течёт быстро и прозрачно, масло — густое и медленное, дрожжи — гранулы с гравитацией и всплытием. В нашем проекте «Пирожки с нуля» жидкости играют центральную роль: вода кипит в миске, масло тает, дрожжи разбухают. Всё это нарисовано на Canvas 2D с помощью эллипсов, синусоид и alpha-blending.
+
+В этой статье разберём, как анимировать разные типы жидкостей.
+
+1. Вода: синий эллипс с бликами
+
+Вода в миске — это статичный эллипс с динамическими деталями: волны на поверхности, блики, движение уровня.
+
+Базовая отрисовка:
+
+function drawWater(ctx, x, y, w, h, time) {
+  // Основной эллипс воды
+  const waterGrad = ctx.createRadialGradient(x, y, 0, x, y, w);
+  waterGrad.addColorStop(0, 'rgba(100, 180, 255, 0.9)');
+  waterGrad.addColorStop(0.7, 'rgba(60, 140, 220, 0.85)');
+  waterGrad.addColorStop(1, 'rgba(30, 100, 180, 0.8)');
+  
+  ctx.fillStyle = waterGrad;
+  ctx.beginPath();
+  ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+Анимация волн:
+
+function drawWaterWaves(ctx, x, y, w, time) {
+  ctx.strokeStyle = 'rgba(180, 220, 255, 0.5)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const waveY = y - 2 + Math.sin(time * 2 + i * 0.5) * 3;
+    const waveW = w * (0.3 + i * 0.15);
+    ctx.moveTo(x - waveW, waveY + i * 4);
+    for (let px = -waveW; px <= waveW; px += 5) {
+      const py = waveY + Math.sin(time * 3 + px * 0.05) * 2 + i * 4;
+      ctx.lineTo(x + px, py);
+    }
+  }
+  ctx.stroke();
+}
+
+Блики:
+
+function drawWaterHighlight(ctx, x, y, time) {
+  ctx.save();
+  ctx.globalAlpha = 0.3 + Math.sin(time * 4) * 0.1;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.ellipse(x - 15, y - 5, 20, 5, -0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+Анимация уровня воды (по синусоиде — «дышит»):
+
+const level = baseLevel + Math.sin(time * 1.5) * 3;
+drawWater(ctx, bowlX, bowlY + level, bowlW, bowlH * 0.8, time);
+
+2. Масло: жёлтый, густой, медленный
+
+Масло отличается от воды: оно жёлтое, густое, медленно двигается, менее прозрачное.
+
+function drawOil(ctx, x, y, w, h, time) {
+  // Жёлтый градиент
+  const oilGrad = ctx.createRadialGradient(x, y, 0, x, y, w);
+  oilGrad.addColorStop(0, 'rgba(255, 220, 100, 0.95)');
+  oilGrad.addColorStop(0.6, 'rgba(230, 180, 50, 0.9)');
+  oilGrad.addColorStop(1, 'rgba(200, 150, 30, 0.85)');
+  
+  ctx.fillStyle = oilGrad;
+  ctx.beginPath();
+  ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Медленные «волны»
+  ctx.strokeStyle = 'rgba(255, 200, 80, 0.4)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let px = -w; px <= w; px += 4) {
+    const py = y + Math.sin(time * 0.8 + px * 0.03) * 2;
+    if (px === -w) ctx.moveTo(x + px, py);
+    else ctx.lineTo(x + px, py);
+  }
+  ctx.stroke();
+}
+
+Ключевое отличие от воды: частота анимации ниже (time * 0.8 вместо time * 3), цвет жёлтый, прозрачность выше (масло плотнее).
+
+3. Дрожжи: гранулы с гравитацией и всплытием
+
+Дрожжи — не жидкость, а суспензия. Это мелкие гранулы, которые:
+— Плавают в жидкости.
+— Медленно всплывают (гравитация вниз, buoyancy вверх).
+— Столкновения минимальны (рупппирование).
+
+class YeastGranule {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.radius = Math.random() * 3 + 2;
+    this.vy = -(Math.random() * 0.3 + 0.1); // всплытие
+    this.vx = (Math.random() - 0.5) * 0.2;
+    this.alpha = 0.7 + Math.random() * 0.3;
+  }
+  
+  update(dt) {
+    this.y += this.vy * dt;
+    this.x += this.vx * dt;
+    // Случайное дрейфование
+    this.vx += (Math.random() - 0.5) * 0.05;
+    // Ограничение в пределах миски
+    if (this.y < bowlTop) this.y = bowlTop;
+    if (this.y > bowlBottom) this.vy = Math.abs(this.vy);
+  }
+  
+  draw(ctx) {
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle = '#F5E6CA';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// Создаём гранулы
+const yeast = [];
+for (let i = 0; i < 20; i++) {
+  yeast.push(new YeastGranule(
+    bowlX + (Math.random() - 0.5) * bowlW,
+    bowlY + Math.random() * bowlH
+  ));
+}
+
+// Обновляем и рисуем
+yeast.forEach(g => g.update(dt));
+yeast.forEach(g => g.draw(ctx));
+
+4. Пена: набор эллипсов с дыханием
+
+Пена — это множество мелких белых/светлых эллипсов, которые появляются на поверхности жидкости и медленно исчезают.
+
+class FoamBubble {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.radius = Math.random() * 6 + 3;
+    this.baseRadius = this.radius;
+    this.phase = Math.random() * Math.PI * 2;
+    this.life = 1;
+    this.decay = 0.005 + Math.random() * 0.01;
+  }
+  
+  update(dt) {
+    this.life -= this.decay * dt;
+    // «Дыхание» — пульсация размера
+    this.radius = this.baseRadius * (1 + Math.sin(this.phase) * 0.2);
+    this.phase += 0.05 * dt;
+  }
+  
+  draw(ctx) {
+    ctx.save();
+    ctx.globalAlpha = this.life * 0.6;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.ellipse(this.x, this.y, this.radius, this.radius * 0.7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+  
+  isDead() {
+    return this.life <= 0;
+  }
+}
+
+// Спавн пены при кипении
+if (isBoiling) {
+  if (Math.random() < 0.3) {
+    foamBubbles.push(new FoamBubble(
+      waterX + (Math.random() - 0.5) * waterW * 0.8,
+      waterY
+    ));
+  }
+}
+
+5. Смешивание: alpha-blending
+
+Когда жидкости смешиваются (масло в воде), используется alpha-blending:
+
+ctx.globalCompositeOperation = 'source-over'; // по умолчанию
+// Рисуем воду
+drawWater(ctx, ...);
+// Рисуем масло поверх с полупрозрачностью
+ctx.globalAlpha = 0.7;
+drawOil(ctx, ...);
+ctx.globalAlpha = 1;
+
+Для более реалистичного смешивания можно использовать composite operations:
+
+ctx.globalCompositeOperation = 'multiply'; // умножение цветов
+// или
+ctx.globalCompositeOperation = 'overlay'; // наложение
+
+В «Пирожках» simple alpha-blending достаточно: масло просто рисуется поверх воды с прозрачностью 0.7–0.8, создавая эффект разделения слоёв.
+
+Заключение
+
+Анимация жидкостей на Canvas — это комбинация эллипсов, синусоид, градиентов и частиц. Вода — быстрые волны, масло — медленные течения, дрожжи — гранулы с всплытием, пена — пульсирующие эллипсы. Alpha-blending позволяет смешивать слои. В «Пирожках с нуля» эти приёмы создают реалистичную кулинарную среду без единой строки физического движка.

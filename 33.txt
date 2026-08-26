@@ -1,0 +1,130 @@
+Кроссбраузерная совместимость Canvas-анимаций
+
+Введение
+
+Вы написали beautiful Canvas-мультик, он великолепно выглядит в Chrome. Открываете в Safari —的一部分 анимации пропали. В Firefox — шрифты отображаются криво. Знакомая ситуация? Canvas API кажется universal, но на практике браузеры имеют разные особенности, которые ломают код без предупреждения. В проекте «Пирожки с нуля» мы столкнулись с этим: корректная отрисовка миски, текста, градиентов и анимаций требует careful cross-browser testing.
+
+В этой статье разберём, что может пойти не так, как это исправить и как протестировать.
+
+1. Поддержка Canvas 2D: что работает везде
+
+Хорошая новость: Canvas 2D Context поддерживается во всех современных браузерах — Chrome, Firefox, Safari, Edge, Opera, а также в мобильных iOS Safari и Android Chrome. Базовые операции (fillRect, arc, drawImage, fillText) работают одинаково.
+
+Но «базовые» — ключевое слово. Продвинутые методы появляются постепенно и не везде.
+
+Проблемные зоны в нашем проекте:
+— roundRect: метод для скруглённых прямоугольников (используется для карточек ингредиентов и тайминга).
+— measureText: точность измерения текста различается.
+— Пользовательские шрифты: @font-face может не загрузиться до первой отрисовки.
+— filter: CSS-фильтры на canvas (blur, drop-shadow) поддерживаются не везде.
+
+2. Проблемы с roundRect
+
+Метод roundRect появился relatively recently:
+— Chrome 99+ (март 2022)
+— Firefox 112+ (апрель 2023)
+— Safari 15.4+ (март 2022)
+
+Если пользователь открывает мультик в более старом браузере, roundRect вызовет ошибку и вся сцена «умрёт».
+
+Решение — полифилл:
+
+if (!ctx.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+    const r = Array.isArray(radii) ? radii[0] : radii;
+    this.beginPath();
+    this.moveTo(x + r, y);
+    this.lineTo(x + w - r, y);
+    this.arcTo(x + w, y, x + w, y + r, r);
+    this.lineTo(x + w, y + h - r);
+    this.arcTo(x + w, y + h, x + w - r, y + h, r);
+    this.lineTo(x + r, y + h);
+    this.arcTo(x, y + h, x, y + h - r, r);
+    this.lineTo(x, y + r);
+    this.arcTo(x, y, x + r, y, r);
+    this.closePath();
+  };
+}
+
+Этот полифилл воспроизводит поведение roundRect через базовые arcTo, и работает везде.
+
+3. Точность measureText
+
+measureText возвращает объект TextMetrics с различными свойствами. Проблема: свойства width, actualBoundingBoxAscent и другие могут отличаться между браузерами на несколько пикселей из-за разных алгоритмов layout.
+
+В «Пирожках» мы используем measureText для центрирования субтитров. Если ширина текста измерена неточно — субтитры смещены.
+
+Решение:
+— Всегда добавлять padding к измеренной ширине (+ 4–8px).
+— Тестировать на нескольких браузерах.
+— Использовать встроенные textAlign = 'center' вместо ручного центрирования через measureText, когда это возможно.
+
+4. Пользовательские шрифты
+
+В проекте мы подключаем кастомные шрифты через @font-face. Проблема: если шрифт ещё не загрузился, canvas отрисует fallback-шрифт, и при перерисовке шрифт «прыгает».
+
+Решение 1: Font Loading API
+
+const font = new FontFace('CustomFont', 'url(font.woff2)');
+font.load().then(() => {
+  document.fonts.add(font);
+  startAnimation(); // запускаем анимацию только после загрузки шрифта
+});
+
+Решение 2: document.fonts.ready
+
+document.fonts.ready.then(() => {
+  drawScene(); // первый кадр с правильным шрифтом
+});
+
+Это гарантирует, что текст на canvas отрисуется нужным шрифтом с первого кадра.
+
+5. Фильтры на Canvas
+
+ctx.filter поддерживается в:
+— Chrome 52+
+— Firefox 49+
+— Safari 16.4+
+
+Для более ранних версий Safari фильтры не работают. Если в «Пирожках» используем ctx.filter = 'blur(5px)' для размытия фона — в старом Safari размытия не будет.
+
+Альтернатива: рисуем blur вручную через stack blur алгоритм или используем CSS filter на самом canvas element:
+
+canvas { filter: blur(5px); }
+
+CSS filter поддерживается гораздо шире, чем Canvas filter.
+
+6. Тестирование: Chrome, Firefox, Safari, Edge
+
+Рекомендуемый workflow:
+
+— Chrome DevTools: Device Mode для тестирования мобильных разрешений.
+— Firefox: about:config → прокрутка вниз → canvasaa для тестирования anti-aliasing.
+— Safari (через WebKit): используем Browser Stack или реальные устройства.
+— Edge: наследует движок Chromium, поэтому тестируется вместе с Chrome.
+
+Для автоматизации можно использовать Sauce Labs или BrowserStack, но для нашего проекта достаточно ручного тестирования в 4 основных браузерах.
+
+7. Мобильные: iOS Safari и Android Chrome
+
+iOS Safari:
+— Часто имеет задержку в 1–2 кадра для requestAnimationFrame.
+— Поддерживает touch-события, но не mousemove (нужно использовать pointer events).
+— Устройства с Retina экраном требуют учёта devicePixelRatio.
+
+Android Chrome:
+— Поддерживает все современные API.
+— Проблема: на дешёвых устройствах canvas отрисовка может быть медленной → нужна оптимизация (см. статью 31).
+
+8. Autoprefixer для CSS
+
+Если мы используем CSS-анимации (например, для кнопок или overlay), полезно подключить Autoprefixer:
+
+-webkit-backdrop-filter: blur(10px);
+backdrop-filter: blur(10px);
+
+Autoprefixer автоматически добавит -webkit- префиксы для Safari, -moz- для Firefox. В нашем проекте, где весь код в одном HTML-файле, Autoprefixer можно запустить как npm-скрипт или использовать online-сервис.
+
+Заключение
+
+Кроссбраузерная совместимость — это не «nice to have», а необходимость. Полифиллы для roundRect, Font Loading API для кастомных шрифтов, pointer events вместо mouse events для iOS, Autoprefixer для CSS — всё это делает наш мультик «Пирожки с нуля» надёжным на любых платформах. Тестируйте в 4 основных браузерах и на реальных мобильных устройствах — только так вы найдёте настоящие проблемы.

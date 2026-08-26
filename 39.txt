@@ -1,0 +1,253 @@
+Финальный экран: рецепты, тайминг, replay
+
+Введение
+
+Финал мультика — это последнее, что видит зритель. Он должен оставить ощущение завершённости, дать полезную информацию и побудить к действию (повторить просмотр, поделиться). В нашем проекте «Пирожки с нуля» финальный экран содержит три ключевых блока: титры «КОНЕЦ», карточку ингредиентов с галочками, карточку тайминга и replay-панель с пресетами. Всё это анимируется появляется плавно.
+
+В этой статье разберём, как спроектировать финальный экран, который запоминается.
+
+1. Блок «КОНЕЦ»: градиент, титры
+
+Первое, что видит зритель после последней сцены — large «КОНЕЦ» по центру экрана.
+
+function drawFinale(ctx, time) {
+  // Градиентный фон (тёплые тона)
+  const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  grad.addColorStop(0, '#FFF8E7');
+  grad.addColorStop(0.5, '#FFE4C4');
+  grad.addColorStop(1, '#FFDAB9');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Заголовок «КОНЕЦ» с fade-in
+  const alpha = Math.min(1, time * 0.5);
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = '#2C1810';
+  ctx.font = 'bold 48px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('КОНЕЦ', canvas.width / 2, 60);
+  
+  // Подзаголовок
+  ctx.font = '20px Arial';
+  ctx.fillStyle = '#666666';
+  ctx.fillText('Пирожки с нуля', canvas.width / 2, 110);
+  ctx.globalAlpha = 1;
+}
+
+Fade-in: alpha растёт от 0 до 1 за 2 секунды (time * 0.5, но max 1). Это создаёт ощущение «появления».
+
+2. Карточка ингредиентов: список с галочками
+
+Ингредиенты отображаются в виде карточки со скруглёнными углами и галочками:
+
+function drawIngredientsCard(ctx, time) {
+  const cardX = 40;
+  const cardY = 150;
+  const cardW = 250;
+  const cardH = 220;
+  
+  // Фон карточки
+  ctx.save();
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  roundRect(ctx, cardX, cardY, cardW, cardH, 12);
+  ctx.fill();
+  ctx.restore();
+  
+  // Заголовок
+  ctx.fillStyle = '#2C1810';
+  ctx.font = 'bold 18px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText('Ингредиенты', cardX + 15, cardY + 28);
+  
+  // Список с галочками
+  const ingredients = [
+    '🌾 Мука — 500г',
+    '💧 Вода — 250мл',
+    '🧈 Масло — 50г',
+    '🧂 Соль — 1 ч.л.',
+    '🍞 Дрожжи — 7г'
+  ];
+  
+  ingredients.forEach((item, i) => {
+    const itemY = cardY + 55 + i * 30;
+    const delay = i * 0.3;
+    const itemAlpha = Math.min(1, Math.max(0, (time - delay) * 2));
+    
+    ctx.globalAlpha = itemAlpha;
+    
+    // Галочка
+    ctx.fillStyle = '#4CAF50';
+    ctx.font = '16px Arial';
+    ctx.fillText('✓', cardX + 15, itemY);
+    
+    // Текст
+    ctx.fillStyle = '#333333';
+    ctx.font = '15px Arial';
+    ctx.fillText(item, cardX + 35, itemY);
+    
+    ctx.globalAlpha = 1;
+  });
+}
+
+Каждый ингредиент появляется с задержкой 0.3 сек, создавая эффект «выписывания списка».
+
+3. Карточка тайминга: временные блоки
+
+Рядом с ингредиентами — карточка с этапами и временем:
+
+function drawTimingCard(ctx, time) {
+  const cardX = 320;
+  const cardY = 150;
+  const cardW = 250;
+  const cardH = 220;
+  
+  // Фон карточки
+  ctx.save();
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  roundRect(ctx, cardX, cardY, cardW, cardH, 12);
+  ctx.fill();
+  ctx.restore();
+  
+  // Заголовок
+  ctx.fillStyle = '#2C1810';
+  ctx.font = 'bold 18px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText('Тайминг', cardX + 15, cardY + 28);
+  
+  // Блоки этапов
+  const steps = [
+    { name: 'Замешивание', time: '10 мин', color: '#E8D5B7' },
+    { name: 'Настаивание', time: '30 мин', color: '#D4A574' },
+    { name: 'Формовка', time: '10 мин', color: '#C4A882' },
+    { name: 'Выпечка', time: '20 мин', color: '#A0522D' },
+    { name: 'Итого', time: '70 мин', color: '#FF6B35', bold: true }
+  ];
+  
+  steps.forEach((step, i) => {
+    const stepY = cardY + 50 + i * 32;
+    const delay = i * 0.4;
+    const stepAlpha = Math.min(1, Math.max(0, (time - delay) * 2));
+    
+    ctx.globalAlpha = stepAlpha;
+    
+    // Цветной индикатор
+    ctx.fillStyle = step.color;
+    ctx.beginPath();
+    roundRect(ctx, cardX + 15, stepY - 10, 8, 20, 3);
+    ctx.fill();
+    
+    // Название этапа
+    ctx.fillStyle = step.bold ? '#FF6B35' : '#333333';
+    ctx.font = step.bold ? 'bold 15px Arial' : '15px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(step.name, cardX + 30, stepY + 4);
+    
+    // Время
+    ctx.fillStyle = '#888888';
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(step.time, cardX + cardW - 15, stepY + 4);
+    
+    ctx.globalAlpha = 1;
+  });
+}
+
+Цветовые индикаторы (от светлого к тёмному) визуально показывают прогресс. Последний этап («Итого») выделен оранжевым.
+
+4. Replay-панель: 3 карточки с пресетами
+
+Внизу экрана — три карточки для выбора следующего действия:
+
+function drawReplayPanel(ctx, time, onPresetClick) {
+  const presets = [
+    { label: 'Заново', icon: '🔄', desc: 'Посмотреть мультик' },
+    { label: 'Быстро', icon: '⚡', desc: 'Без субтитров, 30 сек' },
+    { label: 'Субтитры', icon: '📝', desc: 'С текстом и описанием' }
+  ];
+  
+  const panelY = canvas.height - 120;
+  const cardW = 160;
+  const cardH = 80;
+  const gap = 20;
+  const totalW = presets.length * cardW + (presets.length - 1) * gap;
+  const startX = (canvas.width - totalW) / 2;
+  
+  presets.forEach((preset, i) => {
+    const cardX = startX + i * (cardW + gap);
+    const delay = i * 0.3 + 1; // появление после карточек
+    const cardAlpha = Math.min(1, Math.max(0, (time - delay) * 2));
+    
+    ctx.globalAlpha = cardAlpha;
+    
+    // Фон карточки
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    roundRect(ctx, cardX, panelY, cardW, cardH, 10);
+    ctx.fill();
+    ctx.restore();
+    
+    // Иконка
+    ctx.font = '28px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(preset.icon, cardX + cardW / 2, panelY + 28);
+    
+    // Название
+    ctx.fillStyle = '#333333';
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText(preset.label, cardX + cardW / 2, panelY + 50);
+    
+    // Описание
+    ctx.fillStyle = '#888888';
+    ctx.font = '11px Arial';
+    ctx.fillText(preset.desc, cardX + cardW / 2, panelY + 68);
+    
+    ctx.globalAlpha = 1;
+  });
+}
+
+Обработка кликов:
+
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  presets.forEach((preset, i) => {
+    const cardX = startX + i * (cardW + gap);
+    if (x >= cardX && x <= cardX + cardW && y >= panelY && y <= panelY + cardH) {
+      handlePreset(preset);
+    }
+  });
+});
+
+5. Анимация появления: fadeIn
+
+Все элементы финала используют fadeIn — плавное появление через изменение alpha:
+
+function fadeIn(time, delay, duration) {
+  return Math.min(1, Math.max(0, (time - delay) / duration));
+}
+
+Пример: ингредиенты появляются с задержкой 0.3 сек между элементами, каждая карточка — с задержкой 0.5 сек. Это создаёт «каскадное появление», которое выглядит professionally.
+
+Каскадное появление:
+— Секунда 0–2: «КОНЕЦ» + подзаголовок.
+— Секунда 1–3: карточка ингредиентов (постепенно).
+— Секунда 2–4: карточка тайминга (постепенно).
+— Секунда 3–5: replay-панель (постепенно).
+
+Итого: за 5 секунд весь финальный экран «вырастает» перед зрителем.
+
+Заключение
+
+Финальный экран «Пирожков с нуля» — это не просто статичная картинка, а experiences: fade-in титры, каскадные списки ингредиентов и тайминга, replay-панель с пресетами. Каждый элемент появляется вовремя и на своём месте. Хороший финал оставляет у зрителя ощущение «я что-то получил» и желание нажать «Заново».

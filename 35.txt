@@ -1,0 +1,191 @@
+Работа с текстом на Canvas: шрифты, выравнивание, тени
+
+Введение
+
+Текст на Canvas — это одновременно просто и сложно. Просто:.fillText() выводит строку. Сложно: правильный шрифт, размер, выравнивание, измерение, тени, многострочность и кириллица. В нашем проекте «Пирожки с нуля» текст играет ключевую роль — это субтитры, заголовки на интро, названия ингредиентов, таймеры на финальном экране. Каждый элемент должен выглядеть чётко, красиво и читаемо.
+
+В этой статье разберём все аспекты работы с текстом на Canvas.
+
+1. ctx.font: размер, семейство, жирность
+
+Шрифт задаётся строкой, аналогично CSS font:
+
+ctx.font = 'bold 24px Arial, sans-serif';
+
+Формат: [style] [weight] [size] [family]
+
+Проект «Пирожки» использует несколько стилей:
+— Заголовки: bold 32px Arial — крупно, уверенно.
+— Субтитры: 20px Arial — читаемо, не перекрывает анимацию.
+— Мелкие подписи: 14px Arial — для таймингов и состава.
+
+Важно: шрифт устанавливается ПЕРЕД вызовом fillText. Если забыть — canvas использует предыдущий шрифт или дефолтный 10px sans-serif.
+
+ctx.font = 'bold 32px Arial';
+ctx.fillText('Пирожки с нуля', 100, 50); // bold 32px ✓
+
+ctx.font = '20px Arial';
+ctx.fillText('Субтитры', 100, 80); // 20px ✓
+
+Проблема: если кастомный шрифт ещё не загружен — отрисуется fallback. Решение: Font Loading API (см. статью 33).
+
+2. textBaseline и textAlign
+
+По умолчанию Canvas использует baseline = 'alphabetic' и textAlign = 'left'. Это значит, что координата (x, y) — это левый край текста на baseline (линии, на которой стоят буквы).
+
+textBaseline:
+— 'top': y — верхний край текста (полезно для кнопок).
+— 'middle': y — центр текста (удобно для центрирования).
+— 'alphabetic': y — baseline (стандарт для длинных строк).
+— 'bottom': y — нижний край.
+
+textAlign:
+— 'left': x — левый край.
+— 'center': x — центр строки (идеально для субтитров).
+— 'right': x — правый край.
+
+В «Пирожках» для субтитров используем:
+
+ctx.textAlign = 'center';
+ctx.textBaseline = 'middle';
+ctx.font = '20px Arial';
+ctx.fillText(currentSub.text, canvas.width / 2, canvas.height - 50);
+
+Это гарантирует, что текст всегда отцентрирован по горизонтали и вертикали.
+
+3. Измерение ширины: measureText
+
+Для динамического размещения текста (например, кнопки, размер которой зависит от текста) нужно измерить ширину:
+
+const metrics = ctx.measureText('Смотреть');
+const textWidth = metrics.width;
+
+Пример: кнопка «Смотреть» на экране интро:
+
+const btnText = 'Смотреть';
+const btnWidth = ctx.measureText(btnText).width + 40; // +padding
+const btnHeight = 40;
+const btnX = canvas.width / 2 - btnWidth / 2;
+const btnY = canvas.height - 120;
+
+// Рисуем кнопку
+ctx.fillStyle = '#FF6B35';
+roundRect(ctx, btnX, btnY, btnWidth, btnHeight, 8);
+ctx.fill();
+
+// Рисуем текст кнопки
+ctx.fillStyle = '#FFF';
+ctx.font = 'bold 20px Arial';
+ctx.textAlign = 'center';
+ctx.textBaseline = 'middle';
+ctx.fillText(btnText, canvas.width / 2, btnY + btnHeight / 2);
+
+TextMetrics также содержит:
+— actualBoundingBoxAscent: расстояние от baseline до верха.
+— actualBoundingBoxDescent: расстояние от baseline до низа.
+— fontBoundingBoxAscent: расстояние от baseline до верха bounding box шрифта.
+
+Эти значения критичны для точного вертикального центрирования.
+
+4. Текстовые тени
+
+Canvas позволяет добавлять тени к любым фигурам, включая текст:
+
+ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+ctx.shadowBlur = 4;
+ctx.shadowOffsetX = 2;
+ctx.shadowOffsetY = 2;
+ctx.fillStyle = '#FFFFFF';
+ctx.font = 'bold 32px Arial';
+ctx.fillText('Пирожки с нуля', 100, 50);
+
+Важно: shadow применяется ко ВСЕМ последующим draw-вызовам, пока не сброшен:
+
+ctx.shadowColor = 'transparent';
+ctx.shadowBlur = 0;
+ctx.shadowOffsetX = 0;
+ctx.shadowOffsetY = 0;
+
+В «Пирожках» тени используются для читаемости субтитров поверх анимации:
+
+function drawSubtitle(ctx, text) {
+  ctx.save();
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+  ctx.shadowBlur = 6;
+  ctx.font = '20px Arial';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, canvas.width / 2, canvas.height - 50);
+  ctx.restore();
+}
+
+5. Эмодзи на Canvas
+
+Эмодзи поддерживаются! Просто используйте Unicode-строку:
+
+ctx.fillText('🍳 Готово!', 100, 100);
+ctx.fillText('🔥 Духовка 180°C', 100, 130);
+
+Но есть нюансы:
+— Эмодзи отображаются как текст, а не как картинки. Их стиль зависит от ОС и шрифта.
+— На Windows эмодзи выглядят иначе, чем на macOS.
+— Размер эмодзи невозможно изменить отдельно от шрифта.
+
+В проекте «Пирожки» мы используем эмодзи в финальном экране для ингредиентов (🌾 мука, 💧 вода, 🧈 масло). Для единообразия лучше заменить эмодзи на кастомные иконки (отрисованные через canvas), но для простоты эмодзи — отличный вариант.
+
+6. Многострочный текст: ручной перенос
+
+Canvas не поддерживает автоматический перенос строк. fillText рисует одну строку. Для многострочного текста нужен ручной перенос.
+
+Подход 1: разбиение по словам:
+
+function drawMultiline(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  let lineY = y;
+  
+  for (const word of words) {
+    const testLine = line + word + ' ';
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && line !== '') {
+      ctx.fillText(line.trim(), x, lineY);
+      line = word + ' ';
+      lineY += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line.trim(), x, lineY);
+}
+
+Подход 2: заранее разбитый текст (массив строк):
+
+const recipeLines = [
+  'Ингредиенты:',
+  '— Мука 500г',
+  '— Вода 250мл',
+  '— Дрожжи 7г',
+  '— Масло 50г'
+];
+recipeLines.forEach((line, i) => {
+  ctx.fillText(line, x, y + i * lineHeight);
+});
+
+В «Пирожках» второй подход удобнее, так как текст статичный и известен заранее.
+
+7. Кириллица: проблемы с метриками
+
+Основная проблема: шрифт должен поддерживать кириллицу. Arial, Times New Roman, Courier New — поддерживают. Кастомные шрифты — нужно проверять.
+
+Проблема метрик: ctx.measureText может некорректно измерять кириллический текст, если шрифт не полностью поддерживает Unicode. Ширина строки «Привет» в одном шрифте может отличаться от ожидаемой.
+
+Решения:
+— Использовать web-safe шрифты для кириллицы (Arial, Verdana, Tahoma).
+— Тестировать measureText для кириллических строк.
+— Добавлять padding к измеренной ширине (+10–20%).
+— Использовать textAlign = 'center' вместо ручного позиционирования.
+
+Заключение
+
+Текст на Canvas требует внимания к деталям: правильный шрифт, выравнивание, тени для контрастности, measureText для динамического layout и ручной перенос строк. В «Пирожках с нуля» текст — это не просто надписи, а полноценный UI-элемент: субтитры, заголовки, кнопки, рецепты. Основываясь на этих приёмах, вы сможете красиво и читаемо отображать текст на любом Canvas.

@@ -1,0 +1,205 @@
+Создание интро: первое впечатление за 5 секунд
+
+Введение
+
+Интро — это первые 3–5 секунд мультика. За это время зритель должен понять: что он смотрит, что будет дальше, и хочет ли продолжать. В нашем проекте «Пирожки с нуля» интро — это экран приветствия с анимированным шеф-поваром, градиентным фоном, кнопкой «Смотреть» и таймером обратного отсчёта. Плохое интро = зритель закрывает вкладку. Хорошее интро = вовлечённость с первой секунды.
+
+В этой статье разберём, как создать эффективное Canvas-интро.
+
+1. Экран интро: хедер, таймер, кнопка «Смотреть»
+
+Структура экрана интро:
+
+function drawIntro(ctx, time) {
+  // 1. Градиентный фон
+  drawIntroBackground(ctx, time);
+  
+  // 2. Звёзды (анимированные)
+  drawStars(ctx, time);
+  
+  // 3. Хедер: название мультика
+  drawIntroTitle(ctx);
+  
+  // 4. Анимированный шеф
+  drawIntroChef(ctx, time);
+  
+  // 5. Кнопка «Смотреть»
+  drawWatchButton(ctx, time);
+  
+  // 6. Таймер (если auto-play)
+  drawTimer(ctx, time);
+}
+
+Каждый элемент появляется по очереди с задержкой (fade-in), создавая ощущение «оживания» экрана.
+
+2. Анимированный шеф на Canvas
+
+Шеф-повар на интро — это «лицо» мультика. Он должен быть живым, приветливым и анимированным.
+
+function drawIntroChef(ctx, time) {
+  const chefX = canvas.width / 2;
+  const chefY = canvas.height * 0.45;
+  
+  // Тело (белый фартук)
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.ellipse(chefX, chefY + 60, 50, 70, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Голова
+  ctx.fillStyle = '#FDBCB4';
+  ctx.beginPath();
+  ctx.arc(chefX, chefY - 10, 35, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Поварской колпак
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.ellipse(chefX, chefY - 45, 30, 20, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillRect(chefX - 30, chefY - 40, 60, 15);
+  
+  // Глаза (моргание)
+  const blinkCycle = Math.sin(time * 3);
+  const eyeHeight = blinkCycle > 0.95 ? 2 : 6;
+  ctx.fillStyle = '#2C1810';
+  ctx.beginPath();
+  ctx.ellipse(chefX - 12, chefY - 15, 4, eyeHeight, 0, 0, Math.PI * 2);
+  ctx.ellipse(chefX + 12, chefY - 15, 4, eyeHeight, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Улыбка
+  ctx.strokeStyle = '#2C1810';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(chefX, chefY - 5, 15, 0.2, Math.PI - 0.2);
+  ctx.stroke();
+  
+  // Рука приветствует (покачивание)
+  const waveAngle = Math.sin(time * 4) * 0.3;
+  ctx.save();
+  ctx.translate(chefX + 50, chefY + 30);
+  ctx.rotate(waveAngle - 0.5);
+  ctx.fillStyle = '#FDBCB4';
+  ctx.beginPath();
+  ctx.ellipse(0, -30, 8, 25, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+Анимация: моргание (моргает раз в ~3 сек), покачивание рукой (приветственный жест), лёгкое покачивание тела.
+
+3. Градиентный фон с звёздами
+
+Фон интро — тёмный градиент с мерцающими звёздами:
+
+function drawIntroBackground(ctx, time) {
+  const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  grad.addColorStop(0, '#1a1a2e');
+  grad.addColorStop(0.5, '#16213e');
+  grad.addColorStop(1, '#0f3460');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawStars(ctx, time) {
+  ctx.fillStyle = '#FFFFFF';
+  for (let i = 0; i < 50; i++) {
+    const seed = i * 137.5; // золотое сечение для равномерного распределения
+    const x = (seed * 100) % canvas.width;
+    const y = (seed * 73) % canvas.height;
+    const alpha = 0.3 + Math.sin(time * 2 + seed) * 0.3;
+    const size = 1 + (seed % 3);
+    
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+Звёзды мерцают с разной фазой (time * 2 + seed), создавая живой фон.
+
+4. Кнопка: hover-эффекты, тени
+
+Кнопка «Смотреть» — основной call-to-action. Она должна привлекать внимание и отвечать на hover.
+
+function drawWatchButton(ctx, time, isHovered) {
+  const btnW = 180;
+  const btnH = 50;
+  const btnX = canvas.width / 2 - btnW / 2;
+  const btnY = canvas.height * 0.75;
+  
+  // Пульсация (привлечение внимания)
+  const pulse = Math.sin(time * 3) * 3;
+  
+  ctx.save();
+  ctx.shadowColor = isHovered ? 'rgba(255, 107, 53, 0.8)' : 'rgba(0, 0, 0, 0.5)';
+  ctx.shadowBlur = isHovered ? 20 : 10 + pulse;
+  ctx.shadowOffsetY = isHovered ? 5 : 3;
+  
+  // Фон кнопки
+  const btnGrad = ctx.createLinearGradient(btnX, btnY, btnX, btnY + btnH);
+  btnGrad.addColorStop(0, isHovered ? '#FF8855' : '#FF6B35');
+  btnGrad.addColorStop(1, isHovered ? '#DD5522' : '#CC5522');
+  
+  ctx.fillStyle = btnGrad;
+  ctx.beginPath();
+  roundRect(ctx, btnX - pulse, btnY - pulse / 2, btnW + pulse * 2, btnH + pulse, 10);
+  ctx.fill();
+  
+  // Текст кнопки
+  ctx.shadowColor = 'transparent';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 22px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('▶ Смотреть', canvas.width / 2, btnY + btnH / 2);
+  
+  ctx.restore();
+}
+
+Обработка hover:
+
+let isButtonHovered = false;
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  isButtonHovered = x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
+  canvas.style.cursor = isButtonHovered ? 'pointer' : 'default';
+});
+
+5. Таймер и подсказки
+
+Таймер обратного отсчёта (если мультик стартует автоматически):
+
+function drawTimer(ctx, timeLeft) {
+  if (timeLeft <= 0) return;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+  ctx.font = '16px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(`Начало через ${Math.ceil(timeLeft)}...`, canvas.width / 2, canvas.height * 0.88);
+}
+
+Подсказки по управлению:
+
+function drawControlsHint(ctx) {
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+  ctx.font = '14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('Пробел — пауза | Стрелки — перемотка', canvas.width / 2, canvas.height - 20);
+}
+
+6. Зачем интро нужен: контекст + ожидание
+
+Интро решает две задачи:
+— Контекст: зритель понимает, что будет мультик о готовке пирожков. Название + шеф + подсказки.
+— Ожидание: анимация, пульсация кнопки, таймер — всё создаёт предвкушение.
+
+Без интро мультик начинается «сразу» — зритель не успевает настроиться. С интро — есть переход от «я ничего не знаю» к «я готов смотреть».
+
+Заключение
+
+Интро в «Пирожках с нуля» — это не просто заставка, а interactions design: анимированный шеф, мерцающие звёзды, пульсирующая кнопка, таймер. Каждый элемент работает на вовлечение. Инвестируйте в первые 5 секунд — они определяют, досмотрит ли зритель мультик до конца.
