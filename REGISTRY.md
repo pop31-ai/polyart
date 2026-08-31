@@ -377,6 +377,7 @@
 | `porcelain_art.py` | 324 | Chinese porcelain art style |
 | `vitruvian_da_vinci.py` | 397 | Vitruvian Man polynomial recreation |
 | `weary_emperor.py` | 428 | Weary Roman emperor portrait |
+| `polyart_university_emblem.py` | 140 | Emblem of the polyart university (circular seal): meander ring, Roman arch + columns, golden star & spiral, codex banner «свобода и цели» |
 
 ---
 
@@ -619,6 +620,9 @@ All codec implementations are self-contained with zero external dependencies bey
 | `oil_meta.plang` | 21 KB | Meta-text description of the oil painting (17 regions) |
 | `oil_terrain.plang` | — | Landscape from laser-scan of the oil painting |
 | `oil_terrain_topomap.png` | — | Terrain topomap of the relief |
+| `university_emblem.png` | 243 KB | University emblem: circular polyart seal (meander, arch, columns, star, codex) |
+| `university_emblem.svg` | 93 KB | Vector (SVG) version of the university emblem |
+| `university_emblem.polyart` | 60 KB | University emblem as .polyart data |
 
 ### Example PNGs (examples/)
 
